@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Manajemen Coffee Shop</title>
+<title>Dashboard Coffee Shop Full Terintegrasi</title>
 <style>
   body { font-family: Arial, sans-serif; background:#f4f4f6; color:#222; margin:0; padding:0; }
   header { background:#222; color:#fff; padding:16px 24px; }
@@ -21,12 +21,13 @@
   .btn-danger { background:#d9534f; color:#fff; }
   .flex { display:flex; gap:10px; flex-wrap:wrap; }
   .input { padding:8px; width:100%; box-sizing:border-box; }
+  textarea { width:100%; padding:10px; box-sizing:border-box; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Dashboard Manajemen Coffee Shop (Full Terintegrasi)</h1>
+  <h1>Dashboard Coffee Shop Full Terintegrasi</h1>
 </header>
 
 <div class="container">
@@ -36,28 +37,8 @@
 
     <!-- CARD 1: DATABASE BAHAN BAKU -->
     <div class="card">
-      <h2>1. Database Bahan Baku</h2>
-      <div class="flex">
-        <input class="input" id="bahanNama" placeholder="Nama Bahan">
-        <select class="input" id="bahanKategori">
-          <option value="Kopi">Kopi</option>
-          <option value="Syrup">Syrup</option>
-          <option value="Dairy">Dairy</option>
-          <option value="Powder">Powder</option>
-          <option value="Lain-lain">Lain-lain</option>
-          <option value="Operasional">Operasional</option>
-        </select>
-        <input class="input" id="bahanBrand" placeholder="Brand">
-        <select class="input" id="bahanSatuan">
-          <option value="ml">ml</option>
-          <option value="gr">gr</option>
-          <option value="pcs">pcs</option>
-        </select>
-        <input class="input" id="bahanHarga" type="number" placeholder="Harga Beli Total (Rp)">
-        <input class="input" id="bahanJumlah" type="number" placeholder="Jumlah Isi Kemasan">
-        <button class="btn btn-primary" onclick="addBahan()">Tambah Bahan</button>
-      </div>
-
+      <h2>1. Database Bahan Baku (Single Source of Truth)</h2>
+      <div class="small">Harga per satuan belum diisi? Tidak masalah. Isi nanti lewat fitur “Bulk Input Harga”.</div>
       <table id="tableBahan">
         <thead>
           <tr>
@@ -67,22 +48,22 @@
         </thead>
         <tbody></tbody>
       </table>
+
+      <div class="card" style="margin-top:12px;">
+        <h3>Bulk Input Harga Bahan (Copy-Paste)</h3>
+        <div class="small">Format: <b>Nama Bahan | Harga Beli Total | Jumlah Isi Kemasan</b></div>
+        <textarea id="bulkHarga" rows="6" placeholder="Contoh:
+Syrup Tiramisu | 120000 | 1000
+SKM | 11590 | 370
+Bubuk Matcha | 189000 | 1000"></textarea>
+        <button class="btn btn-primary" onclick="bulkHargaBahan()">Simpan Harga Massal</button>
+      </div>
     </div>
 
     <!-- CARD 2: DATABASE ESPRESSO -->
     <div class="card">
-      <h2>2. Database Parameter Espresso (Global)</h2>
-      <div class="flex">
-        <select class="input" id="espressoJenis">
-          <option value="kaks">kaks</option>
-          <option value="diks">diks</option>
-        </select>
-        <input class="input" id="espressoRasio" placeholder="Rasio (contoh 1:2)">
-        <input class="input" id="espressoGram" type="number" placeholder="Gram Kopi">
-        <input class="input" id="espressoOutput" type="number" placeholder="Output Espresso (ml)">
-        <button class="btn btn-primary" onclick="addEspresso()">Tambah Espresso</button>
-      </div>
-
+      <h2>2. Parameter Espresso (Global)</h2>
+      <div class="small">Harga per gram kopi diambil otomatis dari bahan kopi (kategori Kopi).</div>
       <table id="tableEspresso">
         <thead>
           <tr>
@@ -91,24 +72,12 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div class="small">* Harga per gram diambil dari bahan baku kopi (harus ada di database bahan)</div>
     </div>
 
     <!-- CARD 3: DATABASE PACKAGING & OPERASIONAL -->
     <div class="card">
-      <h2>3. Database Packaging & Operasional</h2>
-      <div class="flex">
-        <input class="input" id="packNama" placeholder="Nama Item (cup hot / lid hot / es batu...)">
-        <select class="input" id="packSatuan">
-          <option value="pcs">pcs</option>
-          <option value="gr">gr</option>
-          <option value="ml">ml</option>
-        </select>
-        <input class="input" id="packHarga" type="number" placeholder="Harga Beli Total">
-        <input class="input" id="packJumlah" type="number" placeholder="Jumlah Isi Kemasan">
-        <button class="btn btn-primary" onclick="addPack()">Tambah Item</button>
-      </div>
-
+      <h2>3. Packaging & Operasional</h2>
+      <div class="small">Es batu otomatis harga per gram: 70.000 / 8000 = 8.75</div>
       <table id="tablePack">
         <thead>
           <tr>
@@ -117,22 +86,11 @@
         </thead>
         <tbody></tbody>
       </table>
-
-      <div class="small">
-        * Es batu otomatis dihitung: 70.000 / 8000 gr = 8.75 per gr
-      </div>
     </div>
 
     <!-- CARD 4: DATABASE RESEP -->
     <div class="card">
-      <h2>4. Database Resep (Junction)</h2>
-      <div class="flex">
-        <select class="input" id="resepMenu"></select>
-        <select class="input" id="resepBahan"></select>
-        <input class="input" id="resepJumlah" type="number" placeholder="Jumlah Pakai">
-        <button class="btn btn-primary" onclick="addResep()">Tambah Resep</button>
-      </div>
-
+      <h2>4. Resep (Junction Menu ↔ Bahan)</h2>
       <table id="tableResep">
         <thead>
           <tr>
@@ -145,24 +103,7 @@
 
     <!-- CARD 5: DATABASE MENU -->
     <div class="card">
-      <h2>5. Database Menu</h2>
-      <div class="flex">
-        <input class="input" id="menuNama" placeholder="Nama Menu">
-        <select class="input" id="menuKategori">
-          <option value="Coffee Based">Coffee Based</option>
-          <option value="Non Coffee">Non Coffee</option>
-          <option value="Tea">Tea</option>
-          <option value="Specialty">Specialty</option>
-        </select>
-        <select class="input" id="menuServing">
-          <option value="Hot">Hot</option>
-          <option value="Ice">Ice</option>
-          <option value="Both">Both</option>
-        </select>
-        <input class="input" id="menuHarga" type="number" placeholder="Harga Jual (Rp)">
-        <button class="btn btn-primary" onclick="addMenu()">Tambah Menu</button>
-      </div>
-
+      <h2>5. Menu</h2>
       <table id="tableMenu">
         <thead>
           <tr>
@@ -176,7 +117,7 @@
 
     <!-- CARD 6: DASHBOARD GLOBAL -->
     <div class="card">
-      <h2>6. Dashboard Global + AI Insight</h2>
+      <h2>6. Dashboard Global + Pendapatan Pengeluaran</h2>
 
       <div class="grid" style="grid-template-columns: 1fr 1fr;">
         <div class="card">
@@ -185,7 +126,7 @@
         </div>
 
         <div class="card">
-          <h3>Pendapatan & Pengeluaran (Bulan Ini)</h3>
+          <h3>Pendapatan & Pengeluaran Bulan Ini</h3>
           <div class="flex">
             <input class="input" id="revDapur" type="number" placeholder="Pendapatan Dapur">
             <input class="input" id="revBar" type="number" placeholder="Pendapatan Bar">
@@ -226,31 +167,364 @@
   let expense = { dapur:0, bar:0, cafe:0 };
 
   // =========================
+  // INIT DATA (Semua bahan + menu + resep)
+  // =========================
+  function initData() {
+    // BAHAN BAKU (nama, kategori, brand, satuan)
+    const bahan = [
+      // SYRUP MONIN
+      "Caramel|Syrup||ml",
+      "Vanilla|Syrup||ml",
+      "Tiramisu|Syrup||ml",
+      "Banana|Syrup||ml",
+      "Butterscotch|Syrup||ml",
+      "Pandan|Syrup||ml",
+      "Apple|Syrup||ml",
+      "Melon|Syrup||ml",
+      "Grenadine|Syrup||ml",
+      "Lychee|Syrup||ml",
+      "Mango|Syrup||ml",
+      "Plum|Syrup||ml",
+      "Strawberry|Syrup||ml",
+      "Orange|Syrup||ml",
+
+      // SUSU & DAIRY
+      "Susu UHT Diamond|Dairy||ml",
+      "Susu evaporasi|Dairy||ml",
+      "SKM|Dairy||ml",
+      "Creamer MaxCreamer|Dairy||gr",
+      "Cheese cream|Dairy||gr",
+      "Oatside|Dairy||ml",
+      "Hydro Coco|Dairy||ml",
+      "Yakult|Dairy||pcs",
+
+      // POWDER
+      "Bubuk coklat|Powder||gr",
+      "Bubuk matcha|Powder||gr",
+      "Bubuk taro|Powder||gr",
+      "Bubuk red velvet|Powder||gr",
+      "Bubuk avocado|Powder||gr",
+      "Bubuk vanilla|Powder||gr",
+
+      // LAIN-LAIN
+      "Peanut butter Skippy|Lain-lain||gr",
+      "Biskuit Lotus|Lain-lain||pcs",
+      "Biji selasih|Lain-lain||gr",
+      "Butterfly pea tea|Lain-lain||pcs",
+      "Thai tea|Lain-lain||pcs",
+      "Green tea|Lain-lain||pcs",
+      "Berry tea|Lain-lain||pcs",
+      "Simple sugar|Lain-lain||ml",
+      "Gula aren|Lain-lain||gr",
+      "Sprite|Lain-lain||ml",
+      "Jeruk nipis|Lain-lain||ml",
+      "Air galon Cleo 19 L|Lain-lain||ml",
+      "Straw|Operasional||pcs",
+      "Lid cup hot|Operasional||pcs",
+      "Lid cup ice|Operasional||pcs",
+      "Cup hot|Operasional||pcs",
+      "Cup ice|Operasional||pcs",
+      "Es batu|Operasional||gr",
+      "Air mineral|Operasional||pcs",
+      "Saus caramel|Operasional||ml",
+      "Saus strawberry|Operasional||ml",
+      "Saus vanilla|Operasional||ml",
+      "Saus chocolate|Operasional||ml"
+    ];
+
+    bahan.forEach(b => {
+      const [nama, kategori, brand, satuan] = b.split("|");
+      bahanBaku.push({
+        nama, kategori, brand, satuan,
+        hargaBeli: 0, jumlahIsi: 0, hargaPerSatuan: 0
+      });
+    });
+
+    // PACKAGING & OPERATIONAL (nilai default, bisa diisi)
+    packaging.push(...[
+      {nama:"Cup hot", satuan:"pcs", hargaBeli:0, jumlahIsi:0, hargaPerSatuan:0},
+      {nama:"Cup ice", satuan:"pcs", hargaBeli:0, jumlahIsi:0, hargaPerSatuan:0},
+      {nama:"Lid cup hot", satuan:"pcs", hargaBeli:0, jumlahIsi:0, hargaPerSatuan:0},
+      {nama:"Lid cup ice", satuan:"pcs", hargaBeli:0, jumlahIsi:0, hargaPerSatuan:0},
+      {nama:"Straw", satuan:"pcs", hargaBeli:0, jumlahIsi:0, hargaPerSatuan:0},
+      {nama:"Es batu", satuan:"gr", hargaBeli:70000, jumlahIsi:8000, hargaPerSatuan:70000/8000},
+    ]);
+
+    // MENU (nama, kategori, serving, harga jual)
+    const menus = [
+      ["Kopi Susu","Coffee Based","Both",20000],
+      ["Tuan Rumah","Coffee Based","Both",30000],
+      ["Tiramisu","Coffee Based","Both",28000],
+      ["Banana","Coffee Based","Both",27000],
+      ["Biscoff","Coffee Based","Both",27000],
+      ["Butterscotch","Coffee Based","Both",28000],
+      ["Pandan","Coffee Based","Both",28000],
+      ["Peanut Butter","Coffee Based","Both",27000],
+      ["Caramel Macchiato","Coffee Based","Both",28000],
+      ["Berry Cano","Coffee Based","Ice",25000],
+      ["Apple Cano","Coffee Based","Ice",25000],
+      ["Melon Cano","Coffee Based","Ice",25000],
+
+      ["Avocado","Non Coffee","Ice",23000],
+      ["Taro","Non Coffee","Ice",25000],
+      ["Red Velvet","Non Coffee","Ice",23000],
+      ["Chocolate Signature","Non Coffee","Both",25000],
+      ["Caramel Latte","Non Coffee","Ice",23000],
+      ["Creamy Coco","Non Coffee","Ice",26000],
+      ["Coconut Plum","Non Coffee","Ice",28000],
+      ["Butter Cream","Non Coffee","Ice",26000],
+      ["Vanilla Latte","Non Coffee","Both",23000],
+      ["Strawberry Love","Non Coffee","Ice",23000],
+      ["Matcha","Specialty","Both",28000],
+      ["Yakult Series","Specialty","Ice",23000],
+      ["Butterfly Tea","Tea","Ice",25000],
+      ["Thai Tea","Tea","Ice",25000],
+      ["Berry Pop","Tea","Ice",25000],
+      ["Green Tea","Tea","Both",25000],
+      ["Lychee Tea","Tea","Ice",25000],
+      ["Mango Squash","Tea","Ice",23000],
+
+      ["Espresso Hot","Coffee Based","Hot",20000],
+      ["Americano","Coffee Based","Both",22000],
+      ["Long Black","Coffee Based","Both",22000],
+      ["Latte Ice","Coffee Based","Ice",28000],
+      ["Latte Hot","Coffee Based","Hot",28000],
+      ["Cappuccino","Coffee Based","Both",28000],
+      ["Cappuccino Hot","Coffee Based","Hot",28000],
+      ["Magic","Coffee Based","Hot",28000],
+      ["Mocha","Coffee Based","Both",26000],
+      ["Mocha Hot","Coffee Based","Hot",26000]
+    ];
+
+    menus.forEach(m => {
+      menu.push({nama:m[0], kategori:m[1], serving:m[2], hargaJual:m[3], hpp:0, profit:0, margin:0, insight:""});
+    });
+
+    // RESEP (menu, bahan, jumlah)
+    const resepData = [
+      // Kopi Susu
+      ["Kopi Susu","SKM",20],
+      ["Kopi Susu","Creamer MaxCreamer",15],
+      ["Kopi Susu","Susu evaporasi",10],
+      ["Kopi Susu","Espresso Hot",30], // espresso sebagai bahan (disederhanakan)
+      ["Kopi Susu","Susu UHT Diamond",70],
+
+      // Tuan Rumah
+      ["Tuan Rumah","Gula aren",25],
+      ["Tuan Rumah","Creamer MaxCreamer",25],
+      ["Tuan Rumah","Espresso Hot",30],
+      ["Tuan Rumah","Susu UHT Diamond",100],
+
+      // Tiramisu
+      ["Tiramisu","Tiramisu",20],
+      ["Tiramisu","SKM",10],
+      ["Tiramisu","Creamer MaxCreamer",15],
+      ["Tiramisu","Espresso Hot",30],
+      ["Tiramisu","Susu UHT Diamond",100],
+      ["Tiramisu","Cheese cream",20],
+
+      // Banana
+      ["Banana","Banana",20],
+      ["Banana","SKM",10],
+      ["Banana","Creamer MaxCreamer",15],
+      ["Banana","Espresso Hot",30],
+      ["Banana","Susu UHT Diamond",100],
+
+      // Biscoff
+      ["Biscoff","Peanut butter Skippy",15],
+      ["Biscoff","SKM",10],
+      ["Biscoff","Caramel",10],
+      ["Biscoff","Creamer MaxCreamer",10],
+      ["Biscoff","Espresso Hot",30],
+      ["Biscoff","Susu UHT Diamond",100],
+      ["Biscoff","Biskuit Lotus",1],
+
+      // Butterscotch
+      ["Butterscotch","Butterscotch",20],
+      ["Butterscotch","SKM",10],
+      ["Butterscotch","Creamer MaxCreamer",15],
+      ["Butterscotch","Espresso Hot",30],
+      ["Butterscotch","Susu UHT Diamond",70],
+      ["Butterscotch","Cheese cream",20],
+
+      // Pandan
+      ["Pandan","Pandan",20],
+      ["Pandan","SKM",10],
+      ["Pandan","Susu evaporasi",10],
+      ["Pandan","Creamer MaxCreamer",20],
+      ["Pandan","Espresso Hot",30],
+      ["Pandan","Susu UHT Diamond",100],
+
+      // Peanut Butter
+      ["Peanut Butter","Peanut butter Skippy",15],
+      ["Peanut Butter","SKM",10],
+      ["Peanut Butter","Caramel",10],
+      ["Peanut Butter","Creamer MaxCreamer",10],
+      ["Peanut Butter","Espresso Hot",30],
+      ["Peanut Butter","Susu UHT Diamond",100],
+
+      // Caramel Macchiato
+      ["Caramel Macchiato","Caramel",10],
+      ["Caramel Macchiato","Vanilla",10],
+      ["Caramel Macchiato","SKM",10],
+      ["Caramel Macchiato","Creamer MaxCreamer",20],
+      ["Caramel Macchiato","Espresso Hot",30],
+      ["Caramel Macchiato","Susu UHT Diamond",100],
+      ["Caramel Macchiato","Saus caramel",20],
+      ["Caramel Macchiato","Cheese cream",20],
+
+      // Americano Series
+      ["Berry Cano","Grenadine",20],
+      ["Berry Cano","Simple sugar",10],
+      ["Berry Cano","Air galon Cleo 19 L",100],
+      ["Berry Cano","Espresso Hot",30],
+
+      ["Apple Cano","Apple",20],
+      ["Apple Cano","Simple sugar",10],
+      ["Apple Cano","Air galon Cleo 19 L",100],
+      ["Apple Cano","Espresso Hot",30],
+
+      ["Melon Cano","Melon",20],
+      ["Melon Cano","Simple sugar",10],
+      ["Melon Cano","Air galon Cleo 19 L",100],
+      ["Melon Cano","Espresso Hot",30],
+
+      // Non Coffee
+      ["Avocado","SKM",10],
+      ["Avocado","Bubuk avocado",20],
+      ["Avocado","Creamer MaxCreamer",15],
+      ["Avocado","Air galon Cleo 19 L",20],
+      ["Avocado","Susu UHT Diamond",100],
+
+      ["Taro","SKM",25],
+      ["Taro","Bubuk taro",4],
+      ["Taro","Creamer MaxCreamer",10],
+      ["Taro","Air galon Cleo 19 L",20],
+      ["Taro","Susu UHT Diamond",100],
+
+      ["Red Velvet","SKM",20],
+      ["Red Velvet","Bubuk red velvet",25],
+      ["Red Velvet","Creamer MaxCreamer",10],
+      ["Red Velvet","Air galon Cleo 19 L",20],
+      ["Red Velvet","Susu UHT Diamond",100],
+
+      ["Chocolate Signature","Gula aren",15],
+      ["Chocolate Signature","Bubuk coklat",13],
+      ["Chocolate Signature","Creamer MaxCreamer",10],
+      ["Chocolate Signature","Air galon Cleo 19 L",20],
+      ["Chocolate Signature","Susu UHT Diamond",100],
+
+      ["Caramel Latte","Caramel",20],
+      ["Caramel Latte","SKM",10],
+      ["Caramel Latte","Susu UHT Diamond",100],
+      ["Caramel Latte","Saus caramel",20],
+
+      ["Creamy Coco","Tiramisu",15],
+      ["Creamy Coco","SKM",10],
+      ["Creamy Coco","Bubuk coklat",10],
+      ["Creamy Coco","Creamer MaxCreamer",10],
+      ["Creamy Coco","Air galon Cleo 19 L",20],
+      ["Creamy Coco","Yakult",1],
+      ["Creamy Coco","Susu UHT Diamond",50],
+      ["Creamy Coco","Cheese cream",20],
+
+      ["Coconut Plum","Grenadine",10],
+      ["Coconut Plum","Plum",10],
+      ["Coconut Plum","Hydro Coco",90],
+      ["Coconut Plum","Sprite",60],
+
+      ["Butter Cream","Peanut butter Skippy",20],
+      ["Butter Cream","SKM",10],
+      ["Butter Cream","Creamer MaxCreamer",10],
+      ["Butter Cream","Air galon Cleo 19 L",20],
+      ["Butter Cream","Susu UHT Diamond",100],
+
+      ["Vanilla Latte","Vanilla",10],
+      ["Vanilla Latte","SKM",10],
+      ["Vanilla Latte","Bubuk vanilla",10],
+      ["Vanilla Latte","Air galon Cleo 19 L",20],
+      ["Vanilla Latte","Susu UHT Diamond",100],
+
+      ["Strawberry Love","Strawberry",20],
+      ["Strawberry Love","SKM",5],
+      ["Strawberry Love","Creamer MaxCreamer",20],
+      ["Strawberry Love","Air galon Cleo 19 L",20],
+      ["Strawberry Love","Susu UHT Diamond",100],
+      ["Strawberry Love","Saus strawberry",20],
+
+      ["Matcha","Bubuk matcha",20],
+      ["Matcha","SKM",15],
+      ["Matcha","Creamer MaxCreamer",10],
+      ["Matcha","Air galon Cleo 19 L",20],
+      ["Matcha","Susu UHT Diamond",110],
+
+      ["Yakult Series","Orange",15],
+      ["Yakult Series","Yakult",1],
+      ["Yakult Series","Sprite",110],
+
+      ["Butterfly Tea","Butterfly pea tea",180],
+      ["Butterfly Tea","Simple sugar",40],
+
+      ["Thai Tea","SKM",50],
+      ["Thai Tea","Susu evaporasi",20],
+      ["Thai Tea","Thai tea",150],
+
+      ["Berry Pop","Berry tea",180],
+      ["Berry Pop","Simple sugar",40],
+
+      ["Green Tea","SKM",50],
+      ["Green Tea","Susu evaporasi",20],
+      ["Green Tea","Green tea",150],
+
+      ["Lychee Tea","Simple sugar",20],
+      ["Lychee Tea","Lychee",30],
+      ["Lychee Tea","Butterfly pea tea",150], // menggunakan tea sebagai ekstrak
+      ["Lychee Tea","Biji selasih",10],
+
+      ["Mango Squash","Mango",20],
+      ["Mango Squash","Jeruk nipis",5],
+      ["Mango Squash","Biji selasih",10],
+      ["Mango Squash","Sprite",110],
+
+      // Coffee Specialty
+      ["Espresso Hot","Espresso Hot",30],
+      ["Americano","Air galon Cleo 19 L",100],
+      ["Americano","Espresso Hot",30],
+      ["Long Black","Air galon Cleo 19 L",100],
+      ["Long Black","Espresso Hot",40],
+      ["Latte Ice","Susu UHT Diamond",120],
+      ["Latte Ice","Espresso Hot",30],
+      ["Latte Hot","Espresso Hot",20],
+      ["Latte Hot","Susu UHT Diamond",100],
+      ["Cappuccino","Simple sugar",10],
+      ["Cappuccino","Susu UHT Diamond",90],
+      ["Cappuccino","Espresso Hot",30],
+      ["Cappuccino Hot","Espresso Hot",30],
+      ["Cappuccino Hot","Susu UHT Diamond",100],
+      ["Magic","Espresso Hot",36],
+      ["Magic","Oatside",20],
+      ["Mocha","SKM",20],
+      ["Mocha","Bubuk coklat",8],
+      ["Mocha","Creamer MaxCreamer",10],
+      ["Mocha","Espresso Hot",30],
+      ["Mocha","Susu UHT Diamond",100],
+      ["Mocha Hot","SKM",15],
+      ["Mocha Hot","Bubuk coklat",5],
+      ["Mocha Hot","Creamer MaxCreamer",10],
+      ["Mocha Hot","Espresso Hot",30],
+      ["Mocha Hot","Susu UHT Diamond",100]
+    ];
+
+    resepData.forEach(r => {
+      resep.push({menu:r[0], bahan:r[1], jumlah:r[2]});
+    });
+  }
+
+  // =========================
   // Helper Functions
   // =========================
   function formatRp(x) {
     return new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(x);
-  }
-
-  function refreshDropdowns() {
-    const menuSelect = document.getElementById("resepMenu");
-    const bahanSelect = document.getElementById("resepBahan");
-    menuSelect.innerHTML = "";
-    bahanSelect.innerHTML = "";
-
-    menu.forEach(m => {
-      let opt = document.createElement("option");
-      opt.value = m.nama;
-      opt.textContent = m.nama;
-      menuSelect.appendChild(opt);
-    });
-
-    bahanBaku.forEach(b => {
-      let opt = document.createElement("option");
-      opt.value = b.nama;
-      opt.textContent = b.nama;
-      bahanSelect.appendChild(opt);
-    });
   }
 
   function findBahan(nama) {
@@ -266,11 +540,11 @@
       row.innerHTML = `
         <td>${b.nama}</td>
         <td>${b.kategori}</td>
-        <td>${b.brand}</td>
+        <td>${b.brand || "-"}</td>
         <td>${b.satuan}</td>
-        <td>${formatRp(b.hargaBeli)}</td>
-        <td>${b.jumlahIsi}</td>
-        <td>${formatRp(b.hargaPerSatuan)}</td>
+        <td>${b.hargaBeli ? formatRp(b.hargaBeli) : "-"}</td>
+        <td>${b.jumlahIsi || "-"}</td>
+        <td>${b.hargaPerSatuan ? formatRp(b.hargaPerSatuan) : "-"}</td>
       `;
       tbodyBahan.appendChild(row);
     });
@@ -285,8 +559,8 @@
         <td>${e.rasio}</td>
         <td>${e.gram}</td>
         <td>${e.output}</td>
-        <td>${formatRp(e.hargaPerGram)}</td>
-        <td>${formatRp(e.biayaPerShot)}</td>
+        <td>${e.hargaPerGram ? formatRp(e.hargaPerGram) : "-"}</td>
+        <td>${e.biayaPerShot ? formatRp(e.biayaPerShot) : "-"}</td>
       `;
       tbodyEsp.appendChild(row);
     });
@@ -299,9 +573,9 @@
       row.innerHTML = `
         <td>${p.nama}</td>
         <td>${p.satuan}</td>
-        <td>${formatRp(p.hargaBeli)}</td>
-        <td>${p.jumlahIsi}</td>
-        <td>${formatRp(p.hargaPerSatuan)}</td>
+        <td>${p.hargaBeli ? formatRp(p.hargaBeli) : "-"}</td>
+        <td>${p.jumlahIsi || "-"}</td>
+        <td>${p.hargaPerSatuan ? formatRp(p.hargaPerSatuan) : "-"}</td>
       `;
       tbodyPack.appendChild(row);
     });
@@ -311,15 +585,15 @@
     tbodyResep.innerHTML = "";
     resep.forEach(r => {
       let b = findBahan(r.bahan);
-      let biaya = r.jumlah * b.hargaPerSatuan;
+      let biaya = b && b.hargaPerSatuan ? r.jumlah * b.hargaPerSatuan : 0;
       let row = document.createElement("tr");
       row.innerHTML = `
         <td>${r.menu}</td>
         <td>${r.bahan}</td>
         <td>${r.jumlah}</td>
-        <td>${b.satuan}</td>
-        <td>${formatRp(b.hargaPerSatuan)}</td>
-        <td>${formatRp(biaya)}</td>
+        <td>${b?.satuan || "-"}</td>
+        <td>${b?.hargaPerSatuan ? formatRp(b.hargaPerSatuan) : "-"}</td>
+        <td>${biaya ? formatRp(biaya) : "-"}</td>
       `;
       tbodyResep.appendChild(row);
     });
@@ -330,7 +604,10 @@
     menu.forEach(m => {
       let totalBiaya = resep
         .filter(r => r.menu === m.nama)
-        .reduce((sum, r) => sum + (r.jumlah * findBahan(r.bahan).hargaPerSatuan), 0);
+        .reduce((sum, r) => {
+          const b = findBahan(r.bahan);
+          return sum + (b?.hargaPerSatuan ? r.jumlah * b.hargaPerSatuan : 0);
+        }, 0);
 
       let profit = m.hargaJual - totalBiaya;
       let margin = m.hargaJual == 0 ? 0 : (profit / m.hargaJual) * 100;
@@ -352,9 +629,9 @@
         <td>${m.kategori}</td>
         <td>${m.serving}</td>
         <td>${formatRp(m.hargaJual)}</td>
-        <td>${formatRp(totalBiaya)}</td>
-        <td>${formatRp(profit)}</td>
-        <td>${margin.toFixed(2)}%</td>
+        <td>${totalBiaya ? formatRp(totalBiaya) : "-"}</td>
+        <td>${profit ? formatRp(profit) : "-"}</td>
+        <td>${margin ? margin.toFixed(2) + "%" : "-"}</td>
         <td>${insight}</td>
       `;
       tbodyMenu.appendChild(row);
@@ -364,73 +641,31 @@
   }
 
   // =========================
-  // Add Functions
+  // Bulk Harga Bahan
   // =========================
-  function addBahan() {
-    const nama = document.getElementById("bahanNama").value;
-    const kategori = document.getElementById("bahanKategori").value;
-    const brand = document.getElementById("bahanBrand").value;
-    const satuan = document.getElementById("bahanSatuan").value;
-    const hargaBeli = Number(document.getElementById("bahanHarga").value);
-    const jumlahIsi = Number(document.getElementById("bahanJumlah").value);
+  function bulkHargaBahan() {
+    const text = document.getElementById("bulkHarga").value.trim();
+    if(!text) return alert("Masukkan data harga bahan.");
 
-    if(!nama || !hargaBeli || !jumlahIsi) return alert("Lengkapi data bahan");
+    const lines = text.split("\n");
+    lines.forEach(line => {
+      const [nama, harga, isi] = line.split("|").map(x => x.trim());
+      const b = findBahan(nama);
+      if(!b) return;
+      b.hargaBeli = Number(harga);
+      b.jumlahIsi = Number(isi);
+      b.hargaPerSatuan = b.hargaBeli / b.jumlahIsi;
+    });
 
-    const hargaPerSatuan = hargaBeli / jumlahIsi;
-
-    bahanBaku.push({ nama, kategori, brand, satuan, hargaBeli, jumlahIsi, hargaPerSatuan });
-    refreshDropdowns();
-    updateTables();
-  }
-
-  function addEspresso() {
-    const jenis = document.getElementById("espressoJenis").value;
-    const rasio = document.getElementById("espressoRasio").value;
-    const gram = Number(document.getElementById("espressoGram").value);
-    const output = Number(document.getElementById("espressoOutput").value);
-
+    // Update espresso jika ada kopi
     const kopi = bahanBaku.find(b => b.kategori === "Kopi");
-    if(!kopi) return alert("Masukkan bahan kopi dulu di database bahan");
+    espresso = [
+      { jenis:"kaks", rasio:"1:2", gram:18, output:36, hargaPerGram: kopi?.hargaPerSatuan || 0, biayaPerShot: (kopi?.hargaPerSatuan || 0)*18 },
+      { jenis:"diks", rasio:"1:3", gram:18, output:54, hargaPerGram: kopi?.hargaPerSatuan || 0, biayaPerShot: (kopi?.hargaPerSatuan || 0)*18 }
+    ];
 
-    const hargaPerGram = kopi.hargaPerSatuan;
-    const biayaPerShot = gram * hargaPerGram;
-
-    espresso.push({ jenis, rasio, gram, output, hargaPerGram, biayaPerShot });
     updateTables();
-  }
-
-  function addPack() {
-    const nama = document.getElementById("packNama").value;
-    const satuan = document.getElementById("packSatuan").value;
-    const hargaBeli = Number(document.getElementById("packHarga").value);
-    const jumlahIsi = Number(document.getElementById("packJumlah").value);
-    if(!nama || !hargaBeli || !jumlahIsi) return alert("Lengkapi data packaging");
-
-    const hargaPerSatuan = hargaBeli / jumlahIsi;
-    packaging.push({ nama, satuan, hargaBeli, jumlahIsi, hargaPerSatuan });
-    updateTables();
-  }
-
-  function addMenu() {
-    const nama = document.getElementById("menuNama").value;
-    const kategori = document.getElementById("menuKategori").value;
-    const serving = document.getElementById("menuServing").value;
-    const hargaJual = Number(document.getElementById("menuHarga").value);
-    if(!nama || !hargaJual) return alert("Lengkapi data menu");
-
-    menu.push({ nama, kategori, serving, hargaJual, hpp:0, profit:0, margin:0, insight:"" });
-    refreshDropdowns();
-    updateTables();
-  }
-
-  function addResep() {
-    const menuNama = document.getElementById("resepMenu").value;
-    const bahanNama = document.getElementById("resepBahan").value;
-    const jumlah = Number(document.getElementById("resepJumlah").value);
-    if(!menuNama || !bahanNama || !jumlah) return alert("Lengkapi resep");
-
-    resep.push({ menu: menuNama, bahan: bahanNama, jumlah });
-    updateTables();
+    alert("Harga bahan berhasil disimpan & HPP otomatis terupdate.");
   }
 
   // =========================
@@ -445,7 +680,7 @@
     globalSummary.innerHTML = `
       <p>Rata-rata Margin: <b>${avgMargin.toFixed(2)}%</b></p>
       <p>Menu Margin Terendah: <b>${minMarginMenu.nama || "-"}</b> (${minMarginMenu.margin?.toFixed(2) || 0}%)</p>
-      <p>Menu HPP Tertinggi: <b>${maxHppMenu.nama || "-"}</b> (${formatRp(maxHppMenu.hpp || 0)})</p>
+      <p>Menu HPP Tertinggi: <b>${maxHppMenu.nama || "-"}</b> (${maxHppMenu.hpp ? formatRp(maxHppMenu.hpp) : "-"})</p>
     `;
 
     const aiGlobal = document.getElementById("aiGlobal");
@@ -455,7 +690,7 @@
         <li>Margin rata-rata <b>${avgMargin.toFixed(2)}%</b> → ${avgMargin < 50 ? "perlu optimasi harga/komposisi" : avgMargin <= 70 ? "sehat" : "sangat baik"}</li>
         <li>Menu dengan margin rendah: <b>${minMarginMenu.nama || "-"}</b></li>
         <li>Menu dengan HPP tinggi: <b>${maxHppMenu.nama || "-"}</b></li>
-        <li>Ketergantungan bahan mahal (kopi/syrup impor) terlihat dari kategori bahan yang paling sering dipakai</li>
+        <li>Ketergantungan bahan mahal: analisa berdasarkan frekuensi penggunaan bahan kategori <b>Kopi/Syrup</b></li>
       </ul>
     `;
   }
@@ -492,6 +727,7 @@
   // =========================
   // Init
   // =========================
+  initData();
   updateTables();
   updateProfitSummary();
 </script>
