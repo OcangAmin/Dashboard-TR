@@ -1,516 +1,499 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>POS Kasir Nasi Kuning 51</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Manajemen Coffee Shop</title>
 <style>
-  body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background:#f2f2f2;
-  }
-  .container{
-    max-width: 420px;
-    margin:0 auto;
-    padding:10px;
-  }
-  .header{
-    text-align:center;
-    padding:12px 0;
-    background:#fff;
-    border-radius:8px;
-    box-shadow:0 1px 4px rgba(0,0,0,0.1);
-    margin-bottom:10px;
-  }
-  .title{
-    font-size:18px;
-    font-weight:700;
-  }
-  .section{
-    background:#fff;
-    border-radius:8px;
-    padding:10px;
-    margin-bottom:10px;
-    box-shadow:0 1px 4px rgba(0,0,0,0.1);
-  }
-  .section h3{
-    margin:0 0 8px 0;
-    font-size:14px;
-    font-weight:700;
-  }
-
-  /* MENU GRID */
-  .btn-grid{
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap:8px;
-  }
-  .btn{
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    font-weight:700;
-    font-size:13px;
-    cursor:pointer;
-    background:#1a73e8;
-    color:#fff;
-    text-align:left;
-  }
-  .btn.secondary{
-    background:#34a853;
-  }
-  .btn.danger{
-    background:#ea4335;
-  }
-  .btn.gray{
-    background:#777;
-  }
-  .btn.small-btn{
-    padding:8px;
-    font-size:12px;
-    border-radius:8px;
-  }
-
-  /* CART */
-  .cart{
-    max-height: 220px;
-    overflow:auto;
-  }
-  .cart-item{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:8px 0;
-    border-bottom:1px solid #eee;
-  }
-  .cart-item div{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .qty{
-    display:flex;
-    align-items:center;
-    gap:4px;
-  }
-  .qty button{
-    padding:4px 8px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-  }
-
-  /* FOOTER FIXED */
-  .footer{
-    position: fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    background:#fff;
-    padding:10px;
-    box-shadow:0 -2px 8px rgba(0,0,0,0.15);
-  }
-  .footer .row{
-    display:flex;
-    gap:8px;
-  }
-  .footer input[type=number]{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    font-size:14px;
-  }
-  .footer .summary{
-    display:flex;
-    justify-content:space-between;
-    margin-top:8px;
-    font-weight:700;
-  }
-  .footer .btn-grid{
-    grid-template-columns: repeat(3, 1fr);
-    margin-top:8px;
-  }
-  .footer .btn{
-    padding:10px;
-  }
-
-  .history{
-    max-height: 220px;
-    overflow:auto;
-  }
-  .history-item{
-    padding:8px;
-    border-bottom:1px solid #eee;
-  }
-  .history-item div{
-    font-size:12px;
-  }
-  .info{
-    font-size:12px;
-    color:#555;
-    margin-top:6px;
-  }
+  body { font-family: Arial, sans-serif; background:#f4f4f6; color:#222; margin:0; padding:0; }
+  header { background:#222; color:#fff; padding:16px 24px; }
+  h1 { margin:0; font-size:20px; }
+  .container { padding:20px; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+  .card { background:#fff; padding:16px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .card h2 { margin-top:0; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; }
+  table, th, td { border:1px solid #ddd; }
+  th, td { padding:8px; text-align:left; }
+  .small { font-size:12px; color:#666; }
+  .btn { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; }
+  .btn-primary { background:#222; color:#fff; }
+  .btn-danger { background:#d9534f; color:#fff; }
+  .flex { display:flex; gap:10px; flex-wrap:wrap; }
+  .input { padding:8px; width:100%; box-sizing:border-box; }
 </style>
 </head>
 <body>
 
+<header>
+  <h1>Dashboard Manajemen Coffee Shop (Full Terintegrasi)</h1>
+</header>
+
 <div class="container">
-  <div class="header">
-    <div class="title">POS Kasir Nasi Kuning 51</div>
-    <div style="font-size:12px; color:#555;">Tampilan POS untuk HP (fit & cepat)</div>
-  </div>
 
-  <!-- MENU -->
-  <div class="section">
-    <h3>Menu Utama</h3>
-    <div class="btn-grid">
-      <button class="btn" onclick="addItem('Nasi kuning ayam',15000)">Nasi kuning ayam - 15.000</button>
-      <button class="btn" onclick="addItem('Nasi kuning ikan',13000)">Nasi kuning ikan - 13.000</button>
-      <button class="btn" onclick="addItem('Nasi kuning telur',10000)">Nasi kuning telur - 10.000</button>
-      <button class="btn" onclick="addItem('Nasi kuning ayam telur',23000)">Nasi kuning ayam telur - 23.000</button>
-      <button class="btn" onclick="addItem('Nasi kuning ikan telur',20000)">Nasi kuning ikan telur - 20.000</button>
+  <!-- GRID UTAMA -->
+  <div class="grid">
+
+    <!-- CARD 1: DATABASE BAHAN BAKU -->
+    <div class="card">
+      <h2>1. Database Bahan Baku</h2>
+      <div class="flex">
+        <input class="input" id="bahanNama" placeholder="Nama Bahan">
+        <select class="input" id="bahanKategori">
+          <option value="Kopi">Kopi</option>
+          <option value="Syrup">Syrup</option>
+          <option value="Dairy">Dairy</option>
+          <option value="Powder">Powder</option>
+          <option value="Lain-lain">Lain-lain</option>
+          <option value="Operasional">Operasional</option>
+        </select>
+        <input class="input" id="bahanBrand" placeholder="Brand">
+        <select class="input" id="bahanSatuan">
+          <option value="ml">ml</option>
+          <option value="gr">gr</option>
+          <option value="pcs">pcs</option>
+        </select>
+        <input class="input" id="bahanHarga" type="number" placeholder="Harga Beli Total (Rp)">
+        <input class="input" id="bahanJumlah" type="number" placeholder="Jumlah Isi Kemasan">
+        <button class="btn btn-primary" onclick="addBahan()">Tambah Bahan</button>
+      </div>
+
+      <table id="tableBahan">
+        <thead>
+          <tr>
+            <th>Nama</th><th>Kategori</th><th>Brand</th><th>Satuan</th>
+            <th>Harga Beli</th><th>Isi</th><th>Harga/Satuan</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-  </div>
 
-  <div class="section">
-    <h3>Menu Additional</h3>
-    <div class="btn-grid">
-      <button class="btn secondary" onclick="addItem('Ikan',5000)">Ikan - 5.000</button>
-      <button class="btn secondary" onclick="addItem('Bakwan',2000)">Bakwan - 2.000</button>
-      <button class="btn secondary" onclick="addItem('Nasi',5000)">Nasi - 5.000</button>
-      <button class="btn secondary" onclick="addItem('Telur',5000)">Telur - 5.000</button>
-      <button class="btn secondary" onclick="addItem('Ayam',5000)">Ayam - 5.000</button>
-      <button class="btn secondary" onclick="addItem('Air mineral',5000)">Air mineral - 5.000</button>
+    <!-- CARD 2: DATABASE ESPRESSO -->
+    <div class="card">
+      <h2>2. Database Parameter Espresso (Global)</h2>
+      <div class="flex">
+        <select class="input" id="espressoJenis">
+          <option value="kaks">kaks</option>
+          <option value="diks">diks</option>
+        </select>
+        <input class="input" id="espressoRasio" placeholder="Rasio (contoh 1:2)">
+        <input class="input" id="espressoGram" type="number" placeholder="Gram Kopi">
+        <input class="input" id="espressoOutput" type="number" placeholder="Output Espresso (ml)">
+        <button class="btn btn-primary" onclick="addEspresso()">Tambah Espresso</button>
+      </div>
+
+      <table id="tableEspresso">
+        <thead>
+          <tr>
+            <th>Jenis</th><th>Rasio</th><th>Gram</th><th>Output</th><th>Harga/Gram</th><th>Biaya/Shot</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="small">* Harga per gram diambil dari bahan baku kopi (harus ada di database bahan)</div>
     </div>
-  </div>
 
-  <!-- CART -->
-  <div class="section">
-    <h3>Pesanan</h3>
-    <div class="cart" id="cart"></div>
-    <div class="summary">
-      <div>Total Item: <span id="totalItem">0</span></div>
-      <div>Total Harga: <span id="totalPrice">0</span></div>
+    <!-- CARD 3: DATABASE PACKAGING & OPERASIONAL -->
+    <div class="card">
+      <h2>3. Database Packaging & Operasional</h2>
+      <div class="flex">
+        <input class="input" id="packNama" placeholder="Nama Item (cup hot / lid hot / es batu...)">
+        <select class="input" id="packSatuan">
+          <option value="pcs">pcs</option>
+          <option value="gr">gr</option>
+          <option value="ml">ml</option>
+        </select>
+        <input class="input" id="packHarga" type="number" placeholder="Harga Beli Total">
+        <input class="input" id="packJumlah" type="number" placeholder="Jumlah Isi Kemasan">
+        <button class="btn btn-primary" onclick="addPack()">Tambah Item</button>
+      </div>
+
+      <table id="tablePack">
+        <thead>
+          <tr>
+            <th>Item</th><th>Satuan</th><th>Harga Beli</th><th>Isi</th><th>Harga/Satuan</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="small">
+        * Es batu otomatis dihitung: 70.000 / 8000 gr = 8.75 per gr
+      </div>
     </div>
-  </div>
 
-  <!-- HISTORY -->
-  <div class="section">
-    <h3>History Penjualan</h3>
-    <div class="history" id="history"></div>
-    <div class="row" style="margin-top:8px;">
-      <button class="btn" onclick="saveHistory()">Simpan History</button>
-      <button class="btn danger" onclick="closeCashier()">Tutup Kasir</button>
+    <!-- CARD 4: DATABASE RESEP -->
+    <div class="card">
+      <h2>4. Database Resep (Junction)</h2>
+      <div class="flex">
+        <select class="input" id="resepMenu"></select>
+        <select class="input" id="resepBahan"></select>
+        <input class="input" id="resepJumlah" type="number" placeholder="Jumlah Pakai">
+        <button class="btn btn-primary" onclick="addResep()">Tambah Resep</button>
+      </div>
+
+      <table id="tableResep">
+        <thead>
+          <tr>
+            <th>Menu</th><th>Bahan</th><th>Jumlah</th><th>Satuan</th><th>Harga/Satuan</th><th>Biaya</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <div class="row" style="margin-top:8px;">
-      <button class="btn gray" onclick="resetHistory()">Reset History</button>
+
+    <!-- CARD 5: DATABASE MENU -->
+    <div class="card">
+      <h2>5. Database Menu</h2>
+      <div class="flex">
+        <input class="input" id="menuNama" placeholder="Nama Menu">
+        <select class="input" id="menuKategori">
+          <option value="Coffee Based">Coffee Based</option>
+          <option value="Non Coffee">Non Coffee</option>
+          <option value="Tea">Tea</option>
+          <option value="Specialty">Specialty</option>
+        </select>
+        <select class="input" id="menuServing">
+          <option value="Hot">Hot</option>
+          <option value="Ice">Ice</option>
+          <option value="Both">Both</option>
+        </select>
+        <input class="input" id="menuHarga" type="number" placeholder="Harga Jual (Rp)">
+        <button class="btn btn-primary" onclick="addMenu()">Tambah Menu</button>
+      </div>
+
+      <table id="tableMenu">
+        <thead>
+          <tr>
+            <th>Menu</th><th>Kategori</th><th>Serving</th><th>Harga Jual</th>
+            <th>HPP</th><th>Profit</th><th>Margin %</th><th>AI Insight</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <div class="info">Reset history akan menghapus semua riwayat penjualan.</div>
-  </div>
-</div>
 
-<!-- FOOTER FIXED -->
-<div class="footer">
-  <div class="row">
-    <button class="btn" onclick="setPayment('cash')">CASH</button>
-    <button class="btn" onclick="setPayment('qris')">QRIS</button>
+    <!-- CARD 6: DASHBOARD GLOBAL -->
+    <div class="card">
+      <h2>6. Dashboard Global + AI Insight</h2>
+
+      <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="card">
+          <h3>Ringkasan Margin</h3>
+          <div id="globalSummary"></div>
+        </div>
+
+        <div class="card">
+          <h3>Pendapatan & Pengeluaran (Bulan Ini)</h3>
+          <div class="flex">
+            <input class="input" id="revDapur" type="number" placeholder="Pendapatan Dapur">
+            <input class="input" id="revBar" type="number" placeholder="Pendapatan Bar">
+            <input class="input" id="revCafe" type="number" placeholder="Pendapatan Cafe">
+            <button class="btn btn-primary" onclick="updateRevenue()">Update</button>
+          </div>
+          <div class="flex">
+            <input class="input" id="expDapur" type="number" placeholder="Pengeluaran Dapur">
+            <input class="input" id="expBar" type="number" placeholder="Pengeluaran Bar">
+            <input class="input" id="expCafe" type="number" placeholder="Pengeluaran Cafe">
+            <button class="btn btn-primary" onclick="updateExpense()">Update</button>
+          </div>
+          <div id="profitSummary"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>AI Insight Global (Data-Driven)</h3>
+        <div id="aiGlobal"></div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="row" style="margin-top:8px;">
-    <input id="paid" type="number" placeholder="Uang Bayar" inputmode="numeric" oninput="calc()">
-    <button class="btn gray" onclick="clearPaid()">Clear</button>
-  </div>
-
-  <div class="btn-grid">
-    <button class="btn small-btn" onclick="addPaid(5000)">5K</button>
-    <button class="btn small-btn" onclick="addPaid(10000)">10K</button>
-    <button class="btn small-btn" onclick="addPaid(20000)">20K</button>
-    <button class="btn small-btn" onclick="addPaid(50000)">50K</button>
-    <button class="btn small-btn" onclick="addPaid(100000)">100K</button>
-    <button class="btn small-btn" onclick="setPaidExact()">Uang Pas</button>
-  </div>
-
-  <div class="summary">
-    <div>Status: <span id="status">Belum ada pesanan</span></div>
-    <div>Kembalian: <span id="change">0</span></div>
-  </div>
-
-  <div class="row" style="margin-top:8px;">
-    <button class="btn secondary" onclick="finishTransaction()">Selesaikan</button>
-    <button class="btn gray" onclick="resetTransaction()">Reset</button>
-  </div>
 </div>
 
 <script>
-  let cart = [];
-  let history = [];
-  let paymentMethod = null;
+  // =========================
+  // DATABASES (In-Memory)
+  // =========================
+  let bahanBaku = [];
+  let resep = [];
+  let menu = [];
+  let espresso = [];
+  let packaging = [];
 
-  function loadData(){
-    cart = JSON.parse(localStorage.getItem("bucek_cart")) || [];
-    history = JSON.parse(localStorage.getItem("bucek_history")) || [];
-    renderCart();
-    renderHistory();
+  let revenue = { dapur:0, bar:0, cafe:0 };
+  let expense = { dapur:0, bar:0, cafe:0 };
+
+  // =========================
+  // Helper Functions
+  // =========================
+  function formatRp(x) {
+    return new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(x);
   }
 
-  function saveData(){
-    localStorage.setItem("bucek_cart", JSON.stringify(cart));
-    localStorage.setItem("bucek_history", JSON.stringify(history));
+  function refreshDropdowns() {
+    const menuSelect = document.getElementById("resepMenu");
+    const bahanSelect = document.getElementById("resepBahan");
+    menuSelect.innerHTML = "";
+    bahanSelect.innerHTML = "";
+
+    menu.forEach(m => {
+      let opt = document.createElement("option");
+      opt.value = m.nama;
+      opt.textContent = m.nama;
+      menuSelect.appendChild(opt);
+    });
+
+    bahanBaku.forEach(b => {
+      let opt = document.createElement("option");
+      opt.value = b.nama;
+      opt.textContent = b.nama;
+      bahanSelect.appendChild(opt);
+    });
   }
 
-  function addItem(name, price){
-    let idx = cart.findIndex(x => x.name === name);
-    if(idx >= 0){
-      cart[idx].qty++;
-    } else {
-      cart.push({name, price, qty:1});
-    }
-    renderCart();
-    calc();
-    saveData();
+  function findBahan(nama) {
+    return bahanBaku.find(b => b.nama === nama);
   }
 
-  function removeItem(name){
-    cart = cart.filter(x => x.name !== name);
-    renderCart();
-    calc();
-    saveData();
-  }
-
-  function changeQty(name, delta){
-    let idx = cart.findIndex(x => x.name === name);
-    if(idx < 0) return;
-    cart[idx].qty += delta;
-    if(cart[idx].qty < 1) cart[idx].qty = 1;
-    renderCart();
-    calc();
-    saveData();
-  }
-
-  function renderCart(){
-    let html = "";
-    let totalItem = 0;
-    let totalPrice = 0;
-    cart.forEach(item => {
-      totalItem += item.qty;
-      totalPrice += item.qty * item.price;
-      html += `
-        <div class="cart-item">
-          <div>
-            <strong>${item.name}</strong>
-            <div class="qty">
-              <button onclick="changeQty('${item.name}', -1)">-</button>
-              <span>${item.qty}</span>
-              <button onclick="changeQty('${item.name}', 1)">+</button>
-            </div>
-          </div>
-          <div>
-            <span>${item.qty * item.price}</span>
-            <button class="btn small-btn danger" onclick="removeItem('${item.name}')">X</button>
-          </div>
-        </div>
+  function updateTables() {
+    // Bahan Table
+    const tbodyBahan = document.querySelector("#tableBahan tbody");
+    tbodyBahan.innerHTML = "";
+    bahanBaku.forEach(b => {
+      let row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${b.nama}</td>
+        <td>${b.kategori}</td>
+        <td>${b.brand}</td>
+        <td>${b.satuan}</td>
+        <td>${formatRp(b.hargaBeli)}</td>
+        <td>${b.jumlahIsi}</td>
+        <td>${formatRp(b.hargaPerSatuan)}</td>
       `;
-    });
-    document.getElementById("cart").innerHTML = html;
-    document.getElementById("totalItem").innerText = totalItem;
-    document.getElementById("totalPrice").innerText = totalPrice;
-  }
-
-  function setPayment(method){
-    paymentMethod = method;
-    if(method === "qris"){
-      document.getElementById("paid").value = document.getElementById("totalPrice").innerText;
-    }
-    calc();
-  }
-
-  function addPaid(amount){
-    let paidInput = document.getElementById("paid");
-    let val = Number(paidInput.value || 0);
-    paidInput.value = val + amount;
-    calc();
-  }
-
-  function setPaidExact(){
-    let total = Number(document.getElementById("totalPrice").innerText);
-    document.getElementById("paid").value = total;
-    calc();
-  }
-
-  function clearPaid(){
-    document.getElementById("paid").value = "";
-    calc();
-  }
-
-  function calc(){
-    let total = Number(document.getElementById("totalPrice").innerText);
-    let paid = Number(document.getElementById("paid").value || 0);
-
-    if(cart.length === 0){
-      document.getElementById("status").innerText = "Belum ada pesanan";
-      document.getElementById("change").innerText = 0;
-      return;
-    }
-
-    if(!paymentMethod){
-      document.getElementById("status").innerText = "Pilih metode pembayaran";
-      document.getElementById("change").innerText = 0;
-      return;
-    }
-
-    if(paid < total){
-      document.getElementById("status").innerText = "Uang kurang";
-      document.getElementById("change").innerText = 0;
-      return;
-    }
-
-    document.getElementById("status").innerText = "Siap bayar";
-    document.getElementById("change").innerText = paid - total;
-  }
-
-  function finishTransaction(){
-    let total = Number(document.getElementById("totalPrice").innerText);
-    let paid = Number(document.getElementById("paid").value || 0);
-    let change = Number(document.getElementById("change").innerText || 0);
-
-    if(cart.length === 0){
-      alert("Belum ada pesanan!");
-      return;
-    }
-    if(!paymentMethod){
-      alert("Pilih metode pembayaran!");
-      return;
-    }
-    if(paid < total){
-      alert("Uang tidak mencukupi!");
-      return;
-    }
-
-    let now = new Date();
-    let timestamp = now.toLocaleString();
-
-    history.push({
-      time: timestamp,
-      items: JSON.parse(JSON.stringify(cart)),
-      total,
-      method: paymentMethod,
-      paid,
-      change
+      tbodyBahan.appendChild(row);
     });
 
-    cart = [];
-    paymentMethod = null;
-    document.getElementById("paid").value = "";
-    renderCart();
-    renderHistory();
-    calc();
-    saveData();
-  }
-
-  function resetTransaction(){
-    if(cart.length === 0){
-      alert("Tidak ada transaksi untuk di-reset.");
-      return;
-    }
-
-    let confirmReset = confirm("Yakin ingin reset transaksi saat ini? Data pesanan akan hilang.");
-    if(!confirmReset) return;
-
-    cart = [];
-    paymentMethod = null;
-    document.getElementById("paid").value = "";
-    renderCart();
-    calc();
-    saveData();
-  }
-
-  function renderHistory(){
-    let html = "";
-    history.forEach((h, idx) => {
-      let itemList = h.items.map(i => `${i.name} x${i.qty}`).join(", ");
-      html += `
-        <div class="history-item">
-          <div><strong>#${idx+1} - ${h.time}</strong></div>
-          <div>${itemList}</div>
-          <div>Total: ${h.total} | Bayar: ${h.paid} | Kembali: ${h.change} | Metode: ${h.method.toUpperCase()}</div>
-        </div>
+    // Espresso Table
+    const tbodyEsp = document.querySelector("#tableEspresso tbody");
+    tbodyEsp.innerHTML = "";
+    espresso.forEach(e => {
+      let row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${e.jenis}</td>
+        <td>${e.rasio}</td>
+        <td>${e.gram}</td>
+        <td>${e.output}</td>
+        <td>${formatRp(e.hargaPerGram)}</td>
+        <td>${formatRp(e.biayaPerShot)}</td>
       `;
-    });
-    document.getElementById("history").innerHTML = html;
-  }
-
-  function saveHistory(){
-    if(history.length === 0){
-      alert("Belum ada history transaksi!");
-      return;
-    }
-
-    let text = "HISTORY TRANSAKSI\n\n";
-    history.forEach((h, idx) => {
-      let itemList = h.items.map(i => `${i.name} x${i.qty}`).join(", ");
-      text += `#${idx+1} | ${h.time}\n`;
-      text += `Items: ${itemList}\n`;
-      text += `Total: ${h.total} | Bayar: ${h.paid} | Kembali: ${h.change} | Metode: ${h.method.toUpperCase()}\n\n`;
+      tbodyEsp.appendChild(row);
     });
 
-    let blob = new Blob([text], {type:"text/plain"});
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `bucek_history_${new Date().getTime()}.txt`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  }
-
-  function resetHistory(){
-    if(history.length === 0){
-      alert("History kosong.");
-      return;
-    }
-
-    let confirmReset = confirm("Yakin ingin reset semua history? Data riwayat akan hilang.");
-    if(!confirmReset) return;
-
-    history = [];
-    saveData();
-    renderHistory();
-  }
-
-  function closeCashier(){
-    if(history.length === 0){
-      alert("Belum ada transaksi untuk ditutup!");
-      return;
-    }
-
-    let now = new Date();
-    let filename = `bucek_tutup_kasir_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.txt`;
-
-    let text = "TUTUP KASIR\n\n";
-    text += `Tanggal: ${now.toLocaleString()}\n`;
-    text += `Total Transaksi: ${history.length}\n\n`;
-    history.forEach((h, idx) => {
-      let itemList = h.items.map(i => `${i.name} x${i.qty}`).join(", ");
-      text += `#${idx+1} | ${h.time}\n`;
-      text += `Items: ${itemList}\n`;
-      text += `Total: ${h.total} | Bayar: ${h.paid} | Kembali: ${h.change} | Metode: ${h.method.toUpperCase()}\n\n`;
+    // Packaging Table
+    const tbodyPack = document.querySelector("#tablePack tbody");
+    tbodyPack.innerHTML = "";
+    packaging.forEach(p => {
+      let row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${p.nama}</td>
+        <td>${p.satuan}</td>
+        <td>${formatRp(p.hargaBeli)}</td>
+        <td>${p.jumlahIsi}</td>
+        <td>${formatRp(p.hargaPerSatuan)}</td>
+      `;
+      tbodyPack.appendChild(row);
     });
 
-    let blob = new Blob([text], {type:"text/plain"});
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(link.href);
+    // Resep Table
+    const tbodyResep = document.querySelector("#tableResep tbody");
+    tbodyResep.innerHTML = "";
+    resep.forEach(r => {
+      let b = findBahan(r.bahan);
+      let biaya = r.jumlah * b.hargaPerSatuan;
+      let row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${r.menu}</td>
+        <td>${r.bahan}</td>
+        <td>${r.jumlah}</td>
+        <td>${b.satuan}</td>
+        <td>${formatRp(b.hargaPerSatuan)}</td>
+        <td>${formatRp(biaya)}</td>
+      `;
+      tbodyResep.appendChild(row);
+    });
 
-    history = [];
-    saveData();
-    renderHistory();
-    alert("Kasir ditutup dan history ter-reset.");
+    // Menu Table
+    const tbodyMenu = document.querySelector("#tableMenu tbody");
+    tbodyMenu.innerHTML = "";
+    menu.forEach(m => {
+      let totalBiaya = resep
+        .filter(r => r.menu === m.nama)
+        .reduce((sum, r) => sum + (r.jumlah * findBahan(r.bahan).hargaPerSatuan), 0);
+
+      let profit = m.hargaJual - totalBiaya;
+      let margin = m.hargaJual == 0 ? 0 : (profit / m.hargaJual) * 100;
+
+      let insight = margin < 50
+        ? "Margin rendah – evaluasi harga jual / komposisi"
+        : margin <= 70
+          ? "Margin sehat"
+          : "Margin tinggi – potensi optimasi volume";
+
+      m.hpp = totalBiaya;
+      m.profit = profit;
+      m.margin = margin;
+      m.insight = insight;
+
+      let row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${m.nama}</td>
+        <td>${m.kategori}</td>
+        <td>${m.serving}</td>
+        <td>${formatRp(m.hargaJual)}</td>
+        <td>${formatRp(totalBiaya)}</td>
+        <td>${formatRp(profit)}</td>
+        <td>${margin.toFixed(2)}%</td>
+        <td>${insight}</td>
+      `;
+      tbodyMenu.appendChild(row);
+    });
+
+    updateGlobal();
   }
 
-  loadData();
-  calc();
+  // =========================
+  // Add Functions
+  // =========================
+  function addBahan() {
+    const nama = document.getElementById("bahanNama").value;
+    const kategori = document.getElementById("bahanKategori").value;
+    const brand = document.getElementById("bahanBrand").value;
+    const satuan = document.getElementById("bahanSatuan").value;
+    const hargaBeli = Number(document.getElementById("bahanHarga").value);
+    const jumlahIsi = Number(document.getElementById("bahanJumlah").value);
+
+    if(!nama || !hargaBeli || !jumlahIsi) return alert("Lengkapi data bahan");
+
+    const hargaPerSatuan = hargaBeli / jumlahIsi;
+
+    bahanBaku.push({ nama, kategori, brand, satuan, hargaBeli, jumlahIsi, hargaPerSatuan });
+    refreshDropdowns();
+    updateTables();
+  }
+
+  function addEspresso() {
+    const jenis = document.getElementById("espressoJenis").value;
+    const rasio = document.getElementById("espressoRasio").value;
+    const gram = Number(document.getElementById("espressoGram").value);
+    const output = Number(document.getElementById("espressoOutput").value);
+
+    const kopi = bahanBaku.find(b => b.kategori === "Kopi");
+    if(!kopi) return alert("Masukkan bahan kopi dulu di database bahan");
+
+    const hargaPerGram = kopi.hargaPerSatuan;
+    const biayaPerShot = gram * hargaPerGram;
+
+    espresso.push({ jenis, rasio, gram, output, hargaPerGram, biayaPerShot });
+    updateTables();
+  }
+
+  function addPack() {
+    const nama = document.getElementById("packNama").value;
+    const satuan = document.getElementById("packSatuan").value;
+    const hargaBeli = Number(document.getElementById("packHarga").value);
+    const jumlahIsi = Number(document.getElementById("packJumlah").value);
+    if(!nama || !hargaBeli || !jumlahIsi) return alert("Lengkapi data packaging");
+
+    const hargaPerSatuan = hargaBeli / jumlahIsi;
+    packaging.push({ nama, satuan, hargaBeli, jumlahIsi, hargaPerSatuan });
+    updateTables();
+  }
+
+  function addMenu() {
+    const nama = document.getElementById("menuNama").value;
+    const kategori = document.getElementById("menuKategori").value;
+    const serving = document.getElementById("menuServing").value;
+    const hargaJual = Number(document.getElementById("menuHarga").value);
+    if(!nama || !hargaJual) return alert("Lengkapi data menu");
+
+    menu.push({ nama, kategori, serving, hargaJual, hpp:0, profit:0, margin:0, insight:"" });
+    refreshDropdowns();
+    updateTables();
+  }
+
+  function addResep() {
+    const menuNama = document.getElementById("resepMenu").value;
+    const bahanNama = document.getElementById("resepBahan").value;
+    const jumlah = Number(document.getElementById("resepJumlah").value);
+    if(!menuNama || !bahanNama || !jumlah) return alert("Lengkapi resep");
+
+    resep.push({ menu: menuNama, bahan: bahanNama, jumlah });
+    updateTables();
+  }
+
+  // =========================
+  // GLOBAL DASHBOARD
+  // =========================
+  function updateGlobal() {
+    const avgMargin = menu.length == 0 ? 0 : menu.reduce((sum, m) => sum + m.margin, 0) / menu.length;
+    const minMarginMenu = menu.reduce((min, m) => m.margin < min.margin ? m : min, menu[0] || {margin:0});
+    const maxHppMenu = menu.reduce((max, m) => m.hpp > max.hpp ? m : max, menu[0] || {hpp:0});
+
+    const globalSummary = document.getElementById("globalSummary");
+    globalSummary.innerHTML = `
+      <p>Rata-rata Margin: <b>${avgMargin.toFixed(2)}%</b></p>
+      <p>Menu Margin Terendah: <b>${minMarginMenu.nama || "-"}</b> (${minMarginMenu.margin?.toFixed(2) || 0}%)</p>
+      <p>Menu HPP Tertinggi: <b>${maxHppMenu.nama || "-"}</b> (${formatRp(maxHppMenu.hpp || 0)})</p>
+    `;
+
+    const aiGlobal = document.getElementById("aiGlobal");
+    aiGlobal.innerHTML = `
+      <p><b>AI Insight Global:</b></p>
+      <ul>
+        <li>Margin rata-rata <b>${avgMargin.toFixed(2)}%</b> → ${avgMargin < 50 ? "perlu optimasi harga/komposisi" : avgMargin <= 70 ? "sehat" : "sangat baik"}</li>
+        <li>Menu dengan margin rendah: <b>${minMarginMenu.nama || "-"}</b></li>
+        <li>Menu dengan HPP tinggi: <b>${maxHppMenu.nama || "-"}</b></li>
+        <li>Ketergantungan bahan mahal (kopi/syrup impor) terlihat dari kategori bahan yang paling sering dipakai</li>
+      </ul>
+    `;
+  }
+
+  // =========================
+  // Revenue & Expense
+  // =========================
+  function updateRevenue() {
+    revenue.dapur = Number(document.getElementById("revDapur").value);
+    revenue.bar = Number(document.getElementById("revBar").value);
+    revenue.cafe = Number(document.getElementById("revCafe").value);
+    updateProfitSummary();
+  }
+
+  function updateExpense() {
+    expense.dapur = Number(document.getElementById("expDapur").value);
+    expense.bar = Number(document.getElementById("expBar").value);
+    expense.cafe = Number(document.getElementById("expCafe").value);
+    updateProfitSummary();
+  }
+
+  function updateProfitSummary() {
+    const totalRev = revenue.dapur + revenue.bar + revenue.cafe;
+    const totalExp = expense.dapur + expense.bar + expense.cafe;
+    const profit = totalRev - totalExp;
+
+    document.getElementById("profitSummary").innerHTML = `
+      <p>Total Revenue: <b>${formatRp(totalRev)}</b></p>
+      <p>Total Expense: <b>${formatRp(totalExp)}</b></p>
+      <p>Profit Bulan Ini: <b>${formatRp(profit)}</b></p>
+    `;
+  }
+
+  // =========================
+  // Init
+  // =========================
+  updateTables();
+  updateProfitSummary();
 </script>
 
 </body>
