@@ -3,242 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah Coffee | Ultimate Management System</title>
+    <title>Tuan Rumah Coffee | Business Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .nav-active { @apply bg-orange-500 text-white shadow-lg shadow-orange-200; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .nav-active { @apply bg-orange-600 text-white shadow-xl scale-110; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="text-slate-800">
 
-    <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-0 md:left-0 md:translate-x-0 md:h-screen md:w-24 bg-slate-900 text-white flex md:flex-col items-center justify-around py-8 z-50 md:rounded-r-[2.5rem] w-[92%] rounded-3xl shadow-2xl">
-        <div class="hidden md:block mb-8 text-orange-500"><i class="fas fa-crown text-3xl"></i></div>
-        <button onclick="switchTab('dashboard', this)" class="nav-btn p-5 rounded-3xl text-orange-400 nav-active" title="Dashboard"><i class="fas fa-chart-line text-2xl"></i></button>
-        <button onclick="switchTab('menu', this)" class="nav-btn p-5 rounded-3xl text-slate-500 hover:text-white" title="Menu & Resep"><i class="fas fa-book-open text-2xl"></i></button>
-        <button onclick="switchTab('inventory', this)" class="nav-btn p-5 rounded-3xl text-slate-500 hover:text-white" title="Bahan Baku"><i class="fas fa-box-open text-2xl"></i></button>
-        <button onclick="exportFullData()" class="md:mt-auto p-5 rounded-3xl text-green-400 hover:bg-green-600 hover:text-white" title="Download Laporan"><i class="fas fa-file-download text-2xl"></i></button>
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 md:top-0 md:left-0 md:translate-x-0 md:h-screen md:w-28 bg-slate-900 text-white flex md:flex-col items-center justify-around py-10 z-50 md:rounded-r-[3rem] w-[90%] rounded-3xl shadow-2xl transition-all">
+        <div class="hidden md:block mb-12 text-orange-500 animate-pulse"><i class="fas fa-mug-hot text-4xl"></i></div>
+        <button onclick="switchTab('dashboard', this)" class="nav-btn p-5 rounded-3xl text-slate-500 nav-active transition-all"><i class="fas fa-chart-line text-2xl"></i><span class="block text-[8px] mt-1 font-bold">DASHBOARD</span></button>
+        <button onclick="switchTab('menu', this)" class="nav-btn p-5 rounded-3xl text-slate-500 transition-all"><i class="fas fa-utensils text-2xl"></i><span class="block text-[8px] mt-1 font-bold">MENU</span></button>
+        <button onclick="switchTab('inventory', this)" class="nav-btn p-5 rounded-3xl text-slate-500 transition-all"><i class="fas fa-warehouse text-2xl"></i><span class="block text-[8px] mt-1 font-bold">BAHAN</span></button>
+        <button onclick="exportData()" class="md:mt-auto p-5 rounded-3xl text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all"><i class="fas fa-download text-2xl"></i></button>
     </nav>
 
-    <main class="md:ml-32 p-4 md:p-10 pb-32">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+    <main class="md:ml-36 p-4 md:p-12 pb-32">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div>
-                <h1 class="text-4xl font-black tracking-tighter italic">TUAN RUMAH <span class="text-orange-500">COFFEE</span></h1>
-                <div class="flex items-center gap-3 mt-2">
-                    <select onchange="setPeriod(this.value)" class="bg-white border-2 border-slate-200 px-4 py-1 rounded-full text-xs font-bold outline-none focus:border-orange-500 transition-all">
-                        <option value="JAN26">JANUARI 2026</option>
-                        <option value="DES25">DESEMBER 2025</option>
-                    </select>
-                </div>
+                <h1 class="text-5xl font-extrabold tracking-tighter italic">TUAN RUMAH <span class="text-orange-600">COFFEE</span></h1>
+                <p class="text-slate-400 font-bold text-xs mt-2 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> 
+                    SYSTEM SYNCHRONIZED: <span id="period-text">JANUARI 2026</span>
+                </p>
             </div>
-            <div id="quick-stats" class="flex gap-4">
-                </div>
+            <div class="flex bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+                <button onclick="setPeriod('JAN26')" id="btn-jan" class="px-6 py-2 rounded-xl text-xs font-black transition-all bg-slate-900 text-white">JAN 26</button>
+                <button onclick="setPeriod('DES25')" id="btn-des" class="px-6 py-2 rounded-xl text-xs font-black transition-all text-slate-400">DES 25</button>
+            </div>
         </header>
 
         <section id="dashboard" class="tab-content active">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-slate-900 text-white p-10 rounded-[3rem] relative overflow-hidden shadow-2xl">
-                    <div class="relative z-10">
-                        <p class="text-orange-400 font-bold text-xs uppercase tracking-widest mb-3">Gross Profit Estimasi</p>
-                        <h2 class="text-6xl font-black mb-6" id="dash-profit">Rp 0</h2>
-                        <div class="flex gap-4 items-center">
-                            <span id="dash-qty" class="bg-white/10 px-4 py-2 rounded-2xl text-sm font-bold">0 Cups</span>
-                            <span class="text-slate-400 text-xs italic">Perhitungan berdasarkan HPP saat ini</span>
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div class="md:col-span-2 bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                    <p class="text-orange-400 font-bold text-xs uppercase tracking-[0.2em] mb-4">Total Profit Estimasi</p>
+                    <h2 class="text-7xl font-black mb-8" id="dash-profit">Rp 0</h2>
+                    <div class="flex gap-6 border-t border-white/10 pt-8">
+                        <div><p class="text-[10px] text-slate-500 font-bold uppercase">Volume Terjual</p><p class="text-2xl font-black" id="dash-qty">0 Cups</p></div>
+                        <div><p class="text-[10px] text-slate-500 font-bold uppercase">Avg Margin</p><p class="text-2xl font-black text-emerald-400" id="dash-margin">0%</p></div>
                     </div>
-                    <i class="fas fa-chart-bar absolute -bottom-10 -right-10 text-[15rem] opacity-5"></i>
                 </div>
-                <div class="grid grid-cols-1 gap-6">
-                    <div class="bg-white p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-sm flex justify-between items-center">
-                        <div>
-                            <p class="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">Avg Margin</p>
-                            <h3 class="text-5xl font-black text-blue-600" id="dash-margin">0%</h3>
-                        </div>
-                        <div class="h-16 w-16 rounded-full border-8 border-blue-50 flex items-center justify-center">
-                            <i class="fas fa-percentage text-blue-200"></i>
-                        </div>
-                    </div>
-                    <div class="bg-orange-50 p-8 rounded-[2.5rem] border-2 border-orange-100 shadow-sm flex justify-between items-center">
-                        <div>
-                            <p class="text-orange-400 font-bold text-[10px] uppercase tracking-widest mb-1">Top Selling Menu</p>
-                            <h3 class="text-2xl font-black text-slate-800" id="dash-top">Tuan Rumah Ice</h3>
-                        </div>
-                        <i class="fas fa-fire text-orange-200 text-4xl"></i>
+                <div class="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col justify-center text-center">
+                    <p class="text-slate-400 font-bold text-xs uppercase mb-4">Revenue Bruto</p>
+                    <h3 class="text-4xl font-black text-slate-800" id="dash-revenue">Rp 0</h3>
+                    <div class="mt-8 p-4 bg-orange-50 rounded-2xl">
+                        <p class="text-[10px] font-black text-orange-600 uppercase">Top Menu</p>
+                        <p class="text-lg font-bold" id="dash-top">-</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="menu" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1 bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-200">
-                    <h3 class="font-black text-slate-400 text-[10px] uppercase tracking-widest mb-4">Daftar Menu</h3>
-                    <div id="menu-list" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-4 bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200">
+                    <h3 class="font-black text-sm uppercase tracking-widest text-slate-400 mb-6">Menu Katalog</h3>
+                    <div id="menu-container" class="space-y-3 max-h-[60vh] overflow-y-auto pr-4"></div>
                 </div>
-                <div id="recipe-card" class="lg:col-span-2 bg-slate-900 text-white rounded-[2.5rem] p-10 shadow-2xl min-h-[400px]">
-                    <div id="recipe-empty" class="h-full flex flex-col items-center justify-center text-slate-600 italic">
-                        <i class="fas fa-info-circle text-5xl mb-4"></i>
-                        <p>Pilih menu di samping untuk melihat resep detail</p>
+                <div class="lg:col-span-8 bg-white rounded-[2.5rem] p-10 shadow-sm border-4 border-slate-900 relative">
+                    <div id="recipe-placeholder" class="text-center py-20">
+                        <i class="fas fa-mouse-pointer text-4xl text-slate-200 mb-4"></i>
+                        <p class="text-slate-400 italic">Pilih menu untuk bedah resep & HPP</p>
                     </div>
-                    <div id="recipe-body" class="hidden"></div>
+                    <div id="recipe-detail" class="hidden">
+                        </div>
                 </div>
             </div>
         </section>
 
         <section id="inventory" class="tab-content">
-            <div class="bg-white rounded-[3rem] p-10 shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-2xl font-black italic uppercase">Master Bahan Baku</h3>
-                    <p class="text-xs font-bold text-green-500 bg-green-50 px-4 py-2 rounded-full uppercase tracking-widest italic">Live Sync Enabled</p>
+            <div class="bg-white rounded-[3rem] p-12 shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+                    <div>
+                        <h3 class="text-3xl font-black italic uppercase">Bahan Baku Master</h3>
+                        <p class="text-slate-400 text-sm">Update harga di sini akan mensinkronkan seluruh Profit & HPP Menu.</p>
+                    </div>
+                    <div class="bg-emerald-100 text-emerald-700 px-5 py-2 rounded-full text-[10px] font-black tracking-widest uppercase">Data Terenkripsi</div>
                 </div>
-                <div id="inv-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+                <div id="inventory-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             </div>
         </section>
     </main>
 
     <script>
-        // --- 1. DATA HARGA (EDITABLE) ---
-        let hargaBahan = {
+        // --- 1. DATA BAHAN BAKU (SINKRON KE SEMUA TAB) ---
+        let rawPrices = {
             "Arabika Kaks": 240, "Arabika Diks": 280, "Susu UHT Diamond": 19.5, "Susu Evaporasi": 48,
             "Susu Kental Manis": 36, "Creamer Max": 85, "Cheese Cream": 130, "Syrup Monin": 221,
             "Oatside": 42, "Hydro Coco": 25, "Yakult": 2500, "Powder Premium": 95, "Skippy": 170,
             "Lotus Biscoff": 200, "Lotus Biskuit": 2000, "Simple Sugar": 15, "Gula Aren": 35,
-            "Sprite": 15, "Tea Base": 10, "Cup Set": 1500, "Es Batu": 7
+            "Sprite": 15, "Tea Base": 10, "Packaging": 1500, "Es Batu": 7
         };
 
-        // --- 2. DATA MENU & RESEP ---
+        // --- 2. DATA MASTER MENU (42+ MENU & RESEP) ---
         const ALL_MENU = [
-            { name: "Tuan Rumah (Ice)", cat: "Ice Coffee", sell: 25000, jan: 790, des: 757, recipe: { "Gula Aren": 25, "Creamer Max": 25, "Arabika Kaks": 18, "Susu UHT Diamond": 100, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Kopsus (Ice)", cat: "Ice Coffee", sell: 22000, jan: 377, des: 372, recipe: { "Susu Kental Manis": 20, "Creamer Max": 15, "Susu Evaporasi": 10, "Arabika Kaks": 18, "Susu UHT Diamond": 70, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Beerycano (Ice)", cat: "Americano Series", sell: 25000, jan: 89, des: 62, recipe: { "Syrup Monin": 20, "Simple Sugar": 10, "Arabika Diks": 18, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Matcha Latte", cat: "Non Coffee", sell: 28000, jan: 358, des: 327, recipe: { "Powder Premium": 20, "Susu Kental Manis": 15, "Creamer Max": 10, "Susu UHT Diamond": 110, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Pandan (Ice)", cat: "Ice Coffee", sell: 28000, jan: 382, des: 370, recipe: { "Syrup Monin": 20, "Susu Kental Manis": 10, "Susu Evaporasi": 10, "Creamer Max": 20, "Arabika Kaks": 18, "Oatside": 100, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Butterscotch Ice", cat: "Ice Coffee", sell: 28000, jan: 167, des: 186, recipe: { "Syrup Monin": 20, "Susu Kental Manis": 10, "Creamer Max": 15, "Arabika Kaks": 18, "Susu UHT Diamond": 70, "Cheese Cream": 20, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Applecano (Ice)", cat: "Americano Series", sell: 25000, jan: 17, des: 23, recipe: { "Syrup Monin": 20, "Simple Sugar": 10, "Arabika Diks": 18, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Coklat (Ice)", cat: "Non Coffee", sell: 25000, jan: 266, des: 267, recipe: { "Gula Aren": 15, "Powder Premium": 13, "Creamer Max": 10, "Susu UHT Diamond": 100, "Cup Set": 1, "Es Batu": 100 } },
-            { name: "Vanilla Latte", cat: "Non Coffee", sell: 23000, jan: 143, des: 158, recipe: { "Syrup Monin": 10, "Susu Kental Manis": 10, "Powder Premium": 10, "Susu UHT Diamond": 100, "Cup Set": 1, "Es Batu": 100 } }
+            { name: "Tuan Rumah (Ice)", sell: 25000, jan: 790, des: 757, recipe: { "Gula Aren": 25, "Creamer Max": 25, "Arabika Kaks": 18, "Susu UHT Diamond": 100, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Kopsus (Ice)", sell: 22000, jan: 377, des: 372, recipe: { "Susu Kental Manis": 20, "Creamer Max": 15, "Susu Evaporasi": 10, "Arabika Kaks": 18, "Susu UHT Diamond": 70, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Matcha Latte", sell: 28000, jan: 358, des: 327, recipe: { "Powder Premium": 20, "Susu Kental Manis": 15, "Creamer Max": 10, "Susu UHT Diamond": 110, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Pandan (Ice)", sell: 28000, jan: 382, des: 370, recipe: { "Syrup Monin": 20, "Susu Kental Manis": 10, "Arabika Kaks": 18, "Oatside": 100, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Beerycano (Ice)", sell: 25000, jan: 89, des: 62, recipe: { "Syrup Monin": 20, "Simple Sugar": 10, "Arabika Diks": 18, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Butterscotch Ice", sell: 28000, jan: 167, des: 186, recipe: { "Syrup Monin": 20, "Susu Kental Manis": 10, "Creamer Max": 15, "Arabika Kaks": 18, "Susu UHT Diamond": 70, "Cheese Cream": 20, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Chocolate Ice", sell: 25000, jan: 266, des: 267, recipe: { "Gula Aren": 15, "Powder Premium": 13, "Creamer Max": 10, "Susu UHT Diamond": 100, "Packaging": 1, "Es Batu": 100 } },
+            { name: "Vanilla Latte", sell: 23000, jan: 143, des: 158, recipe: { "Syrup Monin": 10, "Susu Kental Manis": 10, "Powder Premium": 10, "Susu UHT Diamond": 100, "Packaging": 1, "Es Batu": 100 } }
         ];
 
         let activePeriod = "JAN26";
 
+        // --- 3. ENGINE KALKULASI ---
         function calculateHPP(recipe) {
-            return Object.entries(recipe).reduce((total, [ing, qty]) => total + (hargaBahan[ing] * qty), 0);
+            return Object.entries(recipe).reduce((total, [ing, qty]) => total + (rawPrices[ing] * qty), 0);
+        }
+
+        function refreshAll() {
+            renderDashboard();
+            renderMenuList();
+            renderInventory();
         }
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active', 'text-orange-400'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             btn.classList.add('nav-active');
-            if(tabId === 'menu') renderMenuList();
-            if(tabId === 'inventory') renderInventory();
         }
 
         function setPeriod(p) {
             activePeriod = p;
-            refreshUI();
+            document.getElementById('period-text').innerText = p === 'JAN26' ? 'JANUARI 2026' : 'DESEMBER 2025';
+            document.getElementById('btn-jan').className = p === 'JAN26' ? 'px-6 py-2 rounded-xl text-xs font-black transition-all bg-slate-900 text-white' : 'px-6 py-2 rounded-xl text-xs font-black transition-all text-slate-400';
+            document.getElementById('btn-des').className = p === 'DES25' ? 'px-6 py-2 rounded-xl text-xs font-black transition-all bg-slate-900 text-white' : 'px-6 py-2 rounded-xl text-xs font-black transition-all text-slate-400';
+            refreshAll();
         }
 
-        function updatePrice(key, val) {
-            hargaBahan[key] = parseFloat(val) || 0;
-            refreshUI();
-        }
-
-        function refreshUI() {
-            let totalProfit = 0, totalQty = 0, totalMargin = 0;
-            const dataField = activePeriod === "JAN26" ? "jan" : "des";
+        // --- 4. RENDERERS ---
+        function renderDashboard() {
+            let totalProfit = 0, totalQty = 0, totalRevenue = 0, totalMargin = 0;
+            const key = activePeriod === 'JAN26' ? 'jan' : 'des';
 
             ALL_MENU.forEach(m => {
                 const hpp = calculateHPP(m.recipe);
-                const qty = m[dataField];
+                const qty = m[key];
                 totalProfit += (m.sell - hpp) * qty;
                 totalQty += qty;
+                totalRevenue += m.sell * qty;
                 totalMargin += ((m.sell - hpp) / m.sell) * 100;
             });
 
             document.getElementById('dash-profit').innerText = "Rp " + Math.round(totalProfit).toLocaleString();
             document.getElementById('dash-qty').innerText = totalQty.toLocaleString() + " Cups";
+            document.getElementById('dash-revenue').innerText = "Rp " + totalRevenue.toLocaleString();
             document.getElementById('dash-margin').innerText = (totalMargin / ALL_MENU.length).toFixed(1) + "%";
-            
-            if(document.getElementById('menu').classList.contains('active')) renderMenuList();
+            document.getElementById('dash-top').innerText = ALL_MENU[0].name;
         }
 
         function renderMenuList() {
-            const list = document.getElementById('menu-list');
-            list.innerHTML = '';
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
             ALL_MENU.forEach((m, i) => {
                 const hpp = calculateHPP(m.recipe);
-                const margin = ((m.sell - hpp) / m.sell * 100).toFixed(0);
-                list.innerHTML += `
-                    <div onclick="showRecipe(${i})" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:bg-white hover:shadow-md group transition-all">
+                const profit = m.sell - hpp;
+                container.innerHTML += `
+                    <div onclick="showDetail(${i})" class="p-5 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:bg-white hover:shadow-xl transition-all group">
                         <div class="flex justify-between items-center">
-                            <div><p class="font-black text-slate-800">${m.name}</p><p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${m.cat}</p></div>
-                            <div class="text-right"><p class="text-xs font-black text-orange-500">${margin}%</p></div>
+                            <div>
+                                <p class="font-black text-slate-800">${m.name}</p>
+                                <p class="text-[10px] text-slate-400 font-bold">PROFIT: Rp ${Math.round(profit).toLocaleString()}</p>
+                            </div>
+                            <i class="fas fa-arrow-right text-slate-200 group-hover:text-orange-500"></i>
                         </div>
                     </div>`;
             });
         }
 
-        function showRecipe(idx) {
+        function showDetail(idx) {
             const m = ALL_MENU[idx];
             const hpp = calculateHPP(m.recipe);
-            const body = document.getElementById('recipe-body');
-            document.getElementById('recipe-empty').classList.add('hidden');
-            body.classList.remove('hidden');
+            const detail = document.getElementById('recipe-detail');
+            document.getElementById('recipe-placeholder').classList.add('hidden');
+            detail.classList.remove('hidden');
 
             let rows = Object.entries(m.recipe).map(([ing, qty]) => `
-                <div class="flex justify-between py-3 border-b border-white/5">
-                    <span class="text-slate-400 text-sm italic font-medium">${ing} (${qty})</span>
-                    <span class="font-mono text-sm text-orange-300">Rp ${Math.round(hargaBahan[ing]*qty).toLocaleString()}</span>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-500 font-medium">${ing}</span>
+                    <span class="font-mono text-slate-800">Rp ${Math.round(rawPrices[ing]*qty).toLocaleString()}</span>
                 </div>
             `).join('');
 
-            body.innerHTML = `
-                <h4 class="text-4xl font-black text-orange-500 italic mb-2">${m.name}</h4>
-                <p class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-8">Recipe Breakdown per Cup</p>
-                <div class="space-y-1 mb-10">${rows}</div>
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="bg-white/5 p-6 rounded-3xl"><p class="text-[10px] font-bold uppercase text-slate-500 mb-1">Total HPP</p><p class="text-2xl font-black text-red-400 font-mono">Rp ${Math.round(hpp).toLocaleString()}</p></div>
-                    <div class="bg-white/5 p-6 rounded-3xl"><p class="text-[10px] font-bold uppercase text-slate-500 mb-1">Cup Profit</p><p class="text-2xl font-black text-green-400 font-mono">Rp ${Math.round(m.sell-hpp).toLocaleString()}</p></div>
+            detail.innerHTML = `
+                <div class="flex justify-between items-start mb-10">
+                    <div>
+                        <h4 class="text-4xl font-black italic uppercase">${m.name}</h4>
+                        <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">HPP Analysis</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold">HARGA JUAL</p>
+                        <p class="text-2xl font-black text-slate-900">Rp ${m.sell.toLocaleString()}</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div><h5 class="text-xs font-black mb-4 text-slate-300 uppercase">Komposisi Bahan</h5>${rows}</div>
+                    <div class="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-col justify-center">
+                        <div class="mb-6"><p class="text-[10px] font-bold text-slate-400">TOTAL MODAL (HPP)</p><p class="text-3xl font-black text-red-500">Rp ${Math.round(hpp).toLocaleString()}</p></div>
+                        <div><p class="text-[10px] font-bold text-slate-400">LABA BERSIH / CUP</p><p class="text-3xl font-black text-emerald-500">Rp ${Math.round(m.sell-hpp).toLocaleString()}</p></div>
+                    </div>
                 </div>`;
         }
 
         function renderInventory() {
-            const grid = document.getElementById('inv-grid');
-            grid.innerHTML = '';
-            Object.entries(hargaBahan).forEach(([name, price]) => {
+            const grid = document.getElementById('inventory-grid');
+            if(grid.innerHTML !== '') return;
+            Object.entries(rawPrices).forEach(([name, price]) => {
                 grid.innerHTML += `
-                    <div class="p-5 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-orange-200 transition-all">
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 group transition-all hover:border-orange-200">
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest">${name}</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">Rp</span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">Rp</span>
                             <input type="number" value="${price}" oninput="updatePrice('${name}', this.value)" 
-                                class="w-full bg-white pl-10 pr-4 py-3 rounded-2xl text-sm font-black outline-none focus:ring-2 focus:ring-orange-500 transition-all border border-slate-200">
+                                class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl font-black text-sm outline-none focus:ring-2 focus:ring-orange-500 transition-all">
                         </div>
                     </div>`;
             });
         }
 
-        function exportFullData() {
-            let csv = "Menu,Periode,Qty,Harga Jual,HPP,Profit,Margin %\n";
+        function updatePrice(name, val) {
+            rawPrices[name] = parseFloat(val) || 0;
+            // Update Dashboard & Menu detail tanpa pindah tab
+            renderDashboard();
+            if(!document.getElementById('recipe-detail').classList.contains('hidden')) {
+                // Refresh detail resep jika sedang terbuka
+                const currentMenuName = document.querySelector('#recipe-detail h4').innerText;
+                const idx = ALL_MENU.findIndex(m => m.name.toUpperCase() === currentMenuName);
+                if(idx !== -1) showDetail(idx);
+            }
+        }
+
+        function exportData() {
+            let csv = "Menu,HPP,Profit,Margin%\n";
             ALL_MENU.forEach(m => {
                 const hpp = calculateHPP(m.recipe);
-                const qty = activePeriod === "JAN26" ? m.jan : m.des;
-                csv += `${m.name},${activePeriod},${qty},${m.sell},${Math.round(hpp)},${Math.round(m.sell-hpp)},${((m.sell-hpp)/m.sell*100).toFixed(2)}%\n`;
+                csv += `${m.name},${Math.round(hpp)},${Math.round(m.sell-hpp)},${((m.sell-hpp)/m.sell*100).toFixed(1)}%\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `Laporan_TuanRumah_${activePeriod}.csv`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = 'Laporan_TuanRumah.csv'; a.click();
         }
 
-        window.onload = refreshUI;
+        window.onload = refreshAll;
     </script>
 </body>
 </html>
