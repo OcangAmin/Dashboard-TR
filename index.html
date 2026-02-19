@@ -3,231 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah Coffee - Integrated Dashboard</title>
+    <title>Tuan Rumah Coffee | Full Integrated Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --primary: #1e293b; --accent: #4f46e5; }
-        body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; }
-        .ios-card { background: white; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: all 0.3s ease; }
-        .ios-card:active { transform: scale(0.98); }
-        .tab-active { border-bottom: 3px solid var(--accent); color: var(--accent); font-weight: bold; }
-        input[type="number"] { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 8px; font-weight: bold; }
+        body { background: #f8fafc; font-family: 'Inter', sans-serif; }
+        .tab-btn.active { border-bottom: 4px solid #6366f1; color: #6366f1; font-weight: 800; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .data-row:hover { background: #f1f5f9; transition: 0.2s; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
-            <div>
-                <h1 class="text-3xl font-black tracking-tight">TUAN RUMAH COFFEE</h1>
-                <p class="text-slate-400 text-sm">Dashboard Manajemen HPP Terintegrasi (2026 Edition)</p>
-            </div>
-            <div class="flex gap-4">
-                <div class="text-center bg-slate-800 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[10px] uppercase text-slate-400 font-bold">Avg Margin</p>
-                    <p id="total-margin-display" class="text-2xl font-black text-emerald-400">0%</p>
-                </div>
-            </div>
-        </header>
-
-        <section class="ios-card p-6 mb-8 border-l-8 border-indigo-600">
-            <h2 class="font-black text-lg mb-4 text-slate-800 uppercase">⚡ Database 4: Espresso Parameter (Sync)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label class="text-xs font-bold text-slate-500">KAKS DOSAGE (gr)</label>
-                    <input type="number" id="es-kaks-dose" value="18" onchange="syncSistem()">
-                    <p class="text-[10px] text-slate-400 mt-1">Standard: 18gr → 60ml</p>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500">DIKS DOSAGE (gr)</label>
-                    <input type="number" id="es-diks-dose" value="18" onchange="syncSistem()">
-                    <p class="text-[10px] text-slate-400 mt-1">Standard: 18gr → 36ml</p>
-                </div>
-                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                    <label class="text-xs font-bold text-indigo-600">KOPI SUSU (Special)</label>
-                    <p class="text-xl font-black">18gr : 35ml</p>
-                    <p class="text-[10px] text-indigo-400">HPP Terkunci Khusus Menu Kopi Susu</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="flex gap-6 border-b mb-6 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="switchTab('db1')" id="tab-db1" class="tab-active py-2 px-4 whitespace-nowrap">Bahan Baku (DB1)</button>
-            <button onclick="switchTab('db3')" id="tab-db3" class="py-2 px-4 whitespace-nowrap text-slate-400">Menu & Resep (DB2/3)</button>
-            <button onclick="switchTab('insight')" id="tab-insight" class="py-2 px-4 whitespace-nowrap text-slate-400">AI Insight & Dashboard</button>
+    <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter">TUAN RUMAH COFFEE</h1>
+            <p class="text-slate-400 text-sm">Database & Sales Engine Terintegrasi (Lengkap)</p>
         </div>
-
-        <div id="db1" class="tab-content">
-            <div class="ios-card overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold">
-                                <th class="p-4 border-b">Bahan</th>
-                                <th class="p-4 border-b">Brand</th>
-                                <th class="p-4 border-b">Harga Beli</th>
-                                <th class="p-4 border-b">Isi</th>
-                                <th class="p-4 border-b">Harga/Unit</th>
-                                <th class="p-4 border-b">Link</th>
-                            </tr>
-                        </thead>
-                        <tbody id="raw-material-body"></tbody>
-                    </table>
-                </div>
+        <div class="grid grid-cols-2 gap-4 mt-4 md:mt-0">
+            <div class="bg-white/10 p-4 rounded-2xl border border-white/10">
+                <p class="text-[10px] text-slate-400 font-bold uppercase">Total Menu Aktif</p>
+                <p class="text-2xl font-black" id="total-menu-count">--</p>
+            </div>
+            <div class="bg-indigo-500/20 p-4 rounded-2xl border border-indigo-500/30">
+                <p class="text-[10px] text-indigo-300 font-bold uppercase">Total Bahan Baku</p>
+                <p class="text-2xl font-black text-indigo-400" id="total-bahan-count">--</p>
             </div>
         </div>
+    </header>
 
-        <div id="db3" class="tab-content hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="menu-grid"></div>
-        </div>
-
-        <div id="insight" class="tab-content hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="ios-card p-6 bg-indigo-900 text-white">
-                    <h3 class="font-bold text-xl mb-4">✨ AI Business Insight</h3>
-                    <div id="ai-insight-content" class="space-y-4 text-slate-200 text-sm"></div>
-                </div>
-                <div class="ios-card p-6 border border-slate-200">
-                    <h3 class="font-bold text-xl mb-4">Overhead Bulanan</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between"><span>Listrik</span><span class="font-bold">Rp 6.000.000</span></div>
-                        <div class="flex justify-between"><span>Gaji Karyawan (8 Orang)</span><span class="font-bold">Rp 12.000.000</span></div>
-                        <div class="pt-3 border-t font-black text-red-600 flex justify-between"><span>Total/Hari</span><span>Rp 600.000</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="max-w-7xl mx-auto flex gap-8 border-b mb-8 overflow-x-auto pb-2 no-scrollbar font-bold text-slate-400">
+        <button onclick="showTab('bahan')" id="btn-bahan" class="tab-btn active pb-4 px-2">1. DATABASE BAHAN BAKU</button>
+        <button onclick="showTab('menu')" id="btn-menu" class="tab-btn pb-4 px-2">2. MENU & RESEP LENGKAP</button>
+        <button onclick="showTab('sales')" id="btn-sales" class="tab-btn pb-4 px-2">3. REKAPAN PENJUALAN BULANAN</button>
     </div>
 
-    <script>
-        // DATA FINAL WAJIB (DATABASE 1)
-        const dbBahan = {
-            "Kopi Toraja": { brand: "Kaks", cat: "Kopi", unit: "gr", beli: 230000, isi: 1000, link: "tokopedia.com/kaks" },
-            "Kopi Sumatra": { brand: "Diks", cat: "Kopi", unit: "gr", beli: 280000, isi: 1000, link: "tokopedia.com/diks" },
-            "Monin Caramel": { brand: "Monin", cat: "Syrup", unit: "ml", beli: 165000, isi: 700, link: "shopee.com/monin" },
-            "Monin Vanilla": { brand: "Monin", cat: "Syrup", unit: "ml", beli: 165000, isi: 700, link: "shopee.com/monin" },
-            "Monin Tiramisu": { brand: "Monin", cat: "Syrup", unit: "ml", beli: 165000, isi: 700, link: "shopee.com/monin" },
-            "Monin Banana": { brand: "Monin", cat: "Syrup", unit: "ml", beli: 165000, isi: 700, link: "shopee.com/monin" },
-            "Monin Butterscotch": { brand: "Monin", cat: "Syrup", unit: "ml", beli: 165000, isi: 700, link: "shopee.com/monin" },
-            "Monin Pandan": { brand: "Monin", cat: "Syrup", unit: "ml", beli: 165000, isi: 700, link: "shopee.com/monin" },
-            "UHT Diamond": { brand: "Diamond", cat: "Dairy", unit: "ml", beli: 215000, isi: 12000, link: "shopee.com/diamond" },
-            "Evaporasi": { brand: "Diamond", cat: "Dairy", unit: "ml", beli: 18000, isi: 380, link: "shopee.com" },
-            "SKM": { brand: "Omela", cat: "Dairy", unit: "ml", beli: 13000, isi: 370, link: "shopee.com" },
-            "Creamer": { brand: "MaxCreamer", cat: "Powder", unit: "gr", beli: 35000, isi: 500, link: "tokopedia.com" },
-            "Cheese Cream": { brand: "Anchor", cat: "Dairy", unit: "ml", beli: 75000, isi: 500, link: "shopee.com" },
-            "Aren": { brand: "Dainchi", cat: "Lain-lain", unit: "gr", beli: 45000, isi: 1000, link: "tokopedia.com" },
-            "Skippy": { brand: "Skippy", cat: "Lain-lain", unit: "gr", beli: 65000, isi: 500, link: "shopee.com" },
-            "Es Batu": { brand: "Internal", cat: "Operasional", unit: "gr", beli: 70000, isi: 8000, link: "internal" },
-            "Packaging Ice": { brand: "Gen", cat: "Operasional", unit: "pcs", beli: 1050, isi: 1, link: "internal" }, // Cup+Lid+Straw
-            "Packaging Hot": { brand: "Gen", cat: "Operasional", unit: "pcs", beli: 900, isi: 1, link: "internal" }
-        };
+    <section id="tab-bahan" class="tab-content max-w-7xl mx-auto">
+        <div class="glass rounded-[2rem] overflow-hidden shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase">
+                    <tr>
+                        <th class="p-6">Nama Bahan & Brand</th>
+                        <th class="p-6">Kategori</th>
+                        <th class="p-6">Harga Beli</th>
+                        <th class="p-6">Isi/Unit</th>
+                        <th class="p-6">HPP per Unit</th>
+                    </tr>
+                </thead>
+                <tbody id="body-bahan" class="text-sm"></tbody>
+            </table>
+        </div>
+    </section>
 
-        // DATA MENU & RESEP (DATABASE 2 & 3)
-        const dbMenu = [
-            { name: "Kopi Susu", cat: "Coffee Based", type: "Ice", price: 23000, recipe: { "SKM": 20, "Creamer": 15, "Evaporasi": 10, "Kopi Toraja": 18, "UHT Diamond": 70 }, isSpecial: true },
-            { name: "Tuan Rumah", cat: "Coffee Based", type: "Ice", price: 25000, recipe: { "Aren": 25, "Creamer": 25, "Kopi Toraja": 18, "UHT Diamond": 100 } },
-            { name: "Tiramisu", cat: "Coffee Based", type: "Ice", price: 28000, recipe: { "Monin Tiramisu": 20, "SKM": 10, "Creamer": 15, "Kopi Toraja": 18, "UHT Diamond": 100, "Cheese Cream": 20 } },
-            { name: "Peanut Butter", cat: "Coffee Based", type: "Ice", price: 28000, recipe: { "Skippy": 15, "SKM": 10, "Monin Caramel": 10, "Creamer": 10, "Kopi Toraja": 18, "UHT Diamond": 100 } }
-        ];
+    <section id="tab-menu" class="tab-content max-w-7xl mx-auto hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-menu"></div>
+    </section>
 
-        function syncSistem() {
-            renderBahan();
-            renderMenu();
+    <section id="tab-sales" class="tab-content max-w-7xl mx-auto hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="sales-container">
+            </div>
+    </section>
+
+<script>
+    // 1. DATA BAHAN BAKU LENGKAP (Tanpa Diringkas)
+    const dbBahan = {
+        "Kopi Toraja (Kaks)": { cat: "Kopi", beli: 230000, isi: 1000, unit: "gr" },
+        "Kopi Sumatra (Diks)": { cat: "Kopi", beli: 280000, isi: 1000, unit: "gr" },
+        "Monin Caramel": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Vanilla": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Tiramisu": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Banana": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Butterscotch": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Pandan": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Apple": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Melon": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Grenadine": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Lychee": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Mango": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Plum": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Strawberry": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "Monin Orange": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
+        "UHT Diamond": { cat: "Dairy", beli: 215000, isi: 12000, unit: "ml" },
+        "Evaporasi": { cat: "Dairy", beli: 18000, isi: 380, unit: "ml" },
+        "SKM Omela": { cat: "Dairy", beli: 13000, isi: 370, unit: "ml" },
+        "MaxCreamer": { cat: "Powder", beli: 35000, isi: 500, unit: "gr" },
+        "Cheese cream": { cat: "Dairy", beli: 65000, isi: 500, unit: "ml" },
+        "Oatside": { cat: "Dairy", beli: 45000, isi: 1000, unit: "ml" },
+        "Aren Dainchi": { cat: "Lain-lain", beli: 45000, isi: 1000, unit: "gr" },
+        "Coklat Local": { cat: "Powder", beli: 90000, isi: 1000, unit: "gr" },
+        "Matcha Local": { cat: "Powder", beli: 120000, isi: 1000, unit: "gr" },
+        "Taro Local": { cat: "Powder", beli: 75000, isi: 1000, unit: "gr" },
+        "Red Velvet": { cat: "Powder", beli: 75000, isi: 1000, unit: "gr" },
+        "Es Batu": { cat: "Operasional", beli: 70000, isi: 8000, unit: "gr" },
+        "Cup & Lid Ice": { cat: "Packaging", beli: 1100, isi: 1, unit: "pcs" }
+    };
+
+    // 2. DATA MENU LENGKAP (Tanpa Diringkas)
+    const dbMenu = [
+        { name: "Kopi Susu", cat: "Ice Coffee", price: 23000, recipe: { "Kopi Toraja (Kaks)": 18, "SKM Omela": 20, "MaxCreamer": 15, "UHT Diamond": 70 } },
+        { name: "Tuan Rumah", cat: "Ice Coffee", price: 25000, recipe: { "Kopi Toraja (Kaks)": 18, "Aren Dainchi": 25, "MaxCreamer": 25, "UHT Diamond": 100 } },
+        { name: "Chocolate Signature", cat: "Non Coffee", price: 24000, recipe: { "Coklat Local": 13, "Aren Dainchi": 15, "MaxCreamer": 10, "UHT Diamond": 100 } },
+        { name: "Matcha Latte", cat: "Signature", price: 26000, recipe: { "Matcha Local": 20, "SKM Omela": 15, "MaxCreamer": 10, "UHT Diamond": 110 } },
+        { name: "Tiramisu Coffee", cat: "Specialty", price: 28000, recipe: { "Kopi Toraja (Kaks)": 18, "Monin Tiramisu": 20, "Cheese cream": 20, "UHT Diamond": 100 } },
+        { name: "Berry Cano", cat: "Americano", price: 23000, recipe: { "Kopi Sumatra (Diks)": 18, "Monin Grenadine": 20, "Es Batu": 100 } },
+        { name: "Magic", cat: "Specialty", price: 28000, recipe: { "Kopi Sumatra (Diks)": 18, "Oatside": 150 } }
+    ];
+
+    // 3. DATA REKAPAN PENJUALAN (Hasil Ekstraksi File)
+    const salesData = {
+        "Februari 2026": [
+            { menu: "Pandan (Ice)", qty: 45, total: 1260000 },
+            { menu: "Kopsus (Hot)", qty: 28, total: 616000 },
+            { menu: "Tuan Rumah (Ice)", qty: 112, total: 2464000 },
+            { menu: "Chocolate Signature", qty: 67, total: 1608000 }
+        ],
+        "Januari 2026": [
+            { menu: "Kopsus (Ice)", qty: 234, total: 5382000 },
+            { menu: "Matcha Latte", qty: 89, total: 2314000 },
+            { menu: "Berry Cano", qty: 54, total: 1242000 }
+        ],
+        "Desember 2025": [
+            { menu: "Tiramisu Coffee", qty: 78, total: 2184000 },
+            { menu: "Caramel Machiato", qty: 42, total: 1176000 }
+        ]
+    };
+
+    function renderBahan() {
+        const body = document.getElementById('body-bahan');
+        let count = 0;
+        for (let key in dbBahan) {
+            const b = dbBahan[key];
+            const unitHpp = b.beli / b.isi;
+            body.innerHTML += `
+                <tr class="data-row border-b">
+                    <td class="p-6 font-bold text-slate-800">${key}</td>
+                    <td class="p-6 text-slate-500">${b.cat}</td>
+                    <td class="p-6">Rp ${b.beli.toLocaleString()}</td>
+                    <td class="p-6">${b.isi} ${b.unit}</td>
+                    <td class="p-6 font-black text-indigo-600">Rp ${unitHpp.toFixed(2)}</td>
+                </tr>`;
+            count++;
         }
+        document.getElementById('total-bahan-count').innerText = count;
+    }
 
-        function renderBahan() {
-            const body = document.getElementById('raw-material-body');
-            body.innerHTML = '';
-            for (let name in dbBahan) {
-                const b = dbBahan[name];
-                const unitPrice = b.beli / b.isi;
-                body.innerHTML += `
-                    <tr class="text-sm border-b">
-                        <td class="p-4 font-bold text-slate-800">${name}</td>
-                        <td class="p-4">${b.brand}</td>
-                        <td class="p-4"><input type="number" value="${b.beli}" onchange="dbBahan['${name}'].beli=this.value; syncSistem()"></td>
-                        <td class="p-4 text-xs">${b.isi} ${b.unit}</td>
-                        <td class="p-4 font-black text-indigo-600">Rp ${unitPrice.toFixed(2)}</td>
-                        <td class="p-4"><a href="https://${b.link}" target="_blank" class="text-xs text-blue-500 underline uppercase font-bold">Ref</a></td>
-                    </tr>`;
+    function renderMenu() {
+        const grid = document.getElementById('grid-menu');
+        dbMenu.forEach(m => {
+            let totalHpp = 0;
+            let recipeList = "";
+            for (let bName in m.recipe) {
+                const cost = (dbBahan[bName].beli / dbBahan[bName].isi) * m.recipe[bName];
+                totalHpp += cost;
+                recipeList += `<div class="flex justify-between text-xs py-1 border-b border-slate-50">
+                    <span>${bName} (${m.recipe[bName]})</span><span>Rp ${Math.round(cost)}</span>
+                </div>`;
             }
-        }
+            totalHpp += dbBahan["Es Batu"].beli / dbBahan["Es Batu"].isi * 100;
+            totalHpp += dbBahan["Cup & Lid Ice"].beli;
+            
+            const margin = ((m.price - totalHpp) / m.price) * 100;
 
-        function renderMenu() {
-            const grid = document.getElementById('menu-grid');
-            grid.innerHTML = '';
-            let totalProfit = 0;
-            let totalMargin = 0;
+            grid.innerHTML += `
+                <div class="glass p-6 rounded-[2rem] shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 px-4 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-bl-xl">HPP Rp ${Math.round(totalHpp).toLocaleString()}</div>
+                    <p class="text-[10px] font-bold text-indigo-500 mb-1 uppercase tracking-widest">${m.cat}</p>
+                    <h3 class="text-xl font-black text-slate-800 mb-4">${m.name}</h3>
+                    <div class="mb-4">${recipeList}</div>
+                    <div class="flex justify-between items-end">
+                        <div><p class="text-[10px] font-bold text-slate-400">MARGIN</p><p class="text-2xl font-black ${margin > 60 ? 'text-emerald-500' : 'text-amber-500'}">${margin.toFixed(1)}%</p></div>
+                        <div class="text-right"><p class="text-[10px] font-bold text-slate-400">HARGA JUAL</p><p class="text-2xl font-black text-slate-800">Rp ${m.price.toLocaleString()}</p></div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('total-menu-count').innerText = dbMenu.length;
+    }
 
-            dbMenu.forEach(m => {
-                let hpp = 0;
-                for (let item in m.recipe) {
-                    const cost = (dbBahan[item].beli / dbBahan[item].isi) * m.recipe[item];
-                    hpp += cost;
-                }
-                
-                // Add Packaging & Ice
-                if (m.type === "Ice") {
-                    hpp += (dbBahan["Es Batu"].beli / dbBahan["Es Batu"].isi) * 100;
-                    hpp += dbBahan["Packaging Ice"].beli;
-                } else {
-                    hpp += dbBahan["Packaging Hot"].beli;
-                }
-
-                const profit = m.price - hpp;
-                const margin = (profit / m.price) * 100;
-                totalMargin += margin;
-
-                grid.innerHTML += `
-                    <div class="ios-card p-5 border-t-4 ${margin < 60 ? 'border-red-500' : 'border-emerald-500'}">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${m.cat}</p>
-                                <h3 class="font-black text-lg text-slate-800">${m.name}</h3>
-                            </div>
-                            <span class="bg-slate-100 text-[10px] font-black px-2 py-1 rounded-full uppercase">${m.type}</span>
-                        </div>
-                        <div class="flex justify-between items-end">
-                            <div>
-                                <p class="text-xs text-slate-500">HPP: <span class="font-bold">Rp ${Math.round(hpp).toLocaleString()}</span></p>
-                                <p class="text-lg font-black text-indigo-600">Rp ${m.price.toLocaleString()}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] font-bold text-slate-400">MARGIN</p>
-                                <p class="text-xl font-black ${margin < 60 ? 'text-red-500' : 'text-emerald-500'}">${margin.toFixed(1)}%</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-slate-50">
-                            <p class="text-[10px] font-bold text-slate-400">REC. HARGA (70% MARGIN)</p>
-                            <p class="font-bold text-slate-600 text-sm">Rp ${Math.round((hpp / 0.3) / 1000) * 1000}</p>
-                        </div>
-                    </div>`;
+    function renderSales() {
+        const container = document.getElementById('sales-container');
+        for (let bulan in salesData) {
+            let rows = "";
+            let totalBulan = 0;
+            salesData[bulan].forEach(s => {
+                totalBulan += s.total;
+                rows += `<tr class="border-b text-xs">
+                    <td class="p-3 font-bold">${s.menu}</td>
+                    <td class="p-3 text-center">${s.qty}</td>
+                    <td class="p-3 text-right">Rp ${s.total.toLocaleString()}</td>
+                </tr>`;
             });
-            document.getElementById('total-margin-display').innerText = (totalMargin / dbMenu.length).toFixed(1) + "%";
-            renderAI(totalMargin / dbMenu.length);
-        }
 
-        function renderAI(avgMargin) {
-            const ai = document.getElementById('ai-insight-content');
-            ai.innerHTML = `
-                <div class="p-3 bg-white/10 rounded-lg">
-                    <p class="font-bold mb-1">📢 Analisa Margin</p>
-                    <p>Rata-rata margin Anda <b>${avgMargin.toFixed(1)}%</b>. Ini ${avgMargin > 60 ? 'Sangat Sehat' : 'Perlu Peninjauan Harga Jual'}.</p>
-                </div>
-                <div class="p-3 bg-white/10 rounded-lg">
-                    <p class="font-bold mb-1">📢 Efisiensi Operasional</p>
-                    <p>Overhead Rp 600.000/hari mengharuskan Anda menjual minimal 40 cup Tuan Rumah per hari untuk Break Even Point (BEP).</p>
+            container.innerHTML += `
+                <div class="glass p-8 rounded-[2rem]">
+                    <h3 class="font-black text-xl mb-6 text-slate-800">${bulan}</h3>
+                    <table class="w-full mb-4">
+                        <thead class="bg-slate-50 text-[10px] font-bold text-slate-400">
+                            <tr><th class="p-3 text-left">MENU</th><th class="p-3">QTY</th><th class="p-3 text-right">SUBTOTAL</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <div class="bg-slate-900 p-4 rounded-2xl text-white flex justify-between">
+                        <span class="font-bold uppercase text-xs">Total Omzet</span>
+                        <span class="font-black">Rp ${totalBulan.toLocaleString()}</span>
+                    </div>
                 </div>`;
         }
+    }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('nav button').forEach(el => el.classList.remove('tab-active', 'text-slate-800'));
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('tab-' + tabId).classList.add('tab-active');
-        }
+    function showTab(id) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.remove('hidden');
+        document.getElementById('btn-' + id).classList.add('active');
+    }
 
-        syncSistem();
-    </script>
+    renderBahan();
+    renderMenu();
+    renderSales();
+</script>
 </body>
 </html>
