@@ -3,176 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah Coffee - Dashboard Terintegrasi</title>
+    <title>Tuan Rumah Coffee | Interactive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
-        .card-hover:hover { transform: translateY(-2px); transition: all 0.2s; }
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --primary: #0f172a;
+            --accent: #f97316;
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s ease; }
+        .font-heading { font-family: 'Space Grotesk', sans-serif; }
+        
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        
+        .status-pill { @apply px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider; }
+        
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .live-dot { animation: pulse-slow 2s infinite; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-[#f8fafc]">
 
-    <nav class="sticky top-0 z-50 bg-slate-900 text-white shadow-xl">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-orange-500 p-2 rounded-lg">
-                    <i class="fas fa-coffee text-white text-xl"></i>
-                </div>
-                <h1 class="text-xl font-extrabold tracking-tight">TUAN RUMAH <span class="text-orange-400">COFFEE</span></h1>
-            </div>
-            <div class="hidden md:flex gap-6 text-sm font-semibold opacity-80">
-                <a href="#dashboard" class="hover:text-orange-400">Dashboard</a>
-                <a href="#menu-table" class="hover:text-orange-400">Analisa Menu</a>
-                <a href="#inventory" class="hover:text-orange-400">Bahan Baku</a>
-            </div>
-        </div>
+    <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-0 md:left-0 md:translate-x-0 md:h-screen md:w-20 bg-slate-900 text-white flex md:flex-col items-center justify-around py-4 md:py-8 z-50 shadow-2xl md:rounded-r-3xl w-[90%] rounded-2xl">
+        <div class="hidden md:block mb-8 text-orange-500"><i class="fas fa-mug-hot text-2xl"></i></div>
+        <button onclick="switchTab('dashboard')" class="nav-btn p-3 rounded-xl hover:bg-slate-800 transition text-orange-400" title="Dashboard"><i class="fas fa-chart-pie text-xl"></i></button>
+        <button onclick="switchTab('menu')" class="nav-btn p-3 rounded-xl hover:bg-slate-800 transition text-slate-400" title="Menu & Recipe"><i class="fas fa-book-open text-xl"></i></button>
+        <button onclick="switchTab('inventory')" class="nav-btn p-3 rounded-xl hover:bg-slate-800 transition text-slate-400" title="Bahan Baku"><i class="fas fa-boxes-stacked text-xl"></i></button>
+        <div class="hidden md:block mt-auto text-slate-500 text-[10px] font-bold">V1.0</div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
+    <main class="md:ml-24 p-4 md:p-8 pb-24">
         
-        <div id="dashboard" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 card-hover">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Revenue (Des 25)</p>
-                <h2 class="text-2xl font-black text-slate-800">Rp 103.811.000</h2>
-                <div class="mt-2 text-xs text-green-500 font-bold"><i class="fas fa-arrow-up"></i> 4.493 Cup Terjual</div>
+        <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="h-2 w-2 bg-green-500 rounded-full live-dot"></span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Real-time Analytics</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-900 font-heading italic">TUAN RUMAH <span class="text-orange-500">COFFEE</span></h1>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 card-hover">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Average Margin</p>
-                <h2 class="text-2xl font-black text-blue-600" id="global-margin">--%</h2>
-                <div class="mt-2 text-xs text-slate-400">Target Margin: > 60%</div>
+            <div class="flex gap-2">
+                <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Avg. Margin</p>
+                    <p class="text-xl font-black text-slate-800" id="global-margin-header">0%</p>
+                </div>
+                <div class="bg-slate-900 px-4 py-2 rounded-2xl shadow-sm text-white">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Total Revenue</p>
+                    <p class="text-xl font-black text-orange-400">Rp 103.8M</p>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 card-hover">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Monthly Overhead</p>
-                <h2 class="text-2xl font-black text-red-500">Rp 18.000.000</h2>
-                <div class="mt-2 text-xs text-slate-400">8 Karyawan + Ops</div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 card-hover">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">BEP Status</p>
-                <h2 class="text-2xl font-black text-green-600 font-black italic underline decoration-green-200">ACHIEVED</h2>
-                <div class="mt-2 text-xs text-slate-400">ROI Forecast: 8 Months</div>
-            </div>
-        </div>
+        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            
-            <div class="lg:col-span-1 space-y-6">
-                <div id="inventory" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
-                        <h3 class="font-bold text-sm uppercase">🛒 Ref. Harga Pasar</h3>
-                    </div>
-                    <div class="p-0 max-h-[500px] overflow-y-auto" id="bahan-list">
+        <section id="tab-dashboard" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-10"><i class="fas fa-trophy text-8xl text-orange-500"></i></div>
+                    <h3 class="font-bold text-slate-500 uppercase text-xs mb-4 tracking-widest">Top Selling Performance</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="h-24 w-24 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                            <i class="fas fa-star text-4xl"></i>
                         </div>
-                </div>
-
-                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg">
-                    <h4 class="font-bold text-orange-400 mb-4 italic italic"><i class="fas fa-robot"></i> AI INSIGHT</h4>
-                    <p class="text-xs leading-relaxed opacity-80" id="ai-text">
-                        Menganalisa data...
-                    </p>
-                </div>
-            </div>
-
-            <div class="lg:col-span-3">
-                <div id="menu-table" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-5 border-b flex justify-between items-center flex-wrap gap-4">
-                        <h3 class="font-extrabold text-lg">📊 Analisa 42 Menu & HPP Terintegrasi</h3>
-                        <div class="flex gap-2 text-xs font-bold">
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full italic">High Margin</span>
-                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full italic">Low Margin</span>
+                        <div>
+                            <h2 class="text-4xl font-black text-slate-800">Tuan Rumah Ice</h2>
+                            <p class="text-slate-400 text-sm">757 Cups terjual bulan ini • <span class="text-green-500 font-bold">Contribution: 16.8%</span></p>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 border-b text-slate-500 text-[10px] uppercase font-black tracking-widest">
-                                <tr>
-                                    <th class="px-6 py-4">Menu</th>
-                                    <th class="px-6 py-4">Kategori</th>
-                                    <th class="px-6 py-4 text-right">Harga Jual</th>
-                                    <th class="px-6 py-4 text-right">HPP Bahan</th>
-                                    <th class="px-6 py-4 text-right">Profit</th>
-                                    <th class="px-6 py-4 text-center">Margin</th>
-                                </tr>
-                            </thead>
-                            <tbody id="master-menu-body" class="text-sm divide-y divide-slate-100">
-                                </tbody>
-                        </table>
-                    </div>
+                </div>
+                <div class="bg-orange-500 rounded-3xl p-6 text-white shadow-lg shadow-orange-200">
+                    <h3 class="font-bold uppercase text-[10px] mb-4 opacity-80">Quick Alert</h3>
+                    <p class="text-lg leading-snug font-medium">Bahan <strong>Syrup Monin</strong> mendominasi 40% cost pada kategori Coffee Based. Pertimbangkan bundling.</p>
+                    <button class="mt-4 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold transition">Detail Analisa</button>
                 </div>
             </div>
-        </div>
+
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scroll">
+                <button onclick="filterMenu('All')" class="category-btn bg-slate-900 text-white px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap">All Menu</button>
+                <button onclick="filterMenu('Coffee Based')" class="category-btn bg-white text-slate-500 px-6 py-2 rounded-full text-xs font-bold shadow-sm border border-slate-100 whitespace-nowrap">Coffee Based</button>
+                <button onclick="filterMenu('Non Coffee')" class="category-btn bg-white text-slate-500 px-6 py-2 rounded-full text-xs font-bold shadow-sm border border-slate-100 whitespace-nowrap">Non Coffee</button>
+                <button onclick="filterMenu('Tea Series')" class="category-btn bg-white text-slate-500 px-6 py-2 rounded-full text-xs font-bold shadow-sm border border-slate-100 whitespace-nowrap">Tea & Signature</button>
+                <button onclick="filterMenu('Specialty')" class="category-btn bg-white text-slate-500 px-6 py-2 rounded-full text-xs font-bold shadow-sm border border-slate-100 whitespace-nowrap">Specialty</button>
+            </div>
+
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+        </section>
+
+        <section id="tab-inventory" class="tab-content hidden">
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                <h2 class="text-2xl font-black mb-6">Master Bahan Baku</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="inventory-grid">
+                    </div>
+            </div>
+        </section>
+
     </main>
 
+    <div id="recipe-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl transition-all scale-95 opacity-0" id="modal-content">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 id="modal-title" class="text-xl font-black text-slate-800">Recipe Detail</h3>
+                    <p id="modal-cat" class="text-[10px] font-bold text-orange-500 uppercase tracking-widest"></p>
+                </div>
+                <button onclick="closeModal()" class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <ul id="modal-ingredients" class="space-y-3 mb-6">
+                    </ul>
+                <div class="bg-slate-900 rounded-2xl p-4 text-white flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Total HPP Bahan</p>
+                        <p id="modal-total-hpp" class="text-xl font-black text-orange-400"></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Profitability</p>
+                        <p id="modal-margin-badge" class="font-black text-green-400"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 1. DATA MASTER BAHAN BAKU (REFERENSI MARKETPLACE INDONESIA FEB 2026)
+        // 1. DATA MASTER HARGA (INTERAKTIF)
         const refHarga = {
-            "Biji Kopi Diks": 180, // per gram
-            "Susu UHT Diamond": 19.5, // per ml
-            "Susu Evaporasi": 48, // per gr/ml
-            "SKM": 36, // per ml
-            "Creamer": 85, // per gr
-            "Gula Aren": 35, // per ml
-            "Syrup Monin": 221, // per ml
-            "Oatside": 42, // per ml
-            "Powder Premium": 95, // per gr (Matcha, Chocolate, etc)
-            "Cheese Cream": 130, // per ml/gr
-            "Peanut Butter": 170, // per gr
-            "Biscoff Spread": 200, // per gr
-            "Lotus Biskuit": 1500, // per pcs
-            "Hydro Coco": 25, // per ml
-            "Sprite": 15, // per ml
-            "Yakult": 2500, // per pcs
-            "Simple Sugar": 15, // per ml
-            "Teh Ekstrak": 10, // per ml
-            "Air Galon": 1, // per ml
-            "Packaging Set": 1500, // Cup + Lid + Straw + Es
-            "Es Batu": 1 // per gr
+            "Biji Kopi Diks": 180, "Susu UHT Diamond": 19.5, "Susu Evaporasi": 48,
+            "SKM": 36, "Creamer": 85, "Gula Aren": 35, "Syrup Monin": 221,
+            "Oatside": 42, "Powder Premium": 95, "Cheese Cream": 130,
+            "Peanut Butter": 170, "Biscoff Spread": 200, "Lotus Biskuit": 1500,
+            "Hydro Coco": 25, "Sprite": 15, "Yakult": 2500, "Simple Sugar": 15,
+            "Teh Ekstrak": 10, "Air Galon": 1, "Packaging Set": 1500
         };
 
         // 2. DATA 42 MENU (RESEP LENGKAP)
         const masterMenu = [
-            // COFFEE BASED
-            { name: "Kopi Susu", cat: "Coffee Based", sell: 22000, recipe: { "SKM": 20, "Creamer": 15, "Susu Evaporasi": 10, "Biji Kopi Diks": 18, "Susu UHT Diamond": 70, "Packaging Set": 1 } },
-            { name: "Tuan Rumah", cat: "Coffee Based", sell: 25000, recipe: { "Gula Aren": 25, "Creamer": 25, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-            { name: "Tiramisu Coffee", cat: "Coffee Based", sell: 28000, recipe: { "Syrup Monin": 20, "SKM": 10, "Creamer": 15, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Cheese Cream": 20, "Packaging Set": 1 } },
+            { name: "Kopi Susu Ice", cat: "Coffee Based", sell: 22000, recipe: { "SKM": 20, "Creamer": 15, "Susu Evaporasi": 10, "Biji Kopi Diks": 18, "Susu UHT Diamond": 70, "Packaging Set": 1 } },
+            { name: "Tuan Rumah Ice", cat: "Coffee Based", sell: 25000, recipe: { "Gula Aren": 25, "Creamer": 25, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
+            { name: "Tiramisu Ice", cat: "Coffee Based", sell: 28000, recipe: { "Syrup Monin": 20, "SKM": 10, "Creamer": 15, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Cheese Cream": 20, "Packaging Set": 1 } },
             { name: "Banana Coffee", cat: "Coffee Based", sell: 25000, recipe: { "Syrup Monin": 20, "SKM": 10, "Creamer": 15, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
             { name: "Biscoff Coffee", cat: "Coffee Based", sell: 27000, recipe: { "Biscoff Spread": 15, "SKM": 10, "Syrup Monin": 10, "Creamer": 10, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Lotus Biskuit": 1, "Packaging Set": 1 } },
             { name: "Butterscotch Ice", cat: "Coffee Based", sell: 28000, recipe: { "Syrup Monin": 20, "SKM": 10, "Creamer": 15, "Biji Kopi Diks": 18, "Susu UHT Diamond": 70, "Cheese Cream": 20, "Packaging Set": 1 } },
             { name: "Pandan Coffee", cat: "Coffee Based", sell: 28000, recipe: { "Syrup Monin": 20, "SKM": 10, "Susu Evaporasi": 10, "Creamer": 20, "Biji Kopi Diks": 18, "Oatside": 100, "Packaging Set": 1 } },
             { name: "Peanut Butter Coffee", cat: "Coffee Based", sell: 27000, recipe: { "Peanut Butter": 15, "SKM": 10, "Syrup Monin": 10, "Creamer": 10, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-            { name: "Caramel Macchiato", cat: "Coffee Based", sell: 28000, recipe: { "Syrup Monin": 20, "SKM": 10, "Creamer": 20, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Cheese Cream": 20, "Packaging Set": 1 } },
-            
-            // AMERICANO SERIES
+            { name: "Caramel Macchiato", cat: "Coffee Based", sell: 28000, recipe: { "Syrup Monin": 10, "Syrup Monin": 10, "SKM": 10, "Creamer": 20, "Biji Kopi Diks": 18, "Susu UHT Diamond": 100, "Cheese Cream": 20, "Packaging Set": 1 } },
             { name: "Berry Cano", cat: "Americano Series", sell: 25000, recipe: { "Syrup Monin": 20, "Simple Sugar": 10, "Biji Kopi Diks": 18, "Air Galon": 100, "Packaging Set": 1 } },
             { name: "Apple Cano", cat: "Americano Series", sell: 25000, recipe: { "Syrup Monin": 20, "Simple Sugar": 10, "Biji Kopi Diks": 18, "Air Galon": 100, "Packaging Set": 1 } },
             { name: "Melon Cano", cat: "Americano Series", sell: 25000, recipe: { "Syrup Monin": 20, "Simple Sugar": 10, "Biji Kopi Diks": 18, "Air Galon": 100, "Packaging Set": 1 } },
-
-            // NON COFFEE
             { name: "Avocado Ice", cat: "Non Coffee", sell: 23000, recipe: { "SKM": 10, "Powder Premium": 20, "Creamer": 15, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
             { name: "Taro Ice", cat: "Non Coffee", sell: 25000, recipe: { "SKM": 25, "Powder Premium": 4, "Creamer": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-            { name: "Red Velvet", cat: "Non Coffee", sell: 23000, recipe: { "SKM": 20, "Powder Premium": 25, "Creamer": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
+            { name: "Red Velvet Ice", cat: "Non Coffee", sell: 23000, recipe: { "SKM": 20, "Powder Premium": 25, "Creamer": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
             { name: "Chocolate Signature", cat: "Non Coffee", sell: 25000, recipe: { "Gula Aren": 15, "Powder Premium": 13, "Creamer": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-            { name: "Caramel Latte (Non)", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 20, "SKM": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
+            { name: "Caramel Latte", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 20, "SKM": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
             { name: "Creamy Coco", cat: "Non Coffee", sell: 28000, recipe: { "Syrup Monin": 15, "SKM": 10, "Powder Premium": 10, "Creamer": 10, "Yakult": 1, "Susu UHT Diamond": 50, "Cheese Cream": 20, "Packaging Set": 1 } },
-            { name: "Coconut Plum", cat: "Non Coffee", sell: 28000, recipe: { "Syrup Monin": 20, "Hydro Coco": 90, "Sprite": 60, "Packaging Set": 1 } },
+            { name: "Coconut Plum", cat: "Non Coffee", sell: 28000, recipe: { "Syrup Monin": 10, "Syrup Monin": 10, "Hydro Coco": 90, "Sprite": 60, "Packaging Set": 1 } },
             { name: "Butter Cream Ice", cat: "Non Coffee", sell: 26000, recipe: { "Peanut Butter": 20, "SKM": 10, "Creamer": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-            { name: "Vanilla Latte (Non)", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 10, "SKM": 10, "Powder Premium": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-            { name: "Strawberry Love", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 40, "SKM": 5, "Creamer": 20, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
-
-            // TEA & SPECIALTY
+            { name: "Vanilla Latte", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 10, "SKM": 10, "Powder Premium": 10, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
+            { name: "Strawberry Love", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 20, "SKM": 5, "Creamer": 20, "Susu UHT Diamond": 100, "Packaging Set": 1 } },
             { name: "Matcha Latte", cat: "Tea Series", sell: 28000, recipe: { "Powder Premium": 20, "SKM": 15, "Creamer": 10, "Susu UHT Diamond": 110, "Packaging Set": 1 } },
             { name: "Yakult Series", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 15, "Yakult": 1, "Sprite": 110, "Packaging Set": 1 } },
             { name: "Butterfly Tea", cat: "Tea Series", sell: 20000, recipe: { "Teh Ekstrak": 180, "Simple Sugar": 40, "Packaging Set": 1 } },
-            { name: "Thai Tea", cat: "Tea Series", sell: 25000, recipe: { "SKM": 50, "Susu Evaporasi": 20, "Teh Ekstrak": 150, "Packaging Set": 1 } },
+            { name: "Thai Tea Ice", cat: "Tea Series", sell: 25000, recipe: { "SKM": 50, "Susu Evaporasi": 20, "Teh Ekstrak": 150, "Packaging Set": 1 } },
             { name: "Berry Pop", cat: "Tea Series", sell: 25000, recipe: { "Teh Ekstrak": 180, "Simple Sugar": 40, "Packaging Set": 1 } },
-            { name: "Green Tea Latte", cat: "Tea Series", sell: 25000, recipe: { "SKM": 50, "Susu Evaporasi": 20, "Teh Ekstrak": 150, "Packaging Set": 1 } },
-            { name: "Lychee Tea", cat: "Tea Series", sell: 25000, recipe: { "Simple Sugar": 20, "Syrup Monin": 30, "Teh Ekstrak": 150, "Packaging Set": 1 } },
+            { name: "Green Tea Ice", cat: "Tea Series", sell: 25000, recipe: { "SKM": 50, "Susu Evaporasi": 20, "Teh Ekstrak": 150, "Packaging Set": 1 } },
+            { name: "Lychee Tea Ice", cat: "Tea Series", sell: 25000, recipe: { "Simple Sugar": 20, "Syrup Monin": 30, "Teh Ekstrak": 150, "Packaging Set": 1 } },
             { name: "Mango Squash", cat: "Non Coffee", sell: 23000, recipe: { "Syrup Monin": 20, "Sprite": 110, "Packaging Set": 1 } },
-
-            // SPECIALTY COFFEE
             { name: "Espresso Hot", cat: "Specialty", sell: 20000, recipe: { "Biji Kopi Diks": 18 } },
             { name: "Americano Hot", cat: "Specialty", sell: 22000, recipe: { "Biji Kopi Diks": 18, "Air Galon": 150 } },
             { name: "Long Black Ice", cat: "Specialty", sell: 22000, recipe: { "Biji Kopi Diks": 22, "Air Galon": 150, "Packaging Set": 1 } },
@@ -184,61 +194,117 @@
             { name: "Mocha Hot", cat: "Specialty", sell: 26000, recipe: { "SKM": 15, "Powder Premium": 8, "Creamer": 10, "Biji Kopi Diks": 18, "Susu UHT Diamond": 150 } }
         ];
 
-        // 3. LOGIKA KALKULASI & RENDERING
-        const bahanList = document.getElementById('bahan-list');
-        const menuBody = document.getElementById('master-menu-body');
-        let totalMargin = 0;
+        // 3. CORE LOGIC
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-orange-400', 'text-slate-400'));
+            event.currentTarget.classList.replace('text-slate-400', 'text-orange-400');
+        }
 
-        // Render Bahan Baku Sidebar
-        Object.entries(refHarga).forEach(([name, price]) => {
-            bahanList.innerHTML += `
-                <div class="px-4 py-3 flex justify-between items-center border-b border-slate-50 hover:bg-slate-50">
-                    <span class="text-xs font-semibold text-slate-600">${name}</span>
-                    <span class="text-xs font-mono text-blue-600 font-bold">Rp ${price}</span>
-                </div>
-            `;
-        });
+        function calculateHPP(recipe) {
+            return Object.entries(recipe).reduce((total, [ing, qty]) => total + (refHarga[ing] * qty), 0);
+        }
 
-        // Render Menu Table
-        masterMenu.forEach(item => {
-            let hpp = 0;
-            // Hitung HPP berdasarkan resep
-            Object.entries(item.recipe).forEach(([ing, qty]) => {
-                hpp += (refHarga[ing] || 0) * qty;
+        function filterMenu(category) {
+            renderMenu(category);
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.replace('bg-slate-900', 'bg-white');
+                btn.classList.replace('text-white', 'text-slate-500');
+            });
+            event.currentTarget.classList.replace('bg-white', 'bg-slate-900');
+            event.currentTarget.classList.replace('text-slate-500', 'text-white');
+        }
+
+        function renderMenu(filter = "All") {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            let filtered = filter === "All" ? masterMenu : masterMenu.filter(m => m.cat === filter);
+
+            filtered.forEach(m => {
+                const hpp = calculateHPP(m.recipe);
+                const margin = (((m.sell - hpp) / m.sell) * 100).toFixed(0);
+                const statusColor = margin > 65 ? 'text-green-500 bg-green-50' : (margin > 50 ? 'text-orange-500 bg-orange-50' : 'text-red-500 bg-red-50');
+
+                grid.innerHTML += `
+                    <div class="menu-card bg-white rounded-3xl p-5 shadow-sm border border-slate-100 transition cursor-pointer" onclick="openModal('${m.name}')">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="status-pill ${statusColor}">${margin}% Margin</span>
+                            <span class="text-[9px] font-black text-slate-300 uppercase tracking-tighter">${m.cat}</span>
+                        </div>
+                        <h4 class="text-lg font-black text-slate-800 mb-1">${m.name}</h4>
+                        <div class="flex justify-between items-end">
+                            <p class="text-xs text-slate-400 font-bold font-mono">Rp ${m.sell.toLocaleString()}</p>
+                            <div class="text-right">
+                                <p class="text-[9px] text-slate-300 uppercase font-bold">Cost</p>
+                                <p class="text-xs font-black text-red-400 italic">Rp ${Math.round(hpp).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // MODAL LOGIC
+        function openModal(menuName) {
+            const menu = masterMenu.find(m => m.name === menuName);
+            const hpp = calculateHPP(menu.recipe);
+            const margin = (((menu.sell - hpp) / menu.sell) * 100).toFixed(1);
+
+            document.getElementById('modal-title').innerText = menu.name;
+            document.getElementById('modal-cat').innerText = menu.cat;
+            document.getElementById('modal-total-hpp').innerText = `Rp ${Math.round(hpp).toLocaleString()}`;
+            document.getElementById('modal-margin-badge').innerText = `${margin}%`;
+
+            const ingList = document.getElementById('modal-ingredients');
+            ingList.innerHTML = '';
+            Object.entries(menu.recipe).forEach(([ing, qty]) => {
+                const cost = refHarga[ing] * qty;
+                ingList.innerHTML += `
+                    <li class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                        <span class="text-slate-600 font-medium">${ing} <span class="text-[10px] text-slate-300">(${qty})</span></span>
+                        <span class="font-mono text-slate-400">Rp ${Math.round(cost).toLocaleString()}</span>
+                    </li>
+                `;
             });
 
-            const profit = item.sell - hpp;
-            const margin = ((profit / item.sell) * 100).toFixed(1);
-            totalMargin += parseFloat(margin);
+            const modal = document.getElementById('recipe-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
 
-            const rowClass = margin < 50 ? 'bg-red-50' : 'bg-white';
-            const marginColor = margin < 50 ? 'text-red-600' : 'text-blue-600';
+        function closeModal() {
+            const modal = document.getElementById('recipe-modal');
+            const content = document.getElementById('modal-content');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
 
-            menuBody.innerHTML += `
-                <tr class="${rowClass} hover:bg-slate-50 transition-colors">
-                    <td class="px-6 py-4 font-bold text-slate-800">${item.name}</td>
-                    <td class="px-6 py-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">${item.cat}</td>
-                    <td class="px-6 py-4 text-right font-mono font-bold">Rp ${item.sell.toLocaleString()}</td>
-                    <td class="px-6 py-4 text-right font-mono text-red-500">Rp ${Math.round(hpp).toLocaleString()}</td>
-                    <td class="px-6 py-4 text-right font-mono text-green-600 font-black">Rp ${Math.round(profit).toLocaleString()}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="font-black ${marginColor}">${margin}%</span>
-                    </td>
-                </tr>
-            `;
-        });
+        // INITIALIZE
+        window.onload = () => {
+            renderMenu();
+            // Render Inventory
+            const invGrid = document.getElementById('inventory-grid');
+            Object.entries(refHarga).forEach(([name, price]) => {
+                invGrid.innerHTML += `
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">${name}</p>
+                        <p class="text-lg font-black text-slate-800">Rp ${price}</p>
+                        <p class="text-[9px] text-blue-500 font-bold tracking-widest uppercase">Per Unit (gr/ml)</p>
+                    </div>
+                `;
+            });
 
-        // Update Global Stats
-        document.getElementById('global-margin').innerText = (totalMargin / masterMenu.length).toFixed(1) + '%';
-        
-        // AI Insight Logic
-        const aiText = document.getElementById('ai-text');
-        aiText.innerHTML = `
-            Berdasarkan 42 menu, <strong>Americano Series</strong> memiliki margin tertinggi (>70%). 
-            Saran: Gunakan <strong>Tuan Rumah Ice</strong> sebagai bundling menu karena margin sangat stabil di angka 60.1%. 
-            Waspadai kenaikan harga <strong>Syrup Monin</strong> karena merupakan komponen biaya terbesar di menu Coffee Based.
-        `;
-
+            // Calculate Global Margin
+            const avg = masterMenu.reduce((acc, m) => {
+                const hpp = calculateHPP(m.recipe);
+                return acc + (((m.sell - hpp) / m.sell) * 100);
+            }, 0) / masterMenu.length;
+            document.getElementById('global-margin-header').innerText = avg.toFixed(1) + '%';
+        };
     </script>
 </body>
 </html>
