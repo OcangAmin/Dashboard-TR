@@ -2,332 +2,275 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tuan Rumah Coffee - Integrated Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Shop Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
-        .ios-tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .active-tab { color: #2563eb; font-weight: 700; }
-        .tab-content { display: none; padding-bottom: 100px; }
-        .tab-content.active { display: block; }
-        .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .sidebar { height: 100vh; position: fixed; width: 260px; }
+        .content { margin-left: 260px; padding: 20px; }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .content { margin-left: 0; }
+        }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-        .badge-low { background: #fee2e2; color: #991b1b; }
-        .badge-mid { background: #fef9c3; color: #854d0e; }
-        .badge-high { background: #dcfce7; color: #166534; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 0.875rem; }
+        .input-inline { border: 1px solid #cbd5e0; border-radius: 4px; padding: 2px 5px; width: 80px; }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800">
 
-    <header class="p-4 bg-white sticky top-0 z-50 border-bottom shadow-sm">
-        <div class="flex justify-between items-center">
-            <h1 class="text-xl font-bold text-gray-800">☕ TNRC Dashboard</h1>
-            <span id="current-date" class="text-xs text-gray-500 font-medium"></span>
-        </div>
-    </header>
-
-    <main class="p-4">
-        <section id="global-params" class="hidden">
-            </section>
-
-        <div id="tab-dashboard" class="tab-content active">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div class="glass-card p-4 rounded-2xl">
-                    <p class="text-xs text-gray-500 uppercase">Avg. Margin</p>
-                    <h3 id="stat-avg-margin" class="text-xl font-bold text-blue-600">--%</h3>
-                </div>
-                <div class="glass-card p-4 rounded-2xl">
-                    <p class="text-xs text-gray-500 uppercase">Daily Overhead</p>
-                    <h3 class="text-xl font-bold text-gray-800">Rp200k</h3>
-                </div>
-                <div class="glass-card p-4 rounded-2xl">
-                    <p class="text-xs text-gray-500 uppercase">Total Staff</p>
-                    <h3 class="text-xl font-bold text-gray-800">8 Org</h3>
-                </div>
-                <div class="glass-card p-4 rounded-2xl">
-                    <p class="text-xs text-gray-500 uppercase">HPP Termahal</p>
-                    <h3 id="stat-highest-hpp" class="text-sm font-bold text-red-600">--</h3>
-                </div>
-            </div>
-
-            <div class="glass-card p-5 rounded-2xl border-l-4 border-blue-500 mb-6">
-                <h4 class="text-sm font-bold flex items-center gap-2 mb-2">
-                    ✨ AI Business Insights
-                </h4>
-                <div id="ai-global-insight" class="text-sm text-gray-600 leading-relaxed">
-                    Menganalisa data...
-                </div>
-            </div>
-
-            <div class="glass-card p-5 rounded-2xl mb-6">
-                <h4 class="text-sm font-bold mb-4">Input Keuangan Bulan Ini</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs mb-1">Pendapatan Total (Rp)</label>
-                        <input type="number" id="in-revenue" class="w-full p-2 border rounded-lg text-sm" placeholder="Contoh: 50000000" onchange="updateFinance()">
-                    </div>
-                    <div>
-                        <label class="block text-xs mb-1">Belanja Dapur & Bar (Rp)</label>
-                        <input type="number" id="in-exp-raw" class="w-full p-2 border rounded-lg text-sm" placeholder="Sesuai struk belanja" onchange="updateFinance()">
-                    </div>
-                </div>
-                <div id="finance-result" class="mt-4 p-3 bg-gray-50 rounded-lg text-xs grid grid-cols-2 gap-2">
-                    </div>
-            </div>
-        </div>
-
-        <div id="tab-bahan" class="tab-content">
-            <h2 class="text-lg font-bold mb-4">Database Bahan Baku</h2>
-            <div class="glass-card rounded-2xl overflow-hidden">
-                <div class="scroll-x">
-                    <table id="table-bahan">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th>Bahan</th>
-                                <th>Kategori</th>
-                                <th>Isi</th>
-                                <th>Harga</th>
-                                <th>/Unit</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-bahan"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-menu" class="tab-content">
-            <h2 class="text-lg font-bold mb-4">Menu & Profit Analysis</h2>
-            <div class="glass-card rounded-2xl overflow-hidden">
-                <div class="scroll-x">
-                    <table id="table-menu">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th>Menu</th>
-                                <th>HPP</th>
-                                <th>Harga Jual</th>
-                                <th>Margin</th>
-                                <th>AI Insight</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-menu"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <nav class="ios-tab-bar">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center active-tab">
-            <span class="text-[20px]">📊</span>
-            <span class="text-[10px]">Insight</span>
-        </button>
-        <button onclick="switchTab('bahan')" id="nav-bahan" class="flex flex-col items-center">
-            <span class="text-[20px]">📦</span>
-            <span class="text-[10px]">Bahan</span>
-        </button>
-        <button onclick="switchTab('menu')" id="nav-menu" class="flex flex-col items-center">
-            <span class="text-[20px]">☕</span>
-            <span class="text-[10px]">Menu</span>
-        </button>
+<div class="sidebar bg-slate-900 text-white p-6">
+    <h2 class="text-2xl font-bold mb-8 text-orange-400">COFFEE DASHBOARD</h2>
+    <nav class="space-y-4">
+        <a href="#dashboard" class="block hover:text-orange-300">Overview Dashboard</a>
+        <a href="#espresso" class="block hover:text-orange-300">Parameter Espresso</a>
+        <a href="#ingredients" class="block hover:text-orange-300">Database Bahan Baku</a>
+        <a href="#menu" class="block hover:text-orange-300">Database Menu & HPP</a>
     </nav>
+</div>
 
-    <script>
-        // --- 1. STATE & DATABASE ---
-        const state = {
-            bahan: [
-                { id: 1, nama: "Kaks Arabika G1", cat: "Kopi", brand: "Local", isi: 1000, satuan: "gr", harga: 240000 },
-                { id: 2, nama: "Diks Arabika Spl", cat: "Kopi", brand: "Specialty", isi: 1000, satuan: "gr", harga: 280000 },
-                { id: 3, nama: "Monin Syrup (Avg)", cat: "Syrup", brand: "Monin", isi: 700, satuan: "ml", harga: 150000 },
-                { id: 4, nama: "UHT Diamond", cat: "Dairy", brand: "Diamond", isi: 1000, satuan: "ml", harga: 19000 },
-                { id: 5, nama: "Susu Evaporasi", cat: "Dairy", brand: "Sunbay", isi: 380, satuan: "ml", harga: 16500 },
-                { id: 6, nama: "SKM", cat: "Dairy", brand: "Omela", isi: 370, satuan: "gr", harga: 12500 },
-                { id: 7, nama: "Powder (Avg)", cat: "Powder", brand: "Premix", isi: 1000, satuan: "gr", harga: 85000 },
-                { id: 8, nama: "Es Batu", cat: "Operasional", brand: "Crystal", isi: 8000, satuan: "gr", harga: 70000 },
-                { id: 9, nama: "Cup + Lid Ice", cat: "Operasional", brand: "-", isi: 1, satuan: "pcs", harga: 850 },
-                { id: 10, nama: "Oatside", cat: "Dairy", brand: "Oatside", isi: 1000, satuan: "ml", harga: 45000 },
-                { id: 11, nama: "Gula Aren", cat: "Lain-lain", brand: "Dainichi", isi: 1000, satuan: "ml", harga: 65000 },
-                { id: 12, nama: "Yakult", cat: "Lain-lain", brand: "Yakult", isi: 1, satuan: "pcs", harga: 2500 },
-                { id: 13, nama: "Sprite", cat: "Lain-lain", brand: "CocaCola", isi: 1500, satuan: "ml", harga: 15000 },
-                { id: 14, nama: "Biscoff Spread", cat: "Lain-lain", brand: "Lotus", isi: 400, satuan: "gr", harga: 85000 }
-            ],
-            // Logic HPP Espresso berdasarkan DB 4
-            getEspressoCost(type = 'diks') {
-                const b = this.bahan.find(x => x.id === (type === 'kaks' ? 1 : 2));
-                const hargaPerGram = b.harga / b.isi;
-                return hargaPerGram * 18; // 18gr per double shot (standar espresso)
-            },
-            getUnitCost(id) {
-                const b = this.bahan.find(x => x.id === id);
-                return b ? (b.harga / b.isi) : 0;
-            }
-        };
+<div class="content">
+    <section id="dashboard">
+        <h2 class="text-xl font-bold mb-4">Dashboard Overview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card bg-blue-50 border-l-4 border-blue-500">
+                <p class="text-sm text-gray-600">Total Biaya Operasional / Hari</p>
+                <h3 class="text-2xl font-bold">Rp 500.000</h3>
+                <p class="text-xs text-gray-500 mt-2">Listrik: 200rb | Gaji: 300rb (Rata-rata)</p>
+            </div>
+            <div class="card bg-green-50 border-l-4 border-green-500">
+                <p class="text-sm text-gray-600">Rata-rata Margin Toko</p>
+                <h3 id="avg-margin" class="text-2xl font-bold">0%</h3>
+            </div>
+            <div class="card bg-orange-50 border-l-4 border-orange-500">
+                <p class="text-sm text-gray-600">AI Global Insight</p>
+                <p id="global-insight" class="text-xs italic text-gray-700 font-medium">Menghitung data...</p>
+            </div>
+        </div>
+    </section>
 
-        const menus = [
-            { 
-                nama: "Kopi Susu", 
-                jual: 25000, 
-                resep: [
-                    { id: 6, qty: 20 }, // SKM
-                    { id: 7, qty: 15 }, // Creamer (pakai avg powder)
-                    { id: 5, qty: 10 }, // Evap
-                    { id: 4, qty: 70 }, // UHT
-                    { type: 'espresso', bean: 'kaks' },
-                    { id: 8, qty: 150 }, // Es
-                    { id: 9, qty: 1 }    // Packaging
-                ]
-            },
-            { 
-                nama: "Tuan Rumah (Ice)", 
-                jual: 28000, 
-                resep: [
-                    { id: 11, qty: 25 }, // Gula Aren
-                    { id: 7, qty: 25 },  // Creamer
-                    { id: 4, qty: 100 }, // UHT
-                    { type: 'espresso', bean: 'kaks' },
-                    { id: 8, qty: 150 },
-                    { id: 9, qty: 1 }
-                ]
-            },
-            { 
-                nama: "Biscoff Latte", 
-                jual: 35000, 
-                resep: [
-                    { id: 14, qty: 15 }, // Spread
-                    { id: 3, qty: 10 },  // Syrup
-                    { id: 4, qty: 100 }, 
-                    { type: 'espresso', bean: 'diks' },
-                    { id: 8, qty: 150 },
-                    { id: 9, qty: 1 }
-                ]
-            },
-            { 
-                nama: "Matcha Latte", 
-                jual: 30000, 
-                resep: [
-                    { id: 7, qty: 20 }, // Powder Matcha
-                    { id: 6, qty: 15 }, // SKM
-                    { id: 4, qty: 110 }, 
-                    { id: 8, qty: 150 },
-                    { id: 9, qty: 1 }
-                ]
-            }
-        ];
+    <section id="espresso" class="card">
+        <h2 class="text-xl font-bold mb-4 text-slate-700">Database 4: Parameter Espresso (Editable)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 border rounded-lg bg-orange-50">
+                <h4 class="font-bold mb-2">Biji Kopi Toraja (KAKS)</h4>
+                <div class="flex items-center gap-2 mb-2">
+                    <label>Dose (gr):</label>
+                    <input type="number" id="dose-kaks" value="18" class="input-inline" onchange="calculateAll()">
+                    <label>Yield (ml):</label>
+                    <input type="number" id="yield-kaks" value="60" class="input-inline" onchange="calculateAll()">
+                </div>
+                <p class="text-sm font-semibold">Cost per ml: <span id="cost-kaks" class="text-red-600"></span></p>
+            </div>
+            <div class="p-4 border rounded-lg bg-blue-50">
+                <h4 class="font-bold mb-2">Biji Kopi Sumatra (DIKS)</h4>
+                <div class="flex items-center gap-2 mb-2">
+                    <label>Dose (gr):</label>
+                    <input type="number" id="dose-diks" value="18" class="input-inline" onchange="calculateAll()">
+                    <label>Yield (ml):</label>
+                    <input type="number" id="yield-diks" value="36" class="input-inline" onchange="calculateAll()">
+                </div>
+                <p class="text-sm font-semibold">Cost per ml: <span id="cost-diks" class="text-red-600"></span></p>
+            </div>
+        </div>
+    </section>
 
-        // --- 2. CALCULATOR ENGINE ---
-        function calculateHPP(resep) {
-            let total = 0;
-            resep.forEach(r => {
-                if(r.type === 'espresso') {
-                    total += state.getEspressoCost(r.bean);
-                } else {
-                    total += (state.getUnitCost(r.id) * r.qty);
-                }
-            });
-            return total;
-        }
-
-        // --- 3. UI RENDERING ---
-        function renderBahan() {
-            const container = document.getElementById('body-bahan');
-            container.innerHTML = state.bahan.map(b => `
-                <tr>
-                    <td class="font-semibold">${b.nama}</td>
-                    <td><span class="text-[10px] bg-blue-50 px-2 py-1 rounded">${b.cat}</span></td>
-                    <td>${b.isi}${b.satuan}</td>
-                    <td>Rp${b.harga.toLocaleString()}</td>
-                    <td class="text-blue-600 font-bold">Rp${(b.harga/b.isi).toFixed(1)}</td>
-                </tr>
-            `).join('');
-        }
-
-        function renderMenu() {
-            const container = document.getElementById('body-menu');
-            let totalMargin = 0;
-            let highestHpp = { nama: '', val: 0 };
-
-            container.innerHTML = menus.map(m => {
-                const hpp = calculateHPP(m.resep);
-                const profit = m.jual - hpp;
-                const margin = (profit / m.jual) * 100;
-                
-                totalMargin += margin;
-                if(hpp > highestHpp.val) highestHpp = { nama: m.nama, val: hpp };
-
-                let insight = "";
-                let badgeClass = "";
-                if(margin < 50) { 
-                    insight = "⚠️ Evaluasi"; badgeClass = "badge-low";
-                } else if(margin <= 70) { 
-                    insight = "✅ Sehat"; badgeClass = "badge-mid";
-                } else { 
-                    insight = "🔥 Tinggi"; badgeClass = "badge-high";
-                }
-
-                return `
+    <section id="ingredients" class="card">
+        <h2 class="text-xl font-bold mb-4">Database 1: Bahan Baku</h2>
+        <div class="overflow-x-auto">
+            <table>
+                <thead class="bg-gray-100">
                     <tr>
-                        <td class="font-bold text-gray-700">${m.nama}</td>
-                        <td class="text-red-500">Rp${Math.round(hpp).toLocaleString()}</td>
-                        <td class="font-semibold">Rp${m.jual.toLocaleString()}</td>
-                        <td>${margin.toFixed(1)}%</td>
-                        <td><span class="badge ${badgeClass}">${insight}</span></td>
+                        <th>Nama Bahan</th>
+                        <th>Kategori</th>
+                        <th>Brand</th>
+                        <th>Harga Beli (Rp)</th>
+                        <th>Isi (ml/gr)</th>
+                        <th>Cost/Unit</th>
+                        <th>Referensi Marketplace</th>
                     </tr>
-                `;
-            }).join('');
+                </thead>
+                <tbody id="ingredient-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </section>
 
-            // Update Dash Stats
-            document.getElementById('stat-avg-margin').innerText = (totalMargin / menus.length).toFixed(1) + "%";
-            document.getElementById('stat-highest-hpp').innerText = highestHpp.nama;
-            
-            updateAIInsight(totalMargin / menus.length);
+    <section id="menu" class="card">
+        <h2 class="text-xl font-bold mb-4">Database 3: Dashboard Menu, HPP, & Profit</h2>
+        <div class="overflow-x-auto">
+            <table>
+                <thead class="bg-slate-800 text-white">
+                    <tr>
+                        <th>Menu</th>
+                        <th>Tipe</th>
+                        <th>HPP Total</th>
+                        <th>Harga Jual</th>
+                        <th>Margin %</th>
+                        <th>Profit</th>
+                        <th>Rekomendasi (50-70%)</th>
+                        <th>AI Insight</th>
+                    </tr>
+                </thead>
+                <tbody id="menu-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+// --- DATABASE 1: BAHAN BAKU (FINAL DATA) ---
+const ingredients = {
+    "Toraja Kaks": { cat: "Kopi", brand: "Lokal", unit: "gr", price: 230000, qty: 1000, ref: "Marketplace Biji Kopi" },
+    "Sumatra Diks": { cat: "Kopi", brand: "Lokal", unit: "gr", price: 280000, qty: 1000, ref: "Marketplace Biji Kopi" },
+    "Monin Caramel": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "https://shopee.co.id/monin-official" },
+    "Monin Vanilla": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "https://tokopedia.com/monin" },
+    "Monin Tiramisu": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Banana": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Tokopedia Monin" },
+    "Monin Butterscotch": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Pandan": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Apple": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Melon": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Grenadine": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Lychee": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Mango": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Plum": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Strawberry": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "Monin Orange": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
+    "UHT Diamond": { cat: "Dairy", brand: "Diamond", unit: "ml", price: 215000, qty: 12000, ref: "1 Dus isi 12L" },
+    "Susu Evaporasi": { cat: "Dairy", brand: "Sunbay", unit: "ml", price: 18000, qty: 380, ref: "Pasar Wajar" },
+    "SKM": { cat: "Dairy", brand: "Cap Enaak", unit: "ml", price: 15000, qty: 490, ref: "Pasar Wajar" },
+    "MaxCreamer": { cat: "Dairy", brand: "MaxCreamer", unit: "gr", price: 35000, qty: 500, ref: "Official Shop" },
+    "Cheese Cream": { cat: "Dairy", brand: "Anchor", unit: "ml", price: 85000, qty: 1000, ref: "Marketplace" },
+    "Oatside": { cat: "Dairy", brand: "Oatside", unit: "ml", price: 45000, qty: 1000, ref: "Official" },
+    "Hydro Coco": { cat: "Lain-lain", brand: "Hydro", unit: "ml", price: 8000, qty: 500, ref: "Minimarket" },
+    "Yakult": { cat: "Lain-lain", brand: "Yakult", unit: "pcs", price: 10000, qty: 5, ref: "Pasar" },
+    "Bubuk Coklat": { cat: "Powder", brand: "Premium", unit: "gr", price: 90000, qty: 1000, ref: "Marketplace" },
+    "Bubuk Matcha": { cat: "Powder", brand: "Premium", unit: "gr", price: 150000, qty: 1000, ref: "Marketplace" },
+    "Bubuk Taro": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
+    "Bubuk Red Velvet": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
+    "Bubuk Avocado": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
+    "Bubuk Vanilla": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
+    "Skippy Peanut": { cat: "Lain-lain", brand: "Skippy", unit: "gr", price: 65000, qty: 340, ref: "Marketplace" },
+    "Lotus Biscoff": { cat: "Lain-lain", brand: "Lotus", unit: "gr", price: 85000, qty: 400, ref: "Marketplace" },
+    "Biskuit Lotus": { cat: "Lain-lain", brand: "Lotus", unit: "pcs", price: 25000, qty: 10, ref: "Marketplace" },
+    "Gula Aren": { cat: "Lain-lain", brand: "Dainchi", unit: "gr", price: 45000, qty: 1000, ref: "1kg Aren" },
+    "Simple Sugar": { cat: "Lain-lain", brand: "Home", unit: "ml", price: 15000, qty: 1000, ref: "Self Made" },
+    "Sprite": { cat: "Lain-lain", brand: "CocaCola", unit: "ml", price: 15000, qty: 1500, ref: "Marketplace" },
+    "Air Cleo": { cat: "Lain-lain", brand: "Cleo", unit: "ml", price: 20000, qty: 19000, ref: "Galon 19L" },
+    "Es Batu": { cat: "Operasional", brand: "Kristal", unit: "gr", price: 70000, qty: 8000, ref: "8kg/8 Kantong" },
+    "Packaging Hot": { cat: "Operasional", brand: "Generic", unit: "pcs", price: 900, qty: 1, ref: "Paper Cup + Lid" },
+    "Packaging Ice": { cat: "Operasional", brand: "Generic", unit: "pcs", price: 900, qty: 1, ref: "Cup + Lid + Straw" }
+};
+
+// --- DATABASE 3: MENU & COMPOSITION ---
+const menus = [
+    { name: "Kopi Susu", cat: "Coffee Based", type: "Ice", price: 25000, recipe: { "SKM": 20, "MaxCreamer": 15, "Susu Evaporasi": 10, "UHT Diamond": 70 }, espressoType: "KAKS_SPECIAL", espressoVol: 35 },
+    { name: "Tuan Rumah", cat: "Coffee Based", type: "Ice", price: 28000, recipe: { "Gula Aren": 25, "MaxCreamer": 25, "UHT Diamond": 100 }, espressoType: "KAKS", espressoVol: 30 },
+    { name: "Tiramisu", cat: "Coffee Based", type: "Ice", price: 32000, recipe: { "Monin Tiramisu": 20, "SKM": 10, "MaxCreamer": 15, "UHT Diamond": 100, "Cheese Cream": 20 }, espressoType: "KAKS", espressoVol: 30 },
+    { name: "Berry Cano", cat: "Specialty", type: "Ice", price: 25000, recipe: { "Monin Grenadine": 20, "Simple Sugar": 10, "Air Cleo": 100 }, espressoType: "DIKS", espressoVol: 30 },
+    { name: "Matcha", cat: "Non Coffee", type: "Ice", price: 28000, recipe: { "Bubuk Matcha": 20, "SKM": 15, "MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 110 }, espressoType: "NONE", espressoVol: 0 },
+    { name: "Espresso Hot", cat: "Specialty", type: "Hot", price: 15000, recipe: {}, espressoType: "DIKS", espressoVol: 30 },
+    { name: "Latte Ice", cat: "Specialty", type: "Ice", price: 28000, recipe: { "UHT Diamond": 120 }, espressoType: "DIKS", espressoVol: 30 }
+];
+
+function calculateAll() {
+    const doseKaks = document.getElementById('dose-kaks').value;
+    const yieldKaks = document.getElementById('yield-kaks').value;
+    const doseDiks = document.getElementById('dose-diks').value;
+    const yieldDiks = document.getElementById('yield-diks').value;
+
+    // Hitung Cost Espresso per ml
+    const costKaksPerMl = (ingredients["Toraja Kaks"].price / 1000 * doseKaks) / yieldKaks;
+    const costDiksPerMl = (ingredients["Sumatra Diks"].price / 1000 * doseDiks) / yieldDiks;
+
+    document.getElementById('cost-kaks').innerText = `Rp ${costKaksPerMl.toFixed(2)}/ml`;
+    document.getElementById('cost-diks').innerText = `Rp ${costDiksPerMl.toFixed(2)}/ml`;
+
+    renderIngredients();
+    renderMenu(costKaksPerMl, costDiksPerMl, doseKaks);
+}
+
+function renderIngredients() {
+    const tbody = document.getElementById('ingredient-table-body');
+    tbody.innerHTML = '';
+    for (let key in ingredients) {
+        const item = ingredients[key];
+        const unitCost = item.price / item.qty;
+        tbody.innerHTML += `<tr>
+            <td class="font-bold">${key}</td>
+            <td>${item.cat}</td>
+            <td>${item.brand}</td>
+            <td>${item.price.toLocaleString()}</td>
+            <td>${item.qty} ${item.unit}</td>
+            <td class="text-orange-600 font-bold">Rp ${unitCost.toFixed(2)}</td>
+            <td class="text-blue-500 text-xs truncate max-w-[150px]"><a href="#">${item.ref}</a></td>
+        </tr>`;
+    }
+}
+
+function renderMenu(costKaks, costDiks, doseKaks) {
+    const tbody = document.getElementById('menu-table-body');
+    tbody.innerHTML = '';
+    let totalMargin = 0;
+
+    menus.forEach(menu => {
+        let hpp = 0;
+        // 1. Hitung Recipe
+        for (let ing in menu.recipe) {
+            hpp += (ingredients[ing].price / ingredients[ing].qty) * menu.recipe[ing];
+        }
+        
+        // 2. Hitung Espresso
+        if (menu.espressoType === "KAKS") hpp += costKaks * menu.espressoVol;
+        if (menu.espressoType === "DIKS") hpp += costDiks * menu.espressoVol;
+        if (menu.espressoType === "KAKS_SPECIAL") {
+            // Rasio khusus kopi susu: 18g jadi 35ml. HPP per ml beda.
+            const costKaksSpecial = (ingredients["Toraja Kaks"].price / 1000 * doseKaks) / 35;
+            hpp += costKaksSpecial * 35;
         }
 
-        function updateAIInsight(avgMargin) {
-            const box = document.getElementById('ai-global-insight');
-            let text = `Berdasarkan data saat ini, rata-rata margin keuntungan Anda berada di angka **${avgMargin.toFixed(1)}%**. `;
-            
-            if(avgMargin < 60) {
-                text += "Perhatian: Biaya operasional (listrik & gaji) dapat menggerus profit. Pertimbangkan menaikkan harga pada menu Specialty atau mengurangi wastage susu.";
-            } else {
-                text += "Performa margin sangat sehat. Fokus pada volume penjualan dan pertimbangkan program loyalitas untuk menjaga arus kas.";
-            }
-            box.innerHTML = text;
+        // 3. Packaging & Es Batu
+        hpp += 900; // Cup & Lid
+        if (menu.type === "Ice") {
+            hpp += (70000 / 8000) * 100; // Es batu 100gr
         }
 
-        function updateFinance() {
-            const rev = document.getElementById('in-revenue').value || 0;
-            const expRaw = document.getElementById('in-exp-raw').value || 0;
-            const overhead = 200000 * 30; // 30 hari
-            const gaji = 1500000 * 8;
-            const totalExp = parseFloat(expRaw) + overhead + gaji;
-            const profit = rev - totalExp;
+        const profit = menu.price - hpp;
+        const margin = (profit / menu.price) * 100;
+        totalMargin += margin;
 
-            document.getElementById('finance-result').innerHTML = `
-                <div class="bg-white p-2 border rounded">Pengeluaran Tetap: <br><b>Rp${(overhead+gaji).toLocaleString()}</b></div>
-                <div class="bg-white p-2 border rounded">Estimasi Profit: <br><b class="${profit < 0 ? 'text-red-500' : 'text-green-600'}">Rp${profit.toLocaleString()}</b></div>
-            `;
-        }
+        const recMin = hpp / 0.5;
+        const recMax = hpp / 0.3;
 
-        // --- 4. NAVIGATION ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.ios-tab-bar button').forEach(b => b.classList.remove('active-tab'));
-            
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            document.getElementById(`nav-${tabId}`).classList.add('active-tab');
-        }
+        // AI Insight Logic
+        let insight = margin < 50 ? "⚠️ Margin Tipis. Naikkan harga!" : "✅ Sehat.";
+        if (hpp > 15000) insight = "💎 High-End Cost.";
 
-        // Initialize
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        renderBahan();
-        renderMenu();
-        updateFinance();
+        tbody.innerHTML += `<tr>
+            <td class="font-bold">${menu.name}</td>
+            <td><span class="px-2 py-1 bg-gray-200 rounded text-xs">${menu.type}</span></td>
+            <td class="text-red-600 font-bold">Rp ${Math.round(hpp).toLocaleString()}</td>
+            <td>Rp ${menu.price.toLocaleString()}</td>
+            <td class="${margin < 50 ? 'text-red-500' : 'text-green-600'} font-bold">${margin.toFixed(1)}%</td>
+            <td>Rp ${Math.round(profit).toLocaleString()}</td>
+            <td class="text-xs text-gray-500">Rp ${Math.round(recMin).toLocaleString()} - ${Math.round(recMax).toLocaleString()}</td>
+            <td class="text-xs italic">${insight}</td>
+        </tr>`;
+    });
 
-    </script>
+    const avg = totalMargin / menus.length;
+    document.getElementById('avg-margin').innerText = `${avg.toFixed(1)}%`;
+    document.getElementById('global-insight').innerText = avg < 50 ? 
+        "PERINGATAN: Rata-rata margin di bawah 50%. Segera evaluasi harga jual atau cari substitusi bahan baku yang lebih murah untuk menjaga profitabilitas operasional." : 
+        "PERFORMA BAGUS: Rata-rata margin sudah ideal di atas 50%. Fokus pada volume penjualan dan kualitas konsistensi rasa.";
+}
+
+// Initial Load
+calculateAll();
+</script>
+
 </body>
 </html>
