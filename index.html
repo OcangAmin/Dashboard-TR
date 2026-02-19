@@ -2,223 +2,332 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah Coffee | Full Integrated Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tuan Rumah Coffee - Integrated Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #f8fafc; font-family: 'Inter', sans-serif; }
-        .tab-btn.active { border-bottom: 4px solid #6366f1; color: #6366f1; font-weight: 800; }
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
-        .data-row:hover { background: #f1f5f9; transition: 0.2s; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .ios-tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        .active-tab { color: #2563eb; font-weight: 700; }
+        .tab-content { display: none; padding-bottom: 100px; }
+        .tab-content.active { display: block; }
+        .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .badge-low { background: #fee2e2; color: #991b1b; }
+        .badge-mid { background: #fef9c3; color: #854d0e; }
+        .badge-high { background: #dcfce7; color: #166534; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <header class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl">
-        <div>
-            <h1 class="text-3xl font-black italic tracking-tighter">TUAN RUMAH COFFEE</h1>
-            <p class="text-slate-400 text-sm">Database & Sales Engine Terintegrasi (Lengkap)</p>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mt-4 md:mt-0">
-            <div class="bg-white/10 p-4 rounded-2xl border border-white/10">
-                <p class="text-[10px] text-slate-400 font-bold uppercase">Total Menu Aktif</p>
-                <p class="text-2xl font-black" id="total-menu-count">--</p>
-            </div>
-            <div class="bg-indigo-500/20 p-4 rounded-2xl border border-indigo-500/30">
-                <p class="text-[10px] text-indigo-300 font-bold uppercase">Total Bahan Baku</p>
-                <p class="text-2xl font-black text-indigo-400" id="total-bahan-count">--</p>
-            </div>
+    <header class="p-4 bg-white sticky top-0 z-50 border-bottom shadow-sm">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">☕ TNRC Dashboard</h1>
+            <span id="current-date" class="text-xs text-gray-500 font-medium"></span>
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto flex gap-8 border-b mb-8 overflow-x-auto pb-2 no-scrollbar font-bold text-slate-400">
-        <button onclick="showTab('bahan')" id="btn-bahan" class="tab-btn active pb-4 px-2">1. DATABASE BAHAN BAKU</button>
-        <button onclick="showTab('menu')" id="btn-menu" class="tab-btn pb-4 px-2">2. MENU & RESEP LENGKAP</button>
-        <button onclick="showTab('sales')" id="btn-sales" class="tab-btn pb-4 px-2">3. REKAPAN PENJUALAN BULANAN</button>
-    </div>
+    <main class="p-4">
+        <section id="global-params" class="hidden">
+            </section>
 
-    <section id="tab-bahan" class="tab-content max-w-7xl mx-auto">
-        <div class="glass rounded-[2rem] overflow-hidden shadow-sm">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase">
-                    <tr>
-                        <th class="p-6">Nama Bahan & Brand</th>
-                        <th class="p-6">Kategori</th>
-                        <th class="p-6">Harga Beli</th>
-                        <th class="p-6">Isi/Unit</th>
-                        <th class="p-6">HPP per Unit</th>
-                    </tr>
-                </thead>
-                <tbody id="body-bahan" class="text-sm"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <section id="tab-menu" class="tab-content max-w-7xl mx-auto hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-menu"></div>
-    </section>
-
-    <section id="tab-sales" class="tab-content max-w-7xl mx-auto hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="sales-container">
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="glass-card p-4 rounded-2xl">
+                    <p class="text-xs text-gray-500 uppercase">Avg. Margin</p>
+                    <h3 id="stat-avg-margin" class="text-xl font-bold text-blue-600">--%</h3>
+                </div>
+                <div class="glass-card p-4 rounded-2xl">
+                    <p class="text-xs text-gray-500 uppercase">Daily Overhead</p>
+                    <h3 class="text-xl font-bold text-gray-800">Rp200k</h3>
+                </div>
+                <div class="glass-card p-4 rounded-2xl">
+                    <p class="text-xs text-gray-500 uppercase">Total Staff</p>
+                    <h3 class="text-xl font-bold text-gray-800">8 Org</h3>
+                </div>
+                <div class="glass-card p-4 rounded-2xl">
+                    <p class="text-xs text-gray-500 uppercase">HPP Termahal</p>
+                    <h3 id="stat-highest-hpp" class="text-sm font-bold text-red-600">--</h3>
+                </div>
             </div>
-    </section>
 
-<script>
-    // 1. DATA BAHAN BAKU LENGKAP (Tanpa Diringkas)
-    const dbBahan = {
-        "Kopi Toraja (Kaks)": { cat: "Kopi", beli: 230000, isi: 1000, unit: "gr" },
-        "Kopi Sumatra (Diks)": { cat: "Kopi", beli: 280000, isi: 1000, unit: "gr" },
-        "Monin Caramel": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Vanilla": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Tiramisu": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Banana": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Butterscotch": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Pandan": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Apple": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Melon": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Grenadine": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Lychee": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Mango": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Plum": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Strawberry": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "Monin Orange": { cat: "Syrup", beli: 165000, isi: 700, unit: "ml" },
-        "UHT Diamond": { cat: "Dairy", beli: 215000, isi: 12000, unit: "ml" },
-        "Evaporasi": { cat: "Dairy", beli: 18000, isi: 380, unit: "ml" },
-        "SKM Omela": { cat: "Dairy", beli: 13000, isi: 370, unit: "ml" },
-        "MaxCreamer": { cat: "Powder", beli: 35000, isi: 500, unit: "gr" },
-        "Cheese cream": { cat: "Dairy", beli: 65000, isi: 500, unit: "ml" },
-        "Oatside": { cat: "Dairy", beli: 45000, isi: 1000, unit: "ml" },
-        "Aren Dainchi": { cat: "Lain-lain", beli: 45000, isi: 1000, unit: "gr" },
-        "Coklat Local": { cat: "Powder", beli: 90000, isi: 1000, unit: "gr" },
-        "Matcha Local": { cat: "Powder", beli: 120000, isi: 1000, unit: "gr" },
-        "Taro Local": { cat: "Powder", beli: 75000, isi: 1000, unit: "gr" },
-        "Red Velvet": { cat: "Powder", beli: 75000, isi: 1000, unit: "gr" },
-        "Es Batu": { cat: "Operasional", beli: 70000, isi: 8000, unit: "gr" },
-        "Cup & Lid Ice": { cat: "Packaging", beli: 1100, isi: 1, unit: "pcs" }
-    };
+            <div class="glass-card p-5 rounded-2xl border-l-4 border-blue-500 mb-6">
+                <h4 class="text-sm font-bold flex items-center gap-2 mb-2">
+                    ✨ AI Business Insights
+                </h4>
+                <div id="ai-global-insight" class="text-sm text-gray-600 leading-relaxed">
+                    Menganalisa data...
+                </div>
+            </div>
 
-    // 2. DATA MENU LENGKAP (Tanpa Diringkas)
-    const dbMenu = [
-        { name: "Kopi Susu", cat: "Ice Coffee", price: 23000, recipe: { "Kopi Toraja (Kaks)": 18, "SKM Omela": 20, "MaxCreamer": 15, "UHT Diamond": 70 } },
-        { name: "Tuan Rumah", cat: "Ice Coffee", price: 25000, recipe: { "Kopi Toraja (Kaks)": 18, "Aren Dainchi": 25, "MaxCreamer": 25, "UHT Diamond": 100 } },
-        { name: "Chocolate Signature", cat: "Non Coffee", price: 24000, recipe: { "Coklat Local": 13, "Aren Dainchi": 15, "MaxCreamer": 10, "UHT Diamond": 100 } },
-        { name: "Matcha Latte", cat: "Signature", price: 26000, recipe: { "Matcha Local": 20, "SKM Omela": 15, "MaxCreamer": 10, "UHT Diamond": 110 } },
-        { name: "Tiramisu Coffee", cat: "Specialty", price: 28000, recipe: { "Kopi Toraja (Kaks)": 18, "Monin Tiramisu": 20, "Cheese cream": 20, "UHT Diamond": 100 } },
-        { name: "Berry Cano", cat: "Americano", price: 23000, recipe: { "Kopi Sumatra (Diks)": 18, "Monin Grenadine": 20, "Es Batu": 100 } },
-        { name: "Magic", cat: "Specialty", price: 28000, recipe: { "Kopi Sumatra (Diks)": 18, "Oatside": 150 } }
-    ];
-
-    // 3. DATA REKAPAN PENJUALAN (Hasil Ekstraksi File)
-    const salesData = {
-        "Februari 2026": [
-            { menu: "Pandan (Ice)", qty: 45, total: 1260000 },
-            { menu: "Kopsus (Hot)", qty: 28, total: 616000 },
-            { menu: "Tuan Rumah (Ice)", qty: 112, total: 2464000 },
-            { menu: "Chocolate Signature", qty: 67, total: 1608000 }
-        ],
-        "Januari 2026": [
-            { menu: "Kopsus (Ice)", qty: 234, total: 5382000 },
-            { menu: "Matcha Latte", qty: 89, total: 2314000 },
-            { menu: "Berry Cano", qty: 54, total: 1242000 }
-        ],
-        "Desember 2025": [
-            { menu: "Tiramisu Coffee", qty: 78, total: 2184000 },
-            { menu: "Caramel Machiato", qty: 42, total: 1176000 }
-        ]
-    };
-
-    function renderBahan() {
-        const body = document.getElementById('body-bahan');
-        let count = 0;
-        for (let key in dbBahan) {
-            const b = dbBahan[key];
-            const unitHpp = b.beli / b.isi;
-            body.innerHTML += `
-                <tr class="data-row border-b">
-                    <td class="p-6 font-bold text-slate-800">${key}</td>
-                    <td class="p-6 text-slate-500">${b.cat}</td>
-                    <td class="p-6">Rp ${b.beli.toLocaleString()}</td>
-                    <td class="p-6">${b.isi} ${b.unit}</td>
-                    <td class="p-6 font-black text-indigo-600">Rp ${unitHpp.toFixed(2)}</td>
-                </tr>`;
-            count++;
-        }
-        document.getElementById('total-bahan-count').innerText = count;
-    }
-
-    function renderMenu() {
-        const grid = document.getElementById('grid-menu');
-        dbMenu.forEach(m => {
-            let totalHpp = 0;
-            let recipeList = "";
-            for (let bName in m.recipe) {
-                const cost = (dbBahan[bName].beli / dbBahan[bName].isi) * m.recipe[bName];
-                totalHpp += cost;
-                recipeList += `<div class="flex justify-between text-xs py-1 border-b border-slate-50">
-                    <span>${bName} (${m.recipe[bName]})</span><span>Rp ${Math.round(cost)}</span>
-                </div>`;
-            }
-            totalHpp += dbBahan["Es Batu"].beli / dbBahan["Es Batu"].isi * 100;
-            totalHpp += dbBahan["Cup & Lid Ice"].beli;
-            
-            const margin = ((m.price - totalHpp) / m.price) * 100;
-
-            grid.innerHTML += `
-                <div class="glass p-6 rounded-[2rem] shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 right-0 px-4 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-bl-xl">HPP Rp ${Math.round(totalHpp).toLocaleString()}</div>
-                    <p class="text-[10px] font-bold text-indigo-500 mb-1 uppercase tracking-widest">${m.cat}</p>
-                    <h3 class="text-xl font-black text-slate-800 mb-4">${m.name}</h3>
-                    <div class="mb-4">${recipeList}</div>
-                    <div class="flex justify-between items-end">
-                        <div><p class="text-[10px] font-bold text-slate-400">MARGIN</p><p class="text-2xl font-black ${margin > 60 ? 'text-emerald-500' : 'text-amber-500'}">${margin.toFixed(1)}%</p></div>
-                        <div class="text-right"><p class="text-[10px] font-bold text-slate-400">HARGA JUAL</p><p class="text-2xl font-black text-slate-800">Rp ${m.price.toLocaleString()}</p></div>
+            <div class="glass-card p-5 rounded-2xl mb-6">
+                <h4 class="text-sm font-bold mb-4">Input Keuangan Bulan Ini</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs mb-1">Pendapatan Total (Rp)</label>
+                        <input type="number" id="in-revenue" class="w-full p-2 border rounded-lg text-sm" placeholder="Contoh: 50000000" onchange="updateFinance()">
                     </div>
-                </div>`;
-        });
-        document.getElementById('total-menu-count').innerText = dbMenu.length;
-    }
+                    <div>
+                        <label class="block text-xs mb-1">Belanja Dapur & Bar (Rp)</label>
+                        <input type="number" id="in-exp-raw" class="w-full p-2 border rounded-lg text-sm" placeholder="Sesuai struk belanja" onchange="updateFinance()">
+                    </div>
+                </div>
+                <div id="finance-result" class="mt-4 p-3 bg-gray-50 rounded-lg text-xs grid grid-cols-2 gap-2">
+                    </div>
+            </div>
+        </div>
 
-    function renderSales() {
-        const container = document.getElementById('sales-container');
-        for (let bulan in salesData) {
-            let rows = "";
-            let totalBulan = 0;
-            salesData[bulan].forEach(s => {
-                totalBulan += s.total;
-                rows += `<tr class="border-b text-xs">
-                    <td class="p-3 font-bold">${s.menu}</td>
-                    <td class="p-3 text-center">${s.qty}</td>
-                    <td class="p-3 text-right">Rp ${s.total.toLocaleString()}</td>
-                </tr>`;
-            });
-
-            container.innerHTML += `
-                <div class="glass p-8 rounded-[2rem]">
-                    <h3 class="font-black text-xl mb-6 text-slate-800">${bulan}</h3>
-                    <table class="w-full mb-4">
-                        <thead class="bg-slate-50 text-[10px] font-bold text-slate-400">
-                            <tr><th class="p-3 text-left">MENU</th><th class="p-3">QTY</th><th class="p-3 text-right">SUBTOTAL</th></tr>
+        <div id="tab-bahan" class="tab-content">
+            <h2 class="text-lg font-bold mb-4">Database Bahan Baku</h2>
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="scroll-x">
+                    <table id="table-bahan">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th>Bahan</th>
+                                <th>Kategori</th>
+                                <th>Isi</th>
+                                <th>Harga</th>
+                                <th>/Unit</th>
+                            </tr>
                         </thead>
-                        <tbody>${rows}</tbody>
+                        <tbody id="body-bahan"></tbody>
                     </table>
-                    <div class="bg-slate-900 p-4 rounded-2xl text-white flex justify-between">
-                        <span class="font-bold uppercase text-xs">Total Omzet</span>
-                        <span class="font-black">Rp ${totalBulan.toLocaleString()}</span>
-                    </div>
-                </div>`;
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-menu" class="tab-content">
+            <h2 class="text-lg font-bold mb-4">Menu & Profit Analysis</h2>
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="scroll-x">
+                    <table id="table-menu">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th>Menu</th>
+                                <th>HPP</th>
+                                <th>Harga Jual</th>
+                                <th>Margin</th>
+                                <th>AI Insight</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-menu"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="ios-tab-bar">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center active-tab">
+            <span class="text-[20px]">📊</span>
+            <span class="text-[10px]">Insight</span>
+        </button>
+        <button onclick="switchTab('bahan')" id="nav-bahan" class="flex flex-col items-center">
+            <span class="text-[20px]">📦</span>
+            <span class="text-[10px]">Bahan</span>
+        </button>
+        <button onclick="switchTab('menu')" id="nav-menu" class="flex flex-col items-center">
+            <span class="text-[20px]">☕</span>
+            <span class="text-[10px]">Menu</span>
+        </button>
+    </nav>
+
+    <script>
+        // --- 1. STATE & DATABASE ---
+        const state = {
+            bahan: [
+                { id: 1, nama: "Kaks Arabika G1", cat: "Kopi", brand: "Local", isi: 1000, satuan: "gr", harga: 240000 },
+                { id: 2, nama: "Diks Arabika Spl", cat: "Kopi", brand: "Specialty", isi: 1000, satuan: "gr", harga: 280000 },
+                { id: 3, nama: "Monin Syrup (Avg)", cat: "Syrup", brand: "Monin", isi: 700, satuan: "ml", harga: 150000 },
+                { id: 4, nama: "UHT Diamond", cat: "Dairy", brand: "Diamond", isi: 1000, satuan: "ml", harga: 19000 },
+                { id: 5, nama: "Susu Evaporasi", cat: "Dairy", brand: "Sunbay", isi: 380, satuan: "ml", harga: 16500 },
+                { id: 6, nama: "SKM", cat: "Dairy", brand: "Omela", isi: 370, satuan: "gr", harga: 12500 },
+                { id: 7, nama: "Powder (Avg)", cat: "Powder", brand: "Premix", isi: 1000, satuan: "gr", harga: 85000 },
+                { id: 8, nama: "Es Batu", cat: "Operasional", brand: "Crystal", isi: 8000, satuan: "gr", harga: 70000 },
+                { id: 9, nama: "Cup + Lid Ice", cat: "Operasional", brand: "-", isi: 1, satuan: "pcs", harga: 850 },
+                { id: 10, nama: "Oatside", cat: "Dairy", brand: "Oatside", isi: 1000, satuan: "ml", harga: 45000 },
+                { id: 11, nama: "Gula Aren", cat: "Lain-lain", brand: "Dainichi", isi: 1000, satuan: "ml", harga: 65000 },
+                { id: 12, nama: "Yakult", cat: "Lain-lain", brand: "Yakult", isi: 1, satuan: "pcs", harga: 2500 },
+                { id: 13, nama: "Sprite", cat: "Lain-lain", brand: "CocaCola", isi: 1500, satuan: "ml", harga: 15000 },
+                { id: 14, nama: "Biscoff Spread", cat: "Lain-lain", brand: "Lotus", isi: 400, satuan: "gr", harga: 85000 }
+            ],
+            // Logic HPP Espresso berdasarkan DB 4
+            getEspressoCost(type = 'diks') {
+                const b = this.bahan.find(x => x.id === (type === 'kaks' ? 1 : 2));
+                const hargaPerGram = b.harga / b.isi;
+                return hargaPerGram * 18; // 18gr per double shot (standar espresso)
+            },
+            getUnitCost(id) {
+                const b = this.bahan.find(x => x.id === id);
+                return b ? (b.harga / b.isi) : 0;
+            }
+        };
+
+        const menus = [
+            { 
+                nama: "Kopi Susu", 
+                jual: 25000, 
+                resep: [
+                    { id: 6, qty: 20 }, // SKM
+                    { id: 7, qty: 15 }, // Creamer (pakai avg powder)
+                    { id: 5, qty: 10 }, // Evap
+                    { id: 4, qty: 70 }, // UHT
+                    { type: 'espresso', bean: 'kaks' },
+                    { id: 8, qty: 150 }, // Es
+                    { id: 9, qty: 1 }    // Packaging
+                ]
+            },
+            { 
+                nama: "Tuan Rumah (Ice)", 
+                jual: 28000, 
+                resep: [
+                    { id: 11, qty: 25 }, // Gula Aren
+                    { id: 7, qty: 25 },  // Creamer
+                    { id: 4, qty: 100 }, // UHT
+                    { type: 'espresso', bean: 'kaks' },
+                    { id: 8, qty: 150 },
+                    { id: 9, qty: 1 }
+                ]
+            },
+            { 
+                nama: "Biscoff Latte", 
+                jual: 35000, 
+                resep: [
+                    { id: 14, qty: 15 }, // Spread
+                    { id: 3, qty: 10 },  // Syrup
+                    { id: 4, qty: 100 }, 
+                    { type: 'espresso', bean: 'diks' },
+                    { id: 8, qty: 150 },
+                    { id: 9, qty: 1 }
+                ]
+            },
+            { 
+                nama: "Matcha Latte", 
+                jual: 30000, 
+                resep: [
+                    { id: 7, qty: 20 }, // Powder Matcha
+                    { id: 6, qty: 15 }, // SKM
+                    { id: 4, qty: 110 }, 
+                    { id: 8, qty: 150 },
+                    { id: 9, qty: 1 }
+                ]
+            }
+        ];
+
+        // --- 2. CALCULATOR ENGINE ---
+        function calculateHPP(resep) {
+            let total = 0;
+            resep.forEach(r => {
+                if(r.type === 'espresso') {
+                    total += state.getEspressoCost(r.bean);
+                } else {
+                    total += (state.getUnitCost(r.id) * r.qty);
+                }
+            });
+            return total;
         }
-    }
 
-    function showTab(id) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + id).classList.remove('hidden');
-        document.getElementById('btn-' + id).classList.add('active');
-    }
+        // --- 3. UI RENDERING ---
+        function renderBahan() {
+            const container = document.getElementById('body-bahan');
+            container.innerHTML = state.bahan.map(b => `
+                <tr>
+                    <td class="font-semibold">${b.nama}</td>
+                    <td><span class="text-[10px] bg-blue-50 px-2 py-1 rounded">${b.cat}</span></td>
+                    <td>${b.isi}${b.satuan}</td>
+                    <td>Rp${b.harga.toLocaleString()}</td>
+                    <td class="text-blue-600 font-bold">Rp${(b.harga/b.isi).toFixed(1)}</td>
+                </tr>
+            `).join('');
+        }
 
-    renderBahan();
-    renderMenu();
-    renderSales();
-</script>
+        function renderMenu() {
+            const container = document.getElementById('body-menu');
+            let totalMargin = 0;
+            let highestHpp = { nama: '', val: 0 };
+
+            container.innerHTML = menus.map(m => {
+                const hpp = calculateHPP(m.resep);
+                const profit = m.jual - hpp;
+                const margin = (profit / m.jual) * 100;
+                
+                totalMargin += margin;
+                if(hpp > highestHpp.val) highestHpp = { nama: m.nama, val: hpp };
+
+                let insight = "";
+                let badgeClass = "";
+                if(margin < 50) { 
+                    insight = "⚠️ Evaluasi"; badgeClass = "badge-low";
+                } else if(margin <= 70) { 
+                    insight = "✅ Sehat"; badgeClass = "badge-mid";
+                } else { 
+                    insight = "🔥 Tinggi"; badgeClass = "badge-high";
+                }
+
+                return `
+                    <tr>
+                        <td class="font-bold text-gray-700">${m.nama}</td>
+                        <td class="text-red-500">Rp${Math.round(hpp).toLocaleString()}</td>
+                        <td class="font-semibold">Rp${m.jual.toLocaleString()}</td>
+                        <td>${margin.toFixed(1)}%</td>
+                        <td><span class="badge ${badgeClass}">${insight}</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update Dash Stats
+            document.getElementById('stat-avg-margin').innerText = (totalMargin / menus.length).toFixed(1) + "%";
+            document.getElementById('stat-highest-hpp').innerText = highestHpp.nama;
+            
+            updateAIInsight(totalMargin / menus.length);
+        }
+
+        function updateAIInsight(avgMargin) {
+            const box = document.getElementById('ai-global-insight');
+            let text = `Berdasarkan data saat ini, rata-rata margin keuntungan Anda berada di angka **${avgMargin.toFixed(1)}%**. `;
+            
+            if(avgMargin < 60) {
+                text += "Perhatian: Biaya operasional (listrik & gaji) dapat menggerus profit. Pertimbangkan menaikkan harga pada menu Specialty atau mengurangi wastage susu.";
+            } else {
+                text += "Performa margin sangat sehat. Fokus pada volume penjualan dan pertimbangkan program loyalitas untuk menjaga arus kas.";
+            }
+            box.innerHTML = text;
+        }
+
+        function updateFinance() {
+            const rev = document.getElementById('in-revenue').value || 0;
+            const expRaw = document.getElementById('in-exp-raw').value || 0;
+            const overhead = 200000 * 30; // 30 hari
+            const gaji = 1500000 * 8;
+            const totalExp = parseFloat(expRaw) + overhead + gaji;
+            const profit = rev - totalExp;
+
+            document.getElementById('finance-result').innerHTML = `
+                <div class="bg-white p-2 border rounded">Pengeluaran Tetap: <br><b>Rp${(overhead+gaji).toLocaleString()}</b></div>
+                <div class="bg-white p-2 border rounded">Estimasi Profit: <br><b class="${profit < 0 ? 'text-red-500' : 'text-green-600'}">Rp${profit.toLocaleString()}</b></div>
+            `;
+        }
+
+        // --- 4. NAVIGATION ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.ios-tab-bar button').forEach(b => b.classList.remove('active-tab'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`nav-${tabId}`).classList.add('active-tab');
+        }
+
+        // Initialize
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        renderBahan();
+        renderMenu();
+        updateFinance();
+
+    </script>
 </body>
 </html>
