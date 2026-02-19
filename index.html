@@ -3,274 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Shop Management Dashboard</title>
+    <title>Integrated Coffee Management Dashboard - FULL DATA</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .sidebar { height: 100vh; position: fixed; width: 260px; }
-        .content { margin-left: 260px; padding: 20px; }
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .content { margin-left: 0; }
-        }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 0.875rem; }
-        .input-inline { border: 1px solid #cbd5e0; border-radius: 4px; padding: 2px 5px; width: 80px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .sticky-header th { position: sticky; top: 0; background: #1e293b; color: white; z-index: 10; }
+        input[type="number"] { border: 1px solid #cbd5e0; border-radius: 8px; padding: 4px 8px; width: 80px; transition: all 0.2s; }
+        input[type="number"]:focus { outline: none; border-color: #6366f1; ring: 2px ring #6366f1; }
+        .badge-hot { background: #fee2e2; color: #991b1b; }
+        .badge-ice { background: #e0f2fe; color: #075985; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="p-4 md:p-8">
 
-<div class="sidebar bg-slate-900 text-white p-6">
-    <h2 class="text-2xl font-bold mb-8 text-orange-400">COFFEE DASHBOARD</h2>
-    <nav class="space-y-4">
-        <a href="#dashboard" class="block hover:text-orange-300">Overview Dashboard</a>
-        <a href="#espresso" class="block hover:text-orange-300">Parameter Espresso</a>
-        <a href="#ingredients" class="block hover:text-orange-300">Database Bahan Baku</a>
-        <a href="#menu" class="block hover:text-orange-300">Database Menu & HPP</a>
-    </nav>
-</div>
-
-<div class="content">
-    <section id="dashboard">
-        <h2 class="text-xl font-bold mb-4">Dashboard Overview</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="card bg-blue-50 border-l-4 border-blue-500">
-                <p class="text-sm text-gray-600">Total Biaya Operasional / Hari</p>
-                <h3 class="text-2xl font-bold">Rp 500.000</h3>
-                <p class="text-xs text-gray-500 mt-2">Listrik: 200rb | Gaji: 300rb (Rata-rata)</p>
+    <header class="mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Management Coffee Shop</h1>
+                <p class="text-slate-500 italic text-sm mt-1">Sistem Manajemen Terintegrasi: Bahan Baku, Resep, & Menu</p>
             </div>
-            <div class="card bg-green-50 border-l-4 border-green-500">
-                <p class="text-sm text-gray-600">Rata-rata Margin Toko</p>
-                <h3 id="avg-margin" class="text-2xl font-bold">0%</h3>
-            </div>
-            <div class="card bg-orange-50 border-l-4 border-orange-500">
-                <p class="text-sm text-gray-600">AI Global Insight</p>
-                <p id="global-insight" class="text-xs italic text-gray-700 font-medium">Menghitung data...</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="espresso" class="card">
-        <h2 class="text-xl font-bold mb-4 text-slate-700">Database 4: Parameter Espresso (Editable)</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="p-4 border rounded-lg bg-orange-50">
-                <h4 class="font-bold mb-2">Biji Kopi Toraja (KAKS)</h4>
-                <div class="flex items-center gap-2 mb-2">
-                    <label>Dose (gr):</label>
-                    <input type="number" id="dose-kaks" value="18" class="input-inline" onchange="calculateAll()">
-                    <label>Yield (ml):</label>
-                    <input type="number" id="yield-kaks" value="60" class="input-inline" onchange="calculateAll()">
+            <div class="flex gap-4">
+                <div class="card p-4 flex items-center gap-4">
+                    <div class="bg-indigo-100 p-3 rounded-xl text-indigo-600"><i class="fas fa-chart-pie"></i></div>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400">Avg Shop Margin</p>
+                        <h2 id="avg-margin-global" class="text-xl font-bold text-slate-800">0%</h2>
+                    </div>
                 </div>
-                <p class="text-sm font-semibold">Cost per ml: <span id="cost-kaks" class="text-red-600"></span></p>
             </div>
-            <div class="p-4 border rounded-lg bg-blue-50">
-                <h4 class="font-bold mb-2">Biji Kopi Sumatra (DIKS)</h4>
-                <div class="flex items-center gap-2 mb-2">
-                    <label>Dose (gr):</label>
-                    <input type="number" id="dose-diks" value="18" class="input-inline" onchange="calculateAll()">
-                    <label>Yield (ml):</label>
-                    <input type="number" id="yield-diks" value="36" class="input-inline" onchange="calculateAll()">
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
+        <div class="xl:col-span-1 space-y-8">
+            
+            <section class="card p-6">
+                <div class="flex items-center gap-2 mb-6 border-b pb-4">
+                    <i class="fas fa-vial text-indigo-500"></i>
+                    <h3 class="font-bold text-slate-800 uppercase tracking-wider text-sm">Parameter Espresso (Editable)</h3>
                 </div>
-                <p class="text-sm font-semibold">Cost per ml: <span id="cost-diks" class="text-red-600"></span></p>
-            </div>
-        </div>
-    </section>
+                <div class="space-y-4">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <p class="text-xs font-bold text-slate-500 mb-3">TORAJA (KAKS) - Rp 230.000/kg</p>
+                        <div class="flex justify-between items-center mb-2 text-sm">
+                            <label>Dose: <input type="number" id="dose-kaks" value="18" onchange="calculate()"> gr</label>
+                            <label>Yield: <input type="number" id="yield-kaks" value="60" onchange="calculate()"> ml</label>
+                        </div>
+                        <p class="text-[10px] text-indigo-600 font-bold">COST: <span id="cost-ml-kaks">Rp 0</span>/ml</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <p class="text-xs font-bold text-slate-500 mb-3">SUMATRA (DIKS) - Rp 280.000/kg</p>
+                        <div class="flex justify-between items-center mb-2 text-sm">
+                            <label>Dose: <input type="number" id="dose-diks" value="18" onchange="calculate()"> gr</label>
+                            <label>Yield: <input type="number" id="yield-diks" value="36" onchange="calculate()"> ml</label>
+                        </div>
+                        <p class="text-[10px] text-amber-600 font-bold">COST: <span id="cost-ml-diks">Rp 0</span>/ml</p>
+                    </div>
+                </div>
+            </section>
 
-    <section id="ingredients" class="card">
-        <h2 class="text-xl font-bold mb-4">Database 1: Bahan Baku</h2>
-        <div class="overflow-x-auto">
-            <table>
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th>Nama Bahan</th>
-                        <th>Kategori</th>
-                        <th>Brand</th>
-                        <th>Harga Beli (Rp)</th>
-                        <th>Isi (ml/gr)</th>
-                        <th>Cost/Unit</th>
-                        <th>Referensi Marketplace</th>
-                    </tr>
-                </thead>
-                <tbody id="ingredient-table-body">
-                    </tbody>
-            </table>
+            <section class="card overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20">
+                    <h3 class="font-bold text-slate-800 uppercase tracking-wider text-sm">Database Bahan Baku</h3>
+                </div>
+                <div class="overflow-y-auto max-h-[600px]">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-800 text-white uppercase">
+                            <tr>
+                                <th class="p-3">Bahan</th>
+                                <th class="p-3">Harga Beli</th>
+                                <th class="p-3">Unit Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingredients-list" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
-    </section>
 
-    <section id="menu" class="card">
-        <h2 class="text-xl font-bold mb-4">Database 3: Dashboard Menu, HPP, & Profit</h2>
-        <div class="overflow-x-auto">
-            <table>
-                <thead class="bg-slate-800 text-white">
-                    <tr>
-                        <th>Menu</th>
-                        <th>Tipe</th>
-                        <th>HPP Total</th>
-                        <th>Harga Jual</th>
-                        <th>Margin %</th>
-                        <th>Profit</th>
-                        <th>Rekomendasi (50-70%)</th>
-                        <th>AI Insight</th>
-                    </tr>
-                </thead>
-                <tbody id="menu-table-body">
-                    </tbody>
-            </table>
+        <div class="xl:col-span-2">
+            <section class="card overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20">
+                    <div>
+                        <h3 class="font-bold text-slate-800 uppercase tracking-wider text-sm">Dashboard Menu & HPP Terintegrasi</h3>
+                        <p class="text-[10px] text-slate-400 mt-1">HPP dihitung otomatis berdasarkan resep & parameter espresso</p>
+                    </div>
+                    <div id="ai-status" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full italic">AI Menganalisis...</div>
+                </div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[1000px]">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-white uppercase sticky top-0 z-10 shadow">
+                            <tr>
+                                <th class="p-4">Nama Menu</th>
+                                <th class="p-4">Tipe</th>
+                                <th class="p-4">HPP (Total)</th>
+                                <th class="p-4">Harga Jual</th>
+                                <th class="p-4">Margin %</th>
+                                <th class="p-4">Profit</th>
+                                <th class="p-4">Rekomendasi (50-70%)</th>
+                                <th class="p-4">AI Insight</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menu-list" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
-    </section>
-</div>
+
+    </div>
 
 <script>
-// --- DATABASE 1: BAHAN BAKU (FINAL DATA) ---
-const ingredients = {
-    "Toraja Kaks": { cat: "Kopi", brand: "Lokal", unit: "gr", price: 230000, qty: 1000, ref: "Marketplace Biji Kopi" },
-    "Sumatra Diks": { cat: "Kopi", brand: "Lokal", unit: "gr", price: 280000, qty: 1000, ref: "Marketplace Biji Kopi" },
-    "Monin Caramel": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "https://shopee.co.id/monin-official" },
-    "Monin Vanilla": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "https://tokopedia.com/monin" },
-    "Monin Tiramisu": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Banana": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Tokopedia Monin" },
-    "Monin Butterscotch": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Pandan": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Apple": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Melon": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Grenadine": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Lychee": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Mango": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Plum": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Strawberry": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "Monin Orange": { cat: "Syrup", brand: "Monin", unit: "ml", price: 165000, qty: 700, ref: "Shopee Monin" },
-    "UHT Diamond": { cat: "Dairy", brand: "Diamond", unit: "ml", price: 215000, qty: 12000, ref: "1 Dus isi 12L" },
-    "Susu Evaporasi": { cat: "Dairy", brand: "Sunbay", unit: "ml", price: 18000, qty: 380, ref: "Pasar Wajar" },
-    "SKM": { cat: "Dairy", brand: "Cap Enaak", unit: "ml", price: 15000, qty: 490, ref: "Pasar Wajar" },
-    "MaxCreamer": { cat: "Dairy", brand: "MaxCreamer", unit: "gr", price: 35000, qty: 500, ref: "Official Shop" },
-    "Cheese Cream": { cat: "Dairy", brand: "Anchor", unit: "ml", price: 85000, qty: 1000, ref: "Marketplace" },
-    "Oatside": { cat: "Dairy", brand: "Oatside", unit: "ml", price: 45000, qty: 1000, ref: "Official" },
-    "Hydro Coco": { cat: "Lain-lain", brand: "Hydro", unit: "ml", price: 8000, qty: 500, ref: "Minimarket" },
-    "Yakult": { cat: "Lain-lain", brand: "Yakult", unit: "pcs", price: 10000, qty: 5, ref: "Pasar" },
-    "Bubuk Coklat": { cat: "Powder", brand: "Premium", unit: "gr", price: 90000, qty: 1000, ref: "Marketplace" },
-    "Bubuk Matcha": { cat: "Powder", brand: "Premium", unit: "gr", price: 150000, qty: 1000, ref: "Marketplace" },
-    "Bubuk Taro": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
-    "Bubuk Red Velvet": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
-    "Bubuk Avocado": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
-    "Bubuk Vanilla": { cat: "Powder", brand: "Premium", unit: "gr", price: 85000, qty: 1000, ref: "Marketplace" },
-    "Skippy Peanut": { cat: "Lain-lain", brand: "Skippy", unit: "gr", price: 65000, qty: 340, ref: "Marketplace" },
-    "Lotus Biscoff": { cat: "Lain-lain", brand: "Lotus", unit: "gr", price: 85000, qty: 400, ref: "Marketplace" },
-    "Biskuit Lotus": { cat: "Lain-lain", brand: "Lotus", unit: "pcs", price: 25000, qty: 10, ref: "Marketplace" },
-    "Gula Aren": { cat: "Lain-lain", brand: "Dainchi", unit: "gr", price: 45000, qty: 1000, ref: "1kg Aren" },
-    "Simple Sugar": { cat: "Lain-lain", brand: "Home", unit: "ml", price: 15000, qty: 1000, ref: "Self Made" },
-    "Sprite": { cat: "Lain-lain", brand: "CocaCola", unit: "ml", price: 15000, qty: 1500, ref: "Marketplace" },
-    "Air Cleo": { cat: "Lain-lain", brand: "Cleo", unit: "ml", price: 20000, qty: 19000, ref: "Galon 19L" },
-    "Es Batu": { cat: "Operasional", brand: "Kristal", unit: "gr", price: 70000, qty: 8000, ref: "8kg/8 Kantong" },
-    "Packaging Hot": { cat: "Operasional", brand: "Generic", unit: "pcs", price: 900, qty: 1, ref: "Paper Cup + Lid" },
-    "Packaging Ice": { cat: "Operasional", brand: "Generic", unit: "pcs", price: 900, qty: 1, ref: "Cup + Lid + Straw" }
+// ==========================
+// 1. DATABASE BAHAN BAKU (FINAL)
+// ==========================
+const INGREDIENTS = {
+    // KOPI
+    "Toraja Kaks": { cat: "Kopi", price: 230000, qty: 1000, unit: "gr" },
+    "Sumatra Diks": { cat: "Kopi", price: 280000, qty: 1000, unit: "gr" },
+    // SYRUP MONIN (700ml) - Estimasi harga marketplace wajar Rp 165.000
+    "Syrup Caramel": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Vanilla": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Tiramisu": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Banana": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Butterscotch": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Pandan": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Apple": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Melon": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Grenadine": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Lychee": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Mango": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Plum": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Strawberry": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    "Syrup Orange": { cat: "Syrup", price: 165000, qty: 700, unit: "ml" },
+    // DAIRY
+    "UHT Diamond": { cat: "Dairy", price: 215000, qty: 12000, unit: "ml" }, // 1 dus 12L
+    "Susu Evaporasi": { cat: "Dairy", price: 18500, qty: 380, unit: "ml" },
+    "SKM": { cat: "Dairy", price: 16000, qty: 490, unit: "ml" },
+    "Creamer MaxCreamer": { cat: "Dairy", price: 38000, qty: 500, unit: "gr" },
+    "Cheese Cream": { cat: "Dairy", price: 90000, qty: 1000, unit: "ml" },
+    "Oatside": { cat: "Dairy", price: 45000, qty: 1000, unit: "ml" },
+    // LAIN-LAIN
+    "Gula Aren": { cat: "Lain", price: 45000, qty: 1000, unit: "gr" },
+    "Simple Sugar": { cat: "Lain", price: 15000, qty: 1000, unit: "ml" },
+    "Skippy": { cat: "Lain", price: 68000, qty: 340, unit: "gr" },
+    "Spread Biscoff": { cat: "Lain", price: 85000, qty: 400, unit: "gr" },
+    "Biskuit Lotus": { cat: "Lain", price: 2500, qty: 1, unit: "pcs" },
+    "Saus Caramel": { cat: "Lain", price: 65000, qty: 500, unit: "ml" },
+    "Saus Strawberry": { cat: "Lain", price: 55000, qty: 500, unit: "ml" },
+    "Hydro Coco": { cat: "Lain", price: 8500, qty: 500, unit: "ml" },
+    "Sprite": { cat: "Lain", price: 15000, qty: 1500, unit: "ml" },
+    "Yakult": { cat: "Lain", price: 2500, qty: 1, unit: "pcs" },
+    "Air Cleo": { cat: "Lain", price: 20000, qty: 19000, unit: "ml" },
+    "Jeruk Nipis": { cat: "Lain", price: 2000, qty: 1, unit: "pcs" },
+    "Biji Selasih": { cat: "Lain", price: 5000, qty: 100, unit: "gr" },
+    "Buah Lychee": { cat: "Lain", price: 3000, qty: 1, unit: "pcs" },
+    // POWDER
+    "Bubuk Avocado": { cat: "Powder", price: 95000, qty: 1000, unit: "gr" },
+    "Bubuk Taro": { cat: "Powder", price: 85000, qty: 1000, unit: "gr" },
+    "Bubuk Red Velvet": { cat: "Powder", price: 85000, qty: 1000, unit: "gr" },
+    "Bubuk Coklat": { cat: "Powder", price: 95000, qty: 1000, unit: "gr" },
+    "Bubuk Vanilla": { cat: "Powder", price: 85000, qty: 1000, unit: "ml" },
+    "Bubuk Matcha": { cat: "Powder", price: 150000, qty: 1000, unit: "gr" },
+    // TEA
+    "Butterfly Tea": { cat: "Tea", price: 500, qty: 1, unit: "ml" },
+    "Thai Tea": { cat: "Tea", price: 500, qty: 1, unit: "ml" },
+    "Green Tea": { cat: "Tea", price: 500, qty: 1, unit: "ml" },
+    "Berry Tea": { cat: "Tea", price: 500, qty: 1, unit: "ml" },
+    "Ekstrak Tea": { cat: "Tea", price: 200, qty: 1, unit: "ml" },
+    // PACKAGING & OPS
+    "Es Batu": { cat: "Ops", price: 70000, qty: 8000, unit: "gr" },
+    "Cup Ice": { cat: "Ops", price: 900, qty: 1, unit: "pcs" },
+    "Cup Hot": { cat: "Ops", price: 900, qty: 1, unit: "pcs" }
 };
 
-// --- DATABASE 3: MENU & COMPOSITION ---
-const menus = [
-    { name: "Kopi Susu", cat: "Coffee Based", type: "Ice", price: 25000, recipe: { "SKM": 20, "MaxCreamer": 15, "Susu Evaporasi": 10, "UHT Diamond": 70 }, espressoType: "KAKS_SPECIAL", espressoVol: 35 },
-    { name: "Tuan Rumah", cat: "Coffee Based", type: "Ice", price: 28000, recipe: { "Gula Aren": 25, "MaxCreamer": 25, "UHT Diamond": 100 }, espressoType: "KAKS", espressoVol: 30 },
-    { name: "Tiramisu", cat: "Coffee Based", type: "Ice", price: 32000, recipe: { "Monin Tiramisu": 20, "SKM": 10, "MaxCreamer": 15, "UHT Diamond": 100, "Cheese Cream": 20 }, espressoType: "KAKS", espressoVol: 30 },
-    { name: "Berry Cano", cat: "Specialty", type: "Ice", price: 25000, recipe: { "Monin Grenadine": 20, "Simple Sugar": 10, "Air Cleo": 100 }, espressoType: "DIKS", espressoVol: 30 },
-    { name: "Matcha", cat: "Non Coffee", type: "Ice", price: 28000, recipe: { "Bubuk Matcha": 20, "SKM": 15, "MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 110 }, espressoType: "NONE", espressoVol: 0 },
-    { name: "Espresso Hot", cat: "Specialty", type: "Hot", price: 15000, recipe: {}, espressoType: "DIKS", espressoVol: 30 },
-    { name: "Latte Ice", cat: "Specialty", type: "Ice", price: 28000, recipe: { "UHT Diamond": 120 }, espressoType: "DIKS", espressoVol: 30 }
+// ==========================
+// 2. DATABASE MENU & RESEP (FULL 30+ MENU)
+// ==========================
+const MENUS = [
+    // COFFEE BASED
+    { name: "Kopi Susu", cat: "Coffee Based", type: "Ice", price: 25000, espType: "KAKS_SPECIAL", espVol: 35, recipe: { "SKM": 20, "Creamer MaxCreamer": 15, "Susu Evaporasi": 10, "UHT Diamond": 70 } },
+    { name: "Tuan Rumah", cat: "Coffee Based", type: "Ice", price: 28000, espType: "KAKS", espVol: 30, recipe: { "Gula Aren": 25, "Creamer MaxCreamer": 25, "UHT Diamond": 100 } },
+    { name: "Tiramisu", cat: "Coffee Based", type: "Ice", price: 32000, espType: "KAKS", espVol: 30, recipe: { "Syrup Tiramisu": 20, "SKM": 10, "Creamer MaxCreamer": 15, "UHT Diamond": 100, "Cheese Cream": 20 } },
+    { name: "Banana", cat: "Coffee Based", type: "Ice", price: 32000, espType: "KAKS", espVol: 30, recipe: { "Syrup Banana": 20, "SKM": 10, "Creamer MaxCreamer": 15, "UHT Diamond": 100 } },
+    { name: "Biscoff", cat: "Coffee Based", type: "Ice", price: 35000, espType: "KAKS", espVol: 30, recipe: { "Spread Biscoff": 15, "SKM": 10, "Syrup Caramel": 10, "Creamer MaxCreamer": 10, "UHT Diamond": 100, "Biskuit Lotus": 1 } },
+    { name: "Butterscotch", cat: "Coffee Based", type: "Ice", price: 35000, espType: "KAKS", espVol: 30, recipe: { "Syrup Butterscotch": 20, "SKM": 10, "Creamer MaxCreamer": 15, "UHT Diamond": 70, "Cheese Cream": 20 } },
+    { name: "Pandan", cat: "Coffee Based", type: "Ice", price: 32000, espType: "KAKS", espVol: 30, recipe: { "Syrup Pandan": 20, "SKM": 10, "Susu Evaporasi": 10, "Creamer MaxCreamer": 20, "Oatside": 100 } },
+    { name: "Peanut Butter", cat: "Coffee Based", type: "Ice", price: 32000, espType: "KAKS", espVol: 30, recipe: { "Skippy": 15, "SKM": 10, "Syrup Caramel": 10, "Creamer MaxCreamer": 10, "UHT Diamond": 100 } },
+    { name: "Caramel Macchiato", cat: "Coffee Based", type: "Ice", price: 38000, espType: "KAKS", espVol: 30, recipe: { "Syrup Caramel": 10, "Syrup Vanilla": 10, "SKM": 10, "Creamer MaxCreamer": 20, "UHT Diamond": 100, "Saus Caramel": 20, "Cheese Cream": 20 } },
+    
+    // AMERICANO SERIES
+    { name: "Berry Cano", cat: "Specialty", type: "Ice", price: 25000, espType: "DIKS", espVol: 30, recipe: { "Syrup Grenadine": 20, "Simple Sugar": 10, "Air Cleo": 100 } },
+    { name: "Apple Cano", cat: "Specialty", type: "Ice", price: 25000, espType: "DIKS", espVol: 30, recipe: { "Syrup Apple": 20, "Simple Sugar": 10, "Air Cleo": 100 } },
+    { name: "Melon Cano", cat: "Specialty", type: "Ice", price: 25000, espType: "DIKS", espVol: 30, recipe: { "Syrup Melon": 20, "Simple Sugar": 10, "Air Cleo": 100 } },
+    
+    // NON COFFEE
+    { name: "Avocado", cat: "Non Coffee", type: "Ice", price: 28000, espType: "NONE", espVol: 0, recipe: { "SKM": 10, "Bubuk Avocado": 20, "Creamer MaxCreamer": 15, "Air Cleo": 20, "UHT Diamond": 100 } },
+    { name: "Taro", cat: "Non Coffee", type: "Ice", price: 28000, espType: "NONE", espVol: 0, recipe: { "SKM": 25, "Bubuk Taro": 4, "Creamer MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 100 } },
+    { name: "Red Velvet", cat: "Non Coffee", type: "Ice", price: 28000, espType: "NONE", espVol: 0, recipe: { "SKM": 20, "Bubuk Red Velvet": 25, "Creamer MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 100 } },
+    { name: "Chocolate Signature", cat: "Non Coffee", type: "Ice", price: 28000, espType: "NONE", espVol: 0, recipe: { "Gula Aren": 15, "Bubuk Coklat": 13, "Creamer MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 100 } },
+    { name: "Caramel Latte", cat: "Non Coffee", type: "Ice", price: 30000, espType: "NONE", espVol: 0, recipe: { "Syrup Caramel": 20, "SKM": 10, "UHT Diamond": 100, "Saus Caramel": 20 } },
+    { name: "Creamy Coco", cat: "Non Coffee", type: "Ice", price: 35000, espType: "NONE", espVol: 0, recipe: { "Syrup Tiramisu": 15, "SKM": 10, "Bubuk Coklat": 10, "Creamer MaxCreamer": 10, "Air Cleo": 20, "Yakult": 1, "UHT Diamond": 50, "Cheese Cream": 20 } },
+    { name: "Coconut Plum", cat: "Non Coffee", type: "Ice", price: 28000, espType: "NONE", espVol: 0, recipe: { "Syrup Grenadine": 10, "Syrup Plum": 10, "Hydro Coco": 90, "Sprite": 60 } },
+    { name: "Butter Cream", cat: "Non Coffee", type: "Ice", price: 32000, espType: "NONE", espVol: 0, recipe: { "Skippy": 20, "SKM": 10, "Creamer MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 100 } },
+    { name: "Strawberry Love", cat: "Non Coffee", type: "Ice", price: 32000, espType: "NONE", espVol: 0, recipe: { "Syrup Strawberry": 20, "SKM": 5, "Creamer MaxCreamer": 20, "Air Cleo": 20, "UHT Diamond": 100, "Saus Strawberry": 20 } },
+    
+    // TEA
+    { name: "Matcha", cat: "Specialty", type: "Ice", price: 30000, espType: "NONE", espVol: 0, recipe: { "Bubuk Matcha": 20, "SKM": 15, "Creamer MaxCreamer": 10, "Air Cleo": 20, "UHT Diamond": 110 } },
+    { name: "Butterfly Tea", cat: "Specialty", type: "Ice", price: 20000, espType: "NONE", espVol: 0, recipe: { "Butterfly Tea": 180, "Simple Sugar": 40 } },
+    { name: "Thai Tea", cat: "Specialty", type: "Ice", price: 22000, espType: "NONE", espVol: 0, recipe: { "SKM": 50, "Susu Evaporasi": 20, "Thai Tea": 150 } },
+    { name: "Lychee Tea", cat: "Specialty", type: "Ice", price: 25000, espType: "NONE", espVol: 0, recipe: { "Simple Sugar": 20, "Syrup Lychee": 30, "Ekstrak Tea": 150, "Buah Lychee": 2 } },
+    { name: "Mango Squash", cat: "Specialty", type: "Ice", price: 22000, espType: "NONE", espVol: 0, recipe: { "Syrup Mango": 20, "Jeruk Nipis": 5, "Biji Selasih": 10, "Sprite": 110 } },
+    
+    // SPECIALTY COFFEE (DIKS BASED)
+    { name: "Espresso Hot", cat: "Specialty", type: "Hot", price: 15000, espType: "DIKS", espVol: 30, recipe: {} },
+    { name: "Americano", cat: "Specialty", type: "Ice", price: 22000, espType: "DIKS", espVol: 30, recipe: { "Air Cleo": 100 } },
+    { name: "Latte Ice", cat: "Specialty", type: "Ice", price: 28000, espType: "DIKS", espVol: 30, recipe: { "UHT Diamond": 120 } },
+    { name: "Cappuccino", cat: "Specialty", type: "Ice", price: 28000, espType: "DIKS", espVol: 30, recipe: { "Simple Sugar": 10, "UHT Diamond": 90 } },
+    { name: "Magic", cat: "Specialty", type: "Hot", price: 30000, espType: "DIKS", espVol: 36, recipe: { "Oatside": 120 } },
+    { name: "Mocha Ice", cat: "Specialty", type: "Ice", price: 32000, espType: "DIKS", espVol: 30, recipe: { "SKM": 20, "Bubuk Coklat": 8, "Creamer MaxCreamer": 10, "UHT Diamond": 100 } }
 ];
 
-function calculateAll() {
-    const doseKaks = document.getElementById('dose-kaks').value;
-    const yieldKaks = document.getElementById('yield-kaks').value;
-    const doseDiks = document.getElementById('dose-diks').value;
-    const yieldDiks = document.getElementById('yield-diks').value;
+function calculate() {
+    // 1. Ambil Parameter Espresso
+    const dKaks = parseFloat(document.getElementById('dose-kaks').value);
+    const yKaks = parseFloat(document.getElementById('yield-kaks').value);
+    const dDiks = parseFloat(document.getElementById('dose-diks').value);
+    const yDiks = parseFloat(document.getElementById('yield-diks').value);
 
-    // Hitung Cost Espresso per ml
-    const costKaksPerMl = (ingredients["Toraja Kaks"].price / 1000 * doseKaks) / yieldKaks;
-    const costDiksPerMl = (ingredients["Sumatra Diks"].price / 1000 * doseDiks) / yieldDiks;
+    // 2. Hitung Cost/ml Espresso
+    const costKaks = (INGREDIENTS["Toraja Kaks"].price / 1000 * dKaks) / yKaks;
+    const costDiks = (INGREDIENTS["Sumatra Diks"].price / 1000 * dDiks) / yDiks;
+    // Khusus Kopi Susu: 18g -> 35ml
+    const costKaksSpecial = (INGREDIENTS["Toraja Kaks"].price / 1000 * dKaks) / 35;
 
-    document.getElementById('cost-kaks').innerText = `Rp ${costKaksPerMl.toFixed(2)}/ml`;
-    document.getElementById('cost-diks').innerText = `Rp ${costDiksPerMl.toFixed(2)}/ml`;
+    document.getElementById('cost-ml-kaks').innerText = `Rp ${costKaks.toFixed(1)}`;
+    document.getElementById('cost-ml-diks').innerText = `Rp ${costDiks.toFixed(1)}`;
 
-    renderIngredients();
-    renderMenu(costKaksPerMl, costDiksPerMl, doseKaks);
+    render(costKaks, costDiks, costKaksSpecial);
 }
 
-function renderIngredients() {
-    const tbody = document.getElementById('ingredient-table-body');
-    tbody.innerHTML = '';
-    for (let key in ingredients) {
-        const item = ingredients[key];
+function render(cKaks, cDiks, cKaksSpec) {
+    // Render Ingredients
+    const ingList = document.getElementById('ingredients-list');
+    ingList.innerHTML = '';
+    for (let key in INGREDIENTS) {
+        const item = INGREDIENTS[key];
         const unitCost = item.price / item.qty;
-        tbody.innerHTML += `<tr>
-            <td class="font-bold">${key}</td>
-            <td>${item.cat}</td>
-            <td>${item.brand}</td>
-            <td>${item.price.toLocaleString()}</td>
-            <td>${item.qty} ${item.unit}</td>
-            <td class="text-orange-600 font-bold">Rp ${unitCost.toFixed(2)}</td>
-            <td class="text-blue-500 text-xs truncate max-w-[150px]"><a href="#">${item.ref}</a></td>
-        </tr>`;
+        ingList.innerHTML += `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-3 font-semibold">${key}</td>
+                <td class="p-3 text-slate-500">Rp ${item.price.toLocaleString()}</td>
+                <td class="p-3 text-indigo-600 font-bold">Rp ${unitCost.toFixed(1)}/${item.unit}</td>
+            </tr>
+        `;
     }
-}
 
-function renderMenu(costKaks, costDiks, doseKaks) {
-    const tbody = document.getElementById('menu-table-body');
-    tbody.innerHTML = '';
-    let totalMargin = 0;
+    // Render Menus
+    const menuList = document.getElementById('menu-list');
+    menuList.innerHTML = '';
+    let totalMarginShop = 0;
 
-    menus.forEach(menu => {
+    MENUS.forEach(menu => {
         let hpp = 0;
-        // 1. Hitung Recipe
-        for (let ing in menu.recipe) {
-            hpp += (ingredients[ing].price / ingredients[ing].qty) * menu.recipe[ing];
-        }
         
-        // 2. Hitung Espresso
-        if (menu.espressoType === "KAKS") hpp += costKaks * menu.espressoVol;
-        if (menu.espressoType === "DIKS") hpp += costDiks * menu.espressoVol;
-        if (menu.espressoType === "KAKS_SPECIAL") {
-            // Rasio khusus kopi susu: 18g jadi 35ml. HPP per ml beda.
-            const costKaksSpecial = (ingredients["Toraja Kaks"].price / 1000 * doseKaks) / 35;
-            hpp += costKaksSpecial * 35;
+        // A. Recipe Rollup
+        for (let ingName in menu.recipe) {
+            const ing = INGREDIENTS[ingName];
+            hpp += (ing.price / ing.qty) * menu.recipe[ingName];
         }
 
-        // 3. Packaging & Es Batu
-        hpp += 900; // Cup & Lid
+        // B. Espresso Rollup
+        if (menu.espType === "KAKS") hpp += cKaks * menu.espVol;
+        else if (menu.espType === "DIKS") hpp += cDiks * menu.espVol;
+        else if (menu.espType === "KAKS_SPECIAL") hpp += cKaksSpec * menu.espVol;
+
+        // C. Packaging & Ice
+        const packPrice = menu.type === "Ice" ? INGREDIENTS["Cup Ice"].price : INGREDIENTS["Cup Hot"].price;
+        hpp += packPrice;
         if (menu.type === "Ice") {
-            hpp += (70000 / 8000) * 100; // Es batu 100gr
+            hpp += (INGREDIENTS["Es Batu"].price / INGREDIENTS["Es Batu"].qty) * 100;
         }
 
         const profit = menu.price - hpp;
         const margin = (profit / menu.price) * 100;
-        totalMargin += margin;
+        totalMarginShop += margin;
 
         const recMin = hpp / 0.5;
         const recMax = hpp / 0.3;
 
-        // AI Insight Logic
-        let insight = margin < 50 ? "⚠️ Margin Tipis. Naikkan harga!" : "✅ Sehat.";
-        if (hpp > 15000) insight = "💎 High-End Cost.";
-
-        tbody.innerHTML += `<tr>
-            <td class="font-bold">${menu.name}</td>
-            <td><span class="px-2 py-1 bg-gray-200 rounded text-xs">${menu.type}</span></td>
-            <td class="text-red-600 font-bold">Rp ${Math.round(hpp).toLocaleString()}</td>
-            <td>Rp ${menu.price.toLocaleString()}</td>
-            <td class="${margin < 50 ? 'text-red-500' : 'text-green-600'} font-bold">${margin.toFixed(1)}%</td>
-            <td>Rp ${Math.round(profit).toLocaleString()}</td>
-            <td class="text-xs text-gray-500">Rp ${Math.round(recMin).toLocaleString()} - ${Math.round(recMax).toLocaleString()}</td>
-            <td class="text-xs italic">${insight}</td>
-        </tr>`;
+        menuList.innerHTML += `
+            <tr class="hover:bg-indigo-50/50 transition border-b border-slate-50">
+                <td class="p-4 font-bold text-slate-800">${menu.name}</td>
+                <td class="p-4"><span class="px-2 py-1 rounded-full text-[9px] font-bold uppercase ${menu.type === 'Ice' ? 'badge-ice' : 'badge-hot'}">${menu.type}</span></td>
+                <td class="p-4 font-mono font-bold text-slate-600">Rp ${Math.round(hpp).toLocaleString()}</td>
+                <td class="p-4 font-semibold">Rp ${menu.price.toLocaleString()}</td>
+                <td class="p-4 font-bold ${margin < 50 ? 'text-rose-500' : 'text-emerald-600'}">${margin.toFixed(1)}%</td>
+                <td class="p-4 font-semibold text-slate-700">Rp ${Math.round(profit).toLocaleString()}</td>
+                <td class="p-4 text-[10px] text-slate-400">Rp ${Math.round(recMin).toLocaleString()} - ${Math.round(recMax).toLocaleString()}</td>
+                <td class="p-4 italic text-[10px] ${margin < 50 ? 'text-rose-400' : 'text-slate-400'}">${margin < 50 ? '⚠️ LOW MARGIN' : '✅ SEHAT'}</td>
+            </tr>
+        `;
     });
 
-    const avg = totalMargin / menus.length;
-    document.getElementById('avg-margin').innerText = `${avg.toFixed(1)}%`;
-    document.getElementById('global-insight').innerText = avg < 50 ? 
-        "PERINGATAN: Rata-rata margin di bawah 50%. Segera evaluasi harga jual atau cari substitusi bahan baku yang lebih murah untuk menjaga profitabilitas operasional." : 
-        "PERFORMA BAGUS: Rata-rata margin sudah ideal di atas 50%. Fokus pada volume penjualan dan kualitas konsistensi rasa.";
+    const avg = totalMarginShop / MENUS.length;
+    document.getElementById('avg-margin-global').innerText = `${avg.toFixed(1)}%`;
+    document.getElementById('ai-status').innerText = avg < 55 ? "AI: Segera Review Harga Jual!" : "AI: Performa Margin Bagus";
 }
 
-// Initial Load
-calculateAll();
+// Init
+calculate();
 </script>
-
 </body>
 </html>
