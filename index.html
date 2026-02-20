@@ -3,403 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah OS - Full Database Edition</title>
+    <title>Tuan Rumah OS - Integrated Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F2F2F7; padding-bottom: 90px; }
-        .ios-blur { backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-        .ios-card { border-radius: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.3); }
+        body { font-family: 'Inter', sans-serif; background-color: #F2F2F7; padding-bottom: 100px; }
+        .ios-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .ios-card { border-radius: 20px; background: white; border: 1px solid rgba(0,0,0,0.05); }
+        .ios-input { background: #F2F2F7; border: none; border-radius: 10px; padding: 8px 12px; font-weight: 600; outline: none; transition: 0.2s; }
+        .ios-input:focus { background: #E5E5EA; box-shadow: 0 0 0 2px #007AFF; }
         [x-cloak] { display: none !important; }
         
-        /* Category Styles */
-        .badge-kopi { background: #EFEBE9; color: #5D4037; }
-        .badge-syrup { background: #FCE4EC; color: #C2185B; }
-        .badge-dairy { background: #E3F2FD; color: #1976D2; }
-        .badge-powder { background: #F3E5F5; color: #7B1FA2; }
-        .badge-tea { background: #E8F5E9; color: #388E3C; }
-        .badge-ops { background: #ECEFF1; color: #455A64; }
-        .badge-other { background: #E0F2F1; color: #00796B; }
-
-        .active-tab { color: #007AFF !important; transform: scale(1.1); }
+        /* Category Colors */
+        .cat-kopi { background: #5D4037; color: white; }
+        .cat-syrup { background: #D81B60; color: white; }
+        .cat-dairy { background: #007AFF; color: white; }
+        .cat-powder { background: #8E44AD; color: white; }
+        .cat-tea { background: #27AE60; color: white; }
+        .cat-ops { background: #455A64; color: white; }
     </style>
 </head>
-<body class="text-slate-900" x-data="coffeeApp()" x-init="init()">
+<body x-data="tuanRumahApp()" x-init="init()" class="text-slate-900">
 
-    <aside class="fixed left-0 top-0 h-full w-72 bg-white/80 border-r border-gray-200 ios-blur hidden lg:flex flex-col z-50">
-        <div class="p-8">
-            <h1 class="text-2xl font-black tracking-tighter italic">TUAN RUMAH</h1>
-            <p class="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Enterprise Resource Planning</p>
-        </div>
-        <nav class="flex-1 px-6 space-y-2">
-            <template x-for="tab in tabs" :key="tab.id">
-                <button @click="activeTab = tab.id" 
-                        :class="activeTab === tab.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'text-slate-400 hover:bg-gray-100'"
-                        class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all">
-                    <span class="text-xl" x-text="tab.icon"></span>
-                    <span x-text="tab.name"></span>
-                </button>
-            </template>
-        </nav>
-    </aside>
-
-    <nav class="fixed bottom-6 left-6 right-6 h-20 bg-white/90 border border-white/20 shadow-2xl ios-blur rounded-[32px] flex justify-around items-center px-4 lg:hidden z-50">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 border-t border-gray-200 ios-blur flex justify-around items-center py-4 z-50">
         <template x-for="tab in tabs" :key="tab.id">
-            <button @click="activeTab = tab.id" class="flex flex-col items-center gap-1 transition-all" :class="activeTab === tab.id ? 'active-tab' : 'text-slate-400'">
+            <button @click="activeTab = tab.id" 
+                    :class="activeTab === tab.id ? 'text-blue-600' : 'text-gray-400'"
+                    class="flex flex-col items-center transition-all duration-300">
                 <span class="text-2xl" x-text="tab.icon"></span>
-                <span class="text-[9px] font-black uppercase tracking-tighter" x-text="tab.name"></span>
+                <span class="text-[10px] font-bold uppercase mt-1" x-text="tab.name"></span>
             </button>
         </template>
     </nav>
 
-    <main class="lg:ml-72 min-h-screen">
-        <header class="sticky top-0 z-40 bg-[#F2F2F7]/80 ios-blur px-8 py-6 flex justify-between items-end">
+    <header class="p-6 pt-10 sticky top-0 bg-[#F2F2F7]/90 ios-blur z-40">
+        <div class="max-w-6xl mx-auto flex justify-between items-end">
             <div>
-                <p class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Management System</p>
-                <h2 class="text-3xl font-black tracking-tight" x-text="tabs.find(t => t.id === activeTab).name"></h2>
+                <h1 class="text-3xl font-black tracking-tighter">Tuan Rumah OS</h1>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest" x-text="tabs.find(t => t.id === activeTab)?.fullName || 'Dashboard'"></p>
             </div>
-            <div class="hidden md:block text-right">
-                <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100">
-                    <p class="text-[9px] font-black text-gray-400 uppercase">Espresso (Diks)</p>
-                    <p class="text-sm font-black text-slate-800">Rp <span x-text="formatNumber(espressoPrice)"></span></p>
-                </div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-blue-600 uppercase">Est. Monthly Profit</p>
+                <p class="text-xl font-black" x-text="'Rp' + formatNumber(calculateTotalProfit())"></p>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <div class="p-8">
+    <main class="max-w-6xl mx-auto p-6">
+        <section x-show="activeTab === 'dashboard'" x-cloak>
+             <div class="ios-card p-10 text-center">
+                <h2 class="text-2xl font-black mb-2">Selamat Datang di Tuan Rumah OS</h2>
+                <p class="text-gray-500 mb-6">Kelola HPP dan margin menu cafe Anda dengan presisi.</p>
+                <button @click="activeTab = 'bahan'" class="bg-blue-600 text-white px-6 py-3 rounded-full font-bold">Mulai Atur Bahan</button>
+             </div>
+        </section>
 
-            <section x-show="activeTab === 'bahan'" x-cloak class="space-y-4">
-                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                    <template x-for="cat in categories">
-                        <button @click="filterCat = cat" :class="filterCat === cat ? 'bg-slate-900 text-white' : 'bg-white text-slate-500'" class="px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-sm transition-all" x-text="cat"></button>
-                    </template>
-                </div>
+        <section x-show="activeTab === 'bahan'" x-cloak class="space-y-4">
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <template x-for="c in categories">
+                    <button @click="filterCat = c" :class="filterCat === c ? 'bg-blue-600 text-white' : 'bg-white text-gray-500'" 
+                            class="px-4 py-2 rounded-full text-xs font-bold shadow-sm whitespace-nowrap" x-text="c"></button>
+                </template>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    <template x-for="item in filteredBahan" :key="item.nama">
-                        <div class="bg-white ios-card p-5 shadow-sm hover:shadow-md">
-                            <div class="flex justify-between items-start mb-4">
-                                <span :class="getBadgeClass(item.kategori)" class="px-3 py-1 rounded-lg text-[10px] font-black uppercase" x-text="item.kategori"></span>
-                                <p class="text-[10px] font-bold text-gray-400" x-text="item.isi + ' ' + item.satuan"></p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <template x-for="(item, index) in filteredBahan" :key="index">
+                    <div class="ios-card p-5 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <select x-model="item.kategori" :class="getCatStyle(item.kategori)" class="px-2 py-1 rounded-lg text-[9px] font-black uppercase outline-none border-none cursor-pointer">
+                                <template x-for="cat in categories.filter(c => c !== 'Semua')">
+                                    <option :value="cat" x-text="cat"></option>
+                                </template>
+                            </select>
+                            <button @click="deleteBahan(index)" class="text-red-400 hover:text-red-600">✕</button>
+                        </div>
+                        <input x-model="item.nama" class="w-full bg-transparent font-bold text-slate-800 text-sm mb-3 border-b border-transparent hover:border-gray-200 outline-none">
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase">Harga Beli</label>
+                                <input type="number" x-model.number="item.hargaBeli" class="ios-input w-full text-xs">
                             </div>
-                            <h4 class="text-sm font-extrabold text-slate-800 mb-1" x-text="item.nama"></h4>
-                            <div class="flex justify-between items-end mt-4 pt-4 border-t border-gray-50">
-                                <div>
-                                    <p class="text-[9px] font-black text-gray-400 uppercase">Harga Beli</p>
-                                    <p class="text-xs font-bold">Rp <span x-text="formatNumber(item.hargaBeli)"></span></p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-[9px] font-black text-blue-400 uppercase tracking-tighter">Cost per <span x-text="item.satuan"></span></p>
-                                    <p class="text-lg font-black text-blue-600">Rp <span x-text="formatNumber(item.hargaSatuan)"></span></p>
-                                </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase">Isi (<span x-text="item.satuan"></span>)</label>
+                                <input type="number" x-model.number="item.isi" class="ios-input w-full text-xs">
                             </div>
-                        </div>
-                    </template>
-                </div>
-            </section>
-
-            <section x-show="activeTab === 'resep'" x-cloak class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <template x-for="res in resepList" :key="res.menu">
-                    <div class="bg-white ios-card p-6 shadow-sm border border-gray-100 flex flex-col">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-black tracking-tight" x-text="res.menu"></h3>
-                            <span :class="getMenuBadge(res.menu)" class="px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-sm" x-text="getMenuCategory(res.menu)"></span>
-                        </div>
-                        <div class="flex-1 space-y-3">
-                            <template x-for="ing in res.komposisi">
-                                <div class="flex justify-between items-center text-xs">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                        <span class="text-slate-600 font-medium" x-text="ing.nama"></span>
-                                    </div>
-                                    <div class="flex gap-4 items-center">
-                                        <span class="text-gray-400 font-bold" x-text="ing.qty + ing.unit"></span>
-                                        <span class="font-mono font-bold text-slate-800" x-text="'Rp' + formatNumber(calculateIngCost(ing.nama, ing.qty))"></span>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="mt-8 pt-6 border-t-2 border-dashed border-gray-100 flex justify-between items-center">
-                            <p class="text-xs font-black text-gray-400 uppercase tracking-widest">Calculated HPP</p>
-                            <p class="text-2xl font-black text-slate-900">Rp <span x-text="formatNumber(calculateMenuHPP(res.menu))"></span></p>
                         </div>
                     </div>
                 </template>
-            </section>
+                <button @click="addBahan()" class="ios-card border-2 border-dashed border-gray-300 flex items-center justify-center p-10 text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all">
+                    + Tambah Bahan
+                </button>
+            </div>
+        </section>
 
-            <section x-show="activeTab === 'menu'" x-cloak class="space-y-4">
-                <div class="bg-white ios-card shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-gray-100">
-                                <th class="p-6 text-[10px] font-black uppercase text-gray-400">Menu Name</th>
-                                <th class="p-6 text-[10px] font-black uppercase text-gray-400">Category</th>
-                                <th class="p-6 text-[10px] font-black uppercase text-gray-400 text-right">Sales Price</th>
-                                <th class="p-6 text-[10px] font-black uppercase text-gray-400 text-right">Profit</th>
-                                <th class="p-6 text-[10px] font-black uppercase text-blue-600 text-center">Margin</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            <template x-for="m in menuItems" :key="m.nama">
-                                <tr class="hover:bg-slate-50/50 transition-colors cursor-pointer">
-                                    <td class="p-6 font-extrabold text-slate-800" x-text="m.nama"></td>
-                                    <td class="p-6">
-                                        <span :class="getMenuBadge(m.nama)" class="px-3 py-1 rounded-lg text-[9px] font-black uppercase" x-text="m.kategori"></span>
-                                    </td>
-                                    <td class="p-6 text-right font-mono font-bold">Rp <span x-text="formatNumber(m.hargaJual)"></span></td>
-                                    <td class="p-6 text-right font-mono font-bold text-green-600">Rp <span x-text="formatNumber(m.hargaJual - calculateMenuHPP(m.nama))"></span></td>
-                                    <td class="p-6">
-                                        <div class="flex flex-col items-center gap-1">
-                                            <span class="text-sm font-black" :class="calculateMargin(m.nama) < 50 ? 'text-red-500' : 'text-blue-600'" x-text="calculateMargin(m.nama) + '%'"></span>
-                                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-blue-500" :style="`width: ${calculateMargin(m.nama)}%`"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section x-show="activeTab === 'dashboard'" x-cloak class="space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 ios-card shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Revenue (Dec)</p>
-                        <h4 class="text-2xl font-black text-slate-900 mt-1">Rp 103.811.000</h4>
-                    </div>
-                    <div class="bg-blue-600 p-6 ios-card shadow-xl shadow-blue-100 text-white">
-                        <p class="text-[10px] font-black uppercase tracking-widest opacity-70">Avg. Business Margin</p>
-                        <h4 class="text-3xl font-black mt-1" x-text="avgMargin + '%'"></h4>
-                    </div>
-                    <div class="bg-white p-6 ios-card shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ingredients Data</p>
-                        <h4 class="text-2xl font-black text-slate-900 mt-1" x-text="bahanBaku.length"></h4>
-                    </div>
-                    <div class="bg-white p-6 ios-card shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Menu Items</p>
-                        <h4 class="text-2xl font-black text-slate-900 mt-1" x-text="menuItems.length"></h4>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900 ios-card p-10 text-white relative overflow-hidden">
-                    <div class="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[100px]"></div>
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-8">
-                            <span class="bg-blue-600 px-3 py-1 rounded-md text-[10px] font-black uppercase">AI Strategy Advisor</span>
-                            <div class="h-[1px] flex-1 bg-white/10"></div>
-                        </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                            <div>
-                                <h3 class="text-3xl font-bold tracking-tight mb-6 italic">Ringkasan Eksekutif</h3>
-                                <p class="text-slate-400 leading-relaxed mb-8" x-text="globalInsight"></p>
-                                <div class="space-y-4">
-                                    <div class="bg-white/5 p-5 rounded-3xl border border-white/10">
-                                        <p class="text-blue-400 font-bold text-xs uppercase mb-1 tracking-widest italic">Top Margin Category</p>
-                                        <p class="text-sm">Tea Series dan Specialty Coffee mendominasi profitabilitas di atas 75%.</p>
-                                    </div>
-                                    <div class="bg-white/5 p-5 rounded-3xl border border-white/10">
-                                        <p class="text-amber-400 font-bold text-xs uppercase mb-1 tracking-widest italic">Cost Alert</p>
-                                        <p class="text-sm">Kenaikan Arabika Specialty Diks sebesar Rp 10.000/kg akan memotong profit bersih bulanan sebesar Rp 850.000.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex flex-col justify-center">
-                                <div class="bg-blue-600/10 p-8 rounded-[40px] border border-blue-500/20 text-center">
-                                    <p class="text-[10px] font-black uppercase text-blue-400 mb-2">Estimated Monthly Net Profit</p>
-                                    <h4 class="text-5xl font-black text-white tracking-tighter" x-text="'Rp' + formatNumber(calculateNetProfit())"></h4>
-                                    <p class="mt-4 text-[10px] text-slate-500 italic">Dihitung otomatis setelah gaji 8 staf, listrik, & COGS harian.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
+        </main>
 
     <script>
-        function coffeeApp() {
+        function tuanRumahApp() {
             return {
                 activeTab: 'dashboard',
                 filterCat: 'Semua',
                 tabs: [
-                    { id: 'dashboard', name: 'Analytics', icon: '📊' },
-                    { id: 'bahan', name: 'Database Bahan', icon: '📦' },
-                    { id: 'resep', name: 'Resep Menu', icon: '🧾' },
-                    { id: 'menu', name: 'Pricing', icon: '🏷️' }
+                    { id: 'dashboard', name: 'Home', icon: '🏠', fullName: 'Business Overview' },
+                    { id: 'bahan', name: 'Bahan', icon: '📦', fullName: 'Database Bahan Baku' },
+                    { id: 'resep', name: 'Resep', icon: '🧾', fullName: 'Standardized Recipes' },
+                    { id: 'menu', name: 'Menu', icon: '🏷️', fullName: 'Pricing & Analytics' }
                 ],
-                categories: ['Semua', 'Kopi', 'Syrup', 'Dairy', 'Powder', 'Tea', 'Operasional', 'Lain-lain'],
+                categories: ['Semua', 'Kopi', 'Syrup', 'Dairy', 'Powder', 'Tea', 'Operasional'],
                 
-                // --- DATABASE LENGKAP BAHAN BAKU ---
-                bahanBaku: [
-                    { nama: 'Arabika Grade 1 Kaks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 240000, isi: 1000 },
-                    { nama: 'Arabika Specialty Diks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 280000, isi: 1000 },
-                    
-                    { nama: 'Monin Caramel', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Vanilla', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Tiramisu', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Banana', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Butterscotch', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Pandan', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Apple', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Melon', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Grenadine', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Lychee', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Mango', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Plum', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Strawberry', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-                    { nama: 'Monin Orange', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700 },
-
-                    { nama: 'UHT Diamond', kategori: 'Dairy', satuan: 'ml', hargaBeli: 21000, isi: 1000 },
-                    { nama: 'Susu Evaporasi', kategori: 'Dairy', satuan: 'ml', hargaBeli: 18500, isi: 380 },
-                    { nama: 'SKM Indomilk', kategori: 'Dairy', satuan: 'ml', hargaBeli: 15500, isi: 375 },
-                    { nama: 'Creamer Max', kategori: 'Powder', satuan: 'gr', hargaBeli: 38000, isi: 500 },
-                    { nama: 'Cheese Cream', kategori: 'Dairy', satuan: 'ml', hargaBeli: 55000, isi: 500 },
-                    { nama: 'Oatside', kategori: 'Dairy', satuan: 'ml', hargaBeli: 42000, isi: 1000 },
-                    { nama: 'Hydro Coco', kategori: 'Dairy', satuan: 'ml', hargaBeli: 7500, isi: 250 },
-                    { nama: 'Yakult', kategori: 'Dairy', satuan: 'pcs', hargaBeli: 10000, isi: 5 },
-
-                    { nama: 'Bubuk Coklat', kategori: 'Powder', satuan: 'gr', hargaBeli: 95000, isi: 1000 },
-                    { nama: 'Bubuk Matcha', kategori: 'Powder', satuan: 'gr', hargaBeli: 125000, isi: 1000 },
-                    { nama: 'Bubuk Taro', kategori: 'Powder', satuan: 'gr', hargaBeli: 85000, isi: 1000 },
-                    { nama: 'Bubuk Red Velvet', kategori: 'Powder', satuan: 'gr', hargaBeli: 85000, isi: 1000 },
-                    { nama: 'Bubuk Avocado', kategori: 'Powder', satuan: 'gr', hargaBeli: 85000, isi: 1000 },
-
-                    { nama: 'Butterfly Pea', kategori: 'Tea', satuan: 'ml', hargaBeli: 25000, isi: 1000 },
-                    { nama: 'Thai Tea Base', kategori: 'Tea', satuan: 'ml', hargaBeli: 20000, isi: 1000 },
-                    { nama: 'Gula Aren Dainichi', kategori: 'Lain-lain', satuan: 'gr', hargaBeli: 45000, isi: 1000 },
-                    { nama: 'Biskuit Lotus', kategori: 'Lain-lain', satuan: 'pcs', hargaBeli: 45000, isi: 25 },
-                    
-                    { nama: 'Cup 16oz', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 45000, isi: 50 },
-                    { nama: 'Es Batu', kategori: 'Operasional', satuan: 'gr', hargaBeli: 70000, isi: 8000 },
-                    { nama: 'Straw', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 15000, isi: 100 }
-                ],
-
-                // --- DATABASE LENGKAP MENU ---
-                menuItems: [
-                    { nama: 'Kopsus Ice', kategori: 'Coffee Based', hargaJual: 22000 },
-                    { nama: 'Tuan Rumah Ice', kategori: 'Coffee Based', hargaJual: 25000 },
-                    { nama: 'Tiramisu Coffee', kategori: 'Coffee Based', hargaJual: 28000 },
-                    { nama: 'Banana Coffee', kategori: 'Coffee Based', hargaJual: 25000 },
-                    { nama: 'Biscoff Coffee', kategori: 'Coffee Based', hargaJual: 27000 },
-                    { nama: 'Butterscotch Coffee', kategori: 'Coffee Based', hargaJual: 28000 },
-                    { nama: 'Pandan Coffee', kategori: 'Coffee Based', hargaJual: 28000 },
-                    { nama: 'Caramel Macchiato', kategori: 'Coffee Based', hargaJual: 28000 },
-                    
-                    { nama: 'Berrycano Ice', kategori: 'Americano Series', hargaJual: 25000 },
-                    { nama: 'Applecano Ice', kategori: 'Americano Series', hargaJual: 25000 },
-                    { nama: 'Meloncano Ice', kategori: 'Americano Series', hargaJual: 25000 },
-
-                    { nama: 'Avocado Latte', kategori: 'Non Coffee', hargaJual: 23000 },
-                    { nama: 'Taro Latte', kategori: 'Non Coffee', hargaJual: 25000 },
-                    { nama: 'Chocolate Sign', kategori: 'Non Coffee', hargaJual: 25000 },
-                    { nama: 'Matcha Latte', kategori: 'Non Coffee', hargaJual: 28000 },
-                    
-                    { nama: 'Latte Ice', kategori: 'Specialty', hargaJual: 28000 },
-                    { nama: 'Magic Hot', kategori: 'Specialty', hargaJual: 28000 },
-                    { nama: 'Cappuccino Ice', kategori: 'Specialty', hargaJual: 28000 }
-                ],
-
-                resepList: [
-                    { menu: 'Tuan Rumah Ice', komposisi: [
-                        { nama: 'Arabika Grade 1 Kaks', qty: 18, unit: 'gr' },
-                        { nama: 'Gula Aren Dainichi', qty: 25, unit: 'gr' },
-                        { nama: 'Creamer Max', qty: 25, unit: 'gr' },
-                        { nama: 'UHT Diamond', qty: 100, unit: 'ml' },
-                        { nama: 'Es Batu', qty: 150, unit: 'gr' },
-                        { nama: 'Cup 16oz', qty: 1, unit: 'pcs' }
-                    ]},
-                    { menu: 'Berrycano Ice', komposisi: [
-                        { nama: 'Arabika Specialty Diks', qty: 18, unit: 'gr' },
-                        { nama: 'Monin Grenadine', qty: 20, unit: 'ml' },
-                        { nama: 'Es Batu', qty: 180, unit: 'gr' },
-                        { nama: 'Cup 16oz', qty: 1, unit: 'pcs' }
-                    ]}
-                ],
-
-                espressoPrice: 0,
-                avgMargin: 0,
-                globalInsight: '',
+                bahanBaku: [],
+                menuItems: [],
+                resepList: [],
 
                 init() {
-                    this.calculateAll();
-                    // Auto-fill missing recipes for demo purposes
-                    this.menuItems.forEach(m => {
-                        if(!this.resepList.find(r => r.menu === m.nama)) {
-                            this.resepList.push({ menu: m.nama, komposisi: [
-                                { nama: 'Arabika Grade 1 Kaks', qty: 18, unit: 'gr' },
-                                { nama: 'UHT Diamond', qty: 120, unit: 'ml' },
-                                { nama: 'Es Batu', qty: 150, unit: 'gr' },
-                                { nama: 'Cup 16oz', qty: 1, unit: 'pcs' }
-                            ]});
-                        }
-                    });
-                },
+                    // Load data dari LocalStorage saat startup
+                    const savedBahan = localStorage.getItem('tr_bahan');
+                    const savedMenu = localStorage.getItem('tr_menu');
+                    const savedResep = localStorage.getItem('tr_resep');
 
-                calculateAll() {
-                    this.bahanBaku.forEach(b => b.hargaSatuan = b.hargaBeli / b.isi);
-                    const beans = this.bahanBaku.find(b => b.nama.includes('Diks'));
-                    this.espressoPrice = 18 * beans.hargaSatuan;
-
-                    let totalM = 0;
-                    this.menuItems.forEach(m => totalM += this.calculateMargin(m.nama));
-                    this.avgMargin = Math.round(totalM / this.menuItems.length);
+                    this.bahanBaku = savedBahan ? JSON.parse(savedBahan) : [
+                        { nama: 'Arabika Kaks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 240000, isi: 1000 },
+                        { nama: 'UHT Diamond', kategori: 'Dairy', satuan: 'ml', hargaBeli: 21000, isi: 1000 }
+                    ];
                     
-                    this.globalInsight = `Berdasarkan data Desember (Revenue Rp 103.8jt), performa profitabilitas Anda berada di level prima dengan margin rata-rata ${this.avgMargin}%. Kategori Americano Series memberikan efisiensi COGS tertinggi karena tidak menggunakan komponen Dairy yang mahal.`;
-                },
+                    this.menuItems = savedMenu ? JSON.parse(savedMenu) : [
+                        { nama: 'Kopsus Ice', kategori: 'Coffee Based', hargaJual: 22000 }
+                    ];
 
-                calculateIngCost(nama, qty) {
-                    const bahan = this.bahanBaku.find(b => b.nama === nama);
-                    return bahan ? bahan.hargaSatuan * qty : 0;
-                },
+                    this.resepList = savedResep ? JSON.parse(savedResep) : [
+                        { menu: 'Kopsus Ice', komposisi: [{ nama: 'Arabika Kaks', qty: 18 }] }
+                    ];
 
-                calculateMenuHPP(menuNama) {
-                    const resep = this.resepList.find(r => r.menu === menuNama);
-                    if (!resep) return 0;
-                    return resep.komposisi.reduce((total, ing) => total + this.calculateIngCost(ing.nama, ing.qty), 0);
-                },
-
-                calculateMargin(menuNama) {
-                    const m = this.menuItems.find(i => i.nama === menuNama);
-                    const hpp = this.calculateMenuHPP(menuNama);
-                    return m ? Math.round(((m.hargaJual - hpp) / m.hargaJual) * 100) : 0;
-                },
-
-                calculateNetProfit() {
-                    const revenue = 103811000;
-                    const cogs = revenue * 0.36; // Estimasi 36% COGS
-                    const gaji = 8 * 1500000;
-                    const overhead = 6000000; // Listrik dll
-                    return revenue - cogs - gaji - overhead;
+                    // Watcher untuk auto-save
+                    this.$watch('bahanBaku', (val) => localStorage.setItem('tr_bahan', JSON.stringify(val)));
+                    this.$watch('menuItems', (val) => localStorage.setItem('tr_menu', JSON.stringify(val)));
+                    this.$watch('resepList', (val) => localStorage.setItem('tr_resep', JSON.stringify(val)));
                 },
 
                 get filteredBahan() {
-                    if (this.filterCat === 'Semua') return this.bahanBaku;
-                    return this.bahanBaku.filter(b => b.kategori === this.filterCat);
+                    return this.filterCat === 'Semua' ? this.bahanBaku : this.bahanBaku.filter(b => b.kategori === this.filterCat);
                 },
 
-                getBadgeClass(cat) {
-                    const maps = { 'Kopi': 'badge-kopi', 'Syrup': 'badge-syrup', 'Dairy': 'badge-dairy', 'Powder': 'badge-powder', 'Tea': 'badge-tea', 'Operasional': 'badge-ops' };
-                    return maps[cat] || 'badge-other';
+                calculateHPP(menuNama) {
+                    const resep = this.resepList.find(r => r.menu === menuNama);
+                    if (!resep) return 0;
+                    return resep.komposisi.reduce((total, ing) => {
+                        const bahan = this.bahanBaku.find(b => b.nama === ing.nama);
+                        const unitPrice = bahan ? (bahan.hargaBeli / bahan.isi) : 0;
+                        return total + (unitPrice * ing.qty);
+                    }, 0);
                 },
 
-                getMenuBadge(menuNama) {
-                    const m = this.menuItems.find(i => i.nama === menuNama);
-                    const cat = m ? m.kategori : '';
-                    const maps = { 'Coffee Based': 'bg-amber-600 text-white', 'Americano Series': 'bg-red-500 text-white', 'Non Coffee': 'bg-pink-500 text-white', 'Specialty': 'bg-slate-900 text-white' };
-                    return maps[cat] || 'bg-gray-400 text-white';
-                },
-
-                getMenuCategory(menuNama) {
-                    const m = this.menuItems.find(i => i.nama === menuNama);
-                    return m ? m.kategori : 'Misc';
+                calculateTotalProfit() {
+                    // Logika perhitungan laba kotor sederhana
+                    let totalHPP = 0;
+                    let totalRevenue = 0;
+                    this.menuItems.forEach(m => {
+                        totalRevenue += m.hargaJual;
+                        totalHPP += this.calculateHPP(m.nama);
+                    });
+                    return totalRevenue - totalHPP;
                 },
 
                 formatNumber(num) {
-                    return new Intl.NumberFormat('id-ID').format(Math.round(num));
+                    return new Intl.NumberFormat('id-ID').format(Math.round(num || 0));
+                },
+
+                getCatStyle(cat) {
+                    const maps = { 'Kopi': 'cat-kopi', 'Syrup': 'cat-syrup', 'Dairy': 'cat-dairy', 'Powder': 'cat-powder', 'Tea': 'cat-tea' };
+                    return maps[cat] || 'cat-ops';
+                },
+
+                addBahan() {
+                    this.bahanBaku.push({ nama: 'Bahan Baru', kategori: 'Kopi', satuan: 'gr', hargaBeli: 0, isi: 1 });
+                },
+
+                deleteBahan(index) {
+                    if(confirm('Hapus bahan ini?')) this.bahanBaku.splice(index, 1);
                 }
             }
         }
