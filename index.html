@@ -3,464 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee OS 2026 - Management Suite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    
+    <title>Dashboard Rekapitulasi Penjualan</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root {
-            --ios-bg: #FBFBFD;
-            --ios-accent: #007AFF;
-        }
-        body { 
-            font-family: 'SF Pro Display', 'Inter', sans-serif; 
-            background-color: var(--ios-bg);
-            letter-spacing: -0.01em;
-        }
-        /* Glassmorphism Effect 2026 */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .ios-squircle { border-radius: 28px; }
-        .ios-input {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .ios-input:focus {
-            background: white;
-            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
-            border-color: var(--ios-accent);
-        }
-        /* Hide Scrollbar */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        [x-cloak] { display: none !important; }
-        
-        .tab-active {
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            color: var(--ios-accent);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        canvas { max-width: 100%; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .status { text-align: center; color: #666; font-style: italic; }
     </style>
 </head>
-<body class="text-slate-900 overflow-hidden" x-data="coffeeApp()" x-init="init()">
+<body>
 
-    <div class="flex h-screen w-full p-2 md:p-4 gap-4">
-        
-        <aside class="w-20 md:w-72 glass-panel ios-squircle flex flex-col items-center md:items-stretch overflow-hidden shadow-2xl z-50">
-            <div class="p-6 mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-                        <span class="text-2xl">☕</span>
-                    </div>
-                    <div class="hidden md:block">
-                        <h1 class="text-lg font-bold leading-tight">CoffeeOS</h1>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Enterprise 2026</p>
-                    </div>
-                </div>
-            </div>
-            
-            <nav class="flex-1 px-3 space-y-2">
-                <template x-for="tab in tabs" :key="tab.id">
-                    <button @click="activeTab = tab.id" 
-                            :class="activeTab === tab.id ? 'tab-active' : 'text-slate-500 hover:bg-white/50'"
-                            class="w-full flex items-center justify-center md:justify-start gap-4 px-4 py-4 rounded-2xl transition-all duration-300 group">
-                        <span class="text-xl" x-text="tab.icon"></span>
-                        <span class="hidden md:block font-semibold text-sm" x-text="tab.name"></span>
-                    </button>
-                </template>
-            </nav>
-
-            <div class="p-6 mt-auto hidden md:block">
-                <div class="bg-slate-900 rounded-2xl p-4 text-white">
-                    <p class="text-[10px] font-bold text-slate-400 mb-1">SYSTEM STATUS</p>
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span class="text-xs font-medium text-slate-200 italic">Syncing to GitHub</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 glass-panel ios-squircle overflow-hidden flex flex-col shadow-2xl relative">
-            
-            <header class="px-8 py-6 flex justify-between items-center border-b border-white/20">
-                <div>
-                    <h2 class="text-3xl font-bold tracking-tight" x-text="tabs.find(t => t.id === activeTab).name"></h2>
-                    <p class="text-sm text-slate-400 font-medium" x-text="new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })"></p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="hidden lg:block text-right">
-                        <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Espresso Cost</span>
-                        <span class="text-lg font-black text-blue-600" x-text="'Rp ' + formatNumber(espressoPrice)"></span>
-                    </div>
-                    <div class="h-12 w-px bg-slate-200 mx-2"></div>
-                    <img src="https://ui-avatars.com/api/?name=Admin+Cafe&background=007AFF&color=fff" class="w-12 h-12 rounded-2xl shadow-inner border-2 border-white">
-                </div>
-            </header>
-
-            <div class="flex-1 overflow-y-auto p-8 no-scrollbar">
-                
-                <section x-show="activeTab === 'dashboard'" x-cloak class="space-y-8">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-8 ios-squircle text-white shadow-xl shadow-blue-100 relative overflow-hidden">
-                            <div class="absolute right-[-10%] top-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                            <span class="text-xs font-bold opacity-80 uppercase tracking-widest">Est. Monthly Profit</span>
-                            <h4 class="text-4xl font-black mt-2" x-text="'Rp ' + formatNumber(calculateNetProfit())"></h4>
-                            <div class="mt-4 flex items-center gap-2 text-xs font-bold bg-white/20 w-fit px-3 py-1 rounded-full">
-                                <span>🚀</span> 12.5% Growth
-                            </div>
-                        </div>
-                        <div class="bg-white p-8 ios-squircle shadow-sm border border-slate-100 flex flex-col justify-center">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Average Margin</span>
-                            <h4 class="text-4xl font-black text-slate-800 mt-2" x-text="avgMargin + '%'"></h4>
-                            <p class="text-xs text-green-500 font-bold mt-1">Healthy Zone</p>
-                        </div>
-                        <div class="bg-white p-8 ios-squircle shadow-sm border border-slate-100 flex flex-col justify-center">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Highest HPP Menu</span>
-                            <h4 class="text-xl font-black text-slate-800 mt-2 truncate" x-text="highestHPP.name"></h4>
-                            <p class="text-sm font-bold text-red-500" x-text="'Rp ' + formatNumber(highestHPP.val)"></p>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900 p-8 ios-squircle text-white relative overflow-hidden">
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-4">
-                                <span class="bg-blue-600 text-[10px] font-black px-2 py-0.5 rounded text-white">AI CO-PILOT</span>
-                                <h3 class="text-xl font-bold italic">Smart Analysis</h3>
-                            </div>
-                            <p class="text-slate-400 text-lg leading-relaxed max-w-2xl" x-text="globalInsight"></p>
-                        </div>
-                    </div>
-                </section>
-
-                <section x-show="activeTab === 'bahan'" x-cloak>
-                    <div class="bg-white ios-squircle shadow-xl border border-slate-100 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50/50">
-                                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Ingredient Details</th>
-                                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Category</th>
-                                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Purchase Price (Rp)</th>
-                                    <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Unit Content</th>
-                                    <th class="px-6 py-4 text-[11px] font-bold text-blue-500 uppercase tracking-widest text-right">Cost / Unit</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                                <template x-for="(item, index) in bahanBaku" :key="index">
-                                    <tr class="hover:bg-blue-50/30 transition-colors group">
-                                        <td class="px-6 py-4">
-                                            <div class="font-bold text-slate-800" x-text="item.nama"></div>
-                                            <div class="text-[10px] text-slate-400" x-text="item.brand"></div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span :class="getCatColor(item.kategori)" class="px-3 py-1 rounded-full text-[10px] font-bold" x-text="item.kategori"></span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <input type="number" x-model.number="item.hargaBeli" @input="calculateAll()" 
-                                                   class="w-32 ios-input bg-slate-50 px-3 py-2 rounded-xl text-right font-bold text-sm">
-                                        </td>
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="text-sm font-medium text-slate-500" x-text="item.isi + ' ' + item.satuan"></span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <span class="font-mono font-bold text-blue-600" x-text="formatNumber(item.hargaSatuan)"></span>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <section x-show="activeTab === 'menu'" x-cloak class="space-y-6">
-                    <div class="grid grid-cols-1 gap-4">
-                        <template x-for="m in menuItems" :key="m.nama">
-                            <div class="bg-white p-6 ios-squircle border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
-                                <div class="flex items-center gap-4 min-w-[200px]">
-                                    <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-xl">☕</div>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900" x-text="m.nama"></h4>
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="m.kategori"></p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-8 items-center">
-                                    <div class="text-right">
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Selling Price</p>
-                                        <input type="number" x-model.number="m.hargaJual" @input="calculateAll()" 
-                                               class="w-32 ios-input bg-slate-50 px-3 py-1 rounded-lg text-right font-black text-blue-600">
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">HPP</p>
-                                        <p class="font-mono font-bold text-red-500" x-text="'Rp ' + formatNumber(calculateMenuHPP(m.nama))"></p>
-                                    </div>
-                                    <div class="w-32">
-                                        <div class="flex justify-between items-center mb-1">
-                                            <span class="text-[10px] font-bold text-slate-400 uppercase">Margin</span>
-                                            <span class="text-xs font-black" :class="calculateMargin(m.nama) < 50 ? 'text-red-500' : 'text-green-600'" x-text="calculateMargin(m.nama) + '%'"></span>
-                                        </div>
-                                        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full transition-all duration-500" :class="calculateMargin(m.nama) < 50 ? 'bg-red-500' : 'bg-green-500'" :style="`width: ${calculateMargin(m.nama)}%`"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </section>
-
-                <section x-show="activeTab === 'finance'" x-cloak class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="bg-white p-8 ios-squircle shadow-xl border border-slate-100">
-                        <h3 class="text-xl font-bold mb-6">Revenue & Ops Input</h3>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Monthly Gross Revenue</label>
-                                <div class="relative">
-                                    <span class="absolute left-4 top-4 font-bold text-slate-400">Rp</span>
-                                    <input type="number" x-model.number="finance.revenue" 
-                                           class="w-full pl-12 pr-6 py-4 bg-slate-50 ios-input rounded-2xl text-2xl font-black text-slate-800">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="p-4 bg-slate-50 rounded-2xl">
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Opex Dapur</label>
-                                    <input type="number" x-model.number="finance.opexDapur" class="w-full bg-transparent font-bold text-lg outline-none">
-                                </div>
-                                <div class="p-4 bg-slate-50 rounded-2xl">
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Opex Bar</label>
-                                    <input type="number" x-model.number="finance.opexBar" class="w-full bg-transparent font-bold text-lg outline-none">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900 ios-squircle p-8 text-white flex flex-col justify-between shadow-2xl">
-                        <div>
-                            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-[0.2em] mb-8">Profitability Waterfall</h3>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-slate-400">Gross Revenue</span>
-                                    <span class="font-mono font-bold" x-text="'Rp ' + formatNumber(finance.revenue)"></span>
-                                </div>
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-slate-400">Total COGS (Est 35%)</span>
-                                    <span class="font-mono font-bold text-red-400" x-text="'-' + formatNumber(finance.revenue * 0.35)"></span>
-                                </div>
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-slate-400">Operational & Overhead</span>
-                                    <span class="font-mono font-bold text-red-400" x-text="'-' + formatNumber(finance.opexDapur + finance.opexBar + overheadTotal)"></span>
-                                </div>
-                                <div class="pt-4 border-t border-white/10 mt-4">
-                                    <div class="flex justify-between items-end">
-                                        <div>
-                                            <span class="block text-[10px] font-black text-blue-500 uppercase tracking-widest">Net Profit After Tax</span>
-                                            <span class="text-4xl font-black" x-text="'Rp ' + formatNumber(calculateNetProfit())"></span>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="block text-[10px] font-bold text-slate-500">PROFIT MARGIN</span>
-                                            <span class="text-xl font-bold text-green-500" x-text="Math.round((calculateNetProfit()/finance.revenue)*100) + '%'"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-8 p-4 bg-white/5 rounded-2xl border border-white/10 italic text-xs text-slate-400">
-                             💡 Tip: Profit Anda bulan ini cukup untuk menambah 1 unit Grinder baru atau kampanye iklan lokal.
-                        </div>
-                    </div>
-                </section>
-                
-                <section x-show="activeTab === 'resep'" x-cloak class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <template x-for="res in resepList" :key="res.menu">
-                        <div class="bg-white p-6 ios-squircle shadow-sm border border-slate-100">
-                            <div class="flex justify-between items-start mb-6">
-                                <h3 class="text-lg font-black text-slate-800" x-text="res.menu"></h3>
-                                <span class="bg-blue-600 text-[9px] font-black text-white px-2 py-1 rounded-lg uppercase" x-text="getMenuCategory(res.menu)"></span>
-                            </div>
-                            <div class="space-y-3">
-                                <template x-for="ing in res.komposisi">
-                                    <div class="flex justify-between text-xs items-center">
-                                        <div class="text-slate-500">
-                                            <span class="font-bold text-slate-700" x-text="ing.nama"></span>
-                                            <span class="block text-[10px]" x-text="ing.qty + ' ' + ing.unit"></span>
-                                        </div>
-                                        <span class="font-mono font-bold text-slate-400" x-text="formatNumber(calculateIngCost(ing.nama, ing.qty))"></span>
-                                    </div>
-                                </template>
-                            </div>
-                            <div class="mt-6 pt-4 border-t border-dashed border-slate-200 flex justify-between items-center">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">Production Cost</span>
-                                <span class="text-xl font-black text-blue-600" x-text="'Rp ' + formatNumber(calculateMenuHPP(res.menu))"></span>
-                            </div>
-                        </div>
-                    </template>
-                </section>
-
-            </div>
-            
-            <div class="md:hidden glass-panel border-t border-white/20 p-4 flex justify-around">
-                <template x-for="tab in tabs" :key="tab.id">
-                    <button @click="activeTab = tab.id" :class="activeTab === tab.id ? 'text-blue-600' : 'text-slate-400'">
-                        <span class="text-xl" x-text="tab.icon"></span>
-                    </button>
-                </template>
-            </div>
-        </main>
+<div class="container">
+    <h1>Dashboard Penjualan Menu</h1>
+    
+    <div class="controls">
+        <button onclick="loadData()">🔄 Muat / Segarkan Data</button>
     </div>
 
-    <script>
-        function coffeeApp() {
-            return {
-                activeTab: 'dashboard',
-                tabs: [
-                    { id: 'dashboard', name: 'Analisa Global', icon: '💎' },
-                    { id: 'bahan', name: 'Database Bahan', icon: '📦' },
-                    { id: 'resep', name: 'Resep Menu', icon: '🧾' },
-                    { id: 'menu', name: 'Pricing & Margin', icon: '🏷️' },
-                    { id: 'finance', name: 'Keuangan', icon: '💰' }
-                ],
-                
-                // DATA TETAP LENGKAP
-                bahanBaku: [
-                    { nama: 'Arabika Grade 1 Kaks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 240000, isi: 1000, brand: 'Kaks Roastery' },
-                    { nama: 'Arabika Specialty Diks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 280000, isi: 1000, brand: 'Diks Specialty' },
-                    { nama: 'Monin Caramel', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700, brand: 'Monin' },
-                    { nama: 'Monin Vanilla', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700, brand: 'Monin' },
-                    { nama: 'Monin Tiramisu', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700, brand: 'Monin' },
-                    { nama: 'Monin Banana', kategori: 'Syrup', satuan: 'ml', hargaBeli: 175000, isi: 700, brand: 'Monin' },
-                    { nama: 'UHT Diamond', kategori: 'Dairy', satuan: 'ml', hargaBeli: 21000, isi: 1000, brand: 'Diamond' },
-                    { nama: 'Oatside', kategori: 'Dairy', satuan: 'ml', hargaBeli: 42000, isi: 1000, brand: 'Oatside' },
-                    { nama: 'Susu Evaporasi', kategori: 'Dairy', satuan: 'ml', hargaBeli: 18500, isi: 380, brand: 'F&N' },
-                    { nama: 'SKM', kategori: 'Dairy', satuan: 'ml', hargaBeli: 15000, isi: 375, brand: 'Indomilk' },
-                    { nama: 'Creamer Max', kategori: 'Powder', satuan: 'gr', hargaBeli: 38000, isi: 500, brand: 'MaxCreamer' },
-                    { nama: 'Bubuk Matcha', kategori: 'Powder', satuan: 'gr', hargaBeli: 120000, isi: 1000, brand: 'Pure' },
-                    { nama: 'Bubuk Coklat', kategori: 'Powder', satuan: 'gr', hargaBeli: 95000, isi: 1000, brand: 'Signature' },
-                    { nama: 'Gula Aren', kategori: 'Lain-lain', satuan: 'gr', hargaBeli: 45000, isi: 1000, brand: 'Dainichi' },
-                    { nama: 'Es Batu', kategori: 'Operasional', satuan: 'gr', hargaBeli: 70000, isi: 8000, brand: 'Crystal Ice' },
-                    { nama: 'Cup Ice 16oz', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 45000, isi: 50, brand: 'Starindo' },
-                    { nama: 'Straw', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 15000, isi: 100, brand: 'Oxo' }
-                ],
+    <p id="loadingStatus" class="status">Klik tombol untuk memproses file CSV...</p>
 
-                menuItems: [
-                    { nama: 'Kopsus Ice', kategori: 'Coffee Based', hargaJual: 22000 },
-                    { nama: 'Tuan Rumah Ice', kategori: 'Coffee Based', hargaJual: 25000 },
-                    { nama: 'Tiramisu Coffee', kategori: 'Coffee Based', hargaJual: 28000 },
-                    { nama: 'Banana Coffee', kategori: 'Coffee Based', hargaJual: 25000 },
-                    { nama: 'Berrycano Ice', kategori: 'Americano Series', hargaJual: 25000 },
-                    { nama: 'Matcha Latte', kategori: 'Non Coffee', hargaJual: 28000 },
-                    { nama: 'Chocolate Signature', kategori: 'Non Coffee', hargaJual: 25000 },
-                    { nama: 'Lychee Tea', kategori: 'Tea Series', hargaJual: 25000 }
-                ],
+    <canvas id="salesChart"></canvas>
 
-                resepList: [
-                    { menu: 'Kopsus Ice', komposisi: [
-                        { nama: 'Arabika Grade 1 Kaks', qty: 18, unit: 'gr' },
-                        { nama: 'SKM', qty: 20, unit: 'ml' },
-                        { nama: 'Creamer Max', qty: 15, unit: 'gr' },
-                        { nama: 'UHT Diamond', qty: 70, unit: 'ml' },
-                        { nama: 'Es Batu', qty: 150, unit: 'gr' },
-                        { nama: 'Cup Ice 16oz', qty: 1, unit: 'pcs' }
-                    ]},
-                    { menu: 'Tuan Rumah Ice', komposisi: [
-                        { nama: 'Arabika Grade 1 Kaks', qty: 18, unit: 'gr' },
-                        { nama: 'Gula Aren', qty: 25, unit: 'gr' },
-                        { nama: 'Creamer Max', qty: 25, unit: 'gr' },
-                        { nama: 'UHT Diamond', qty: 100, unit: 'ml' },
-                        { nama: 'Es Batu', qty: 150, unit: 'gr' },
-                        { nama: 'Cup Ice 16oz', qty: 1, unit: 'pcs' }
-                    ]}
-                ],
+    <div id="tableContainer"></div>
+</div>
 
-                finance: { revenue: 103811000, opexDapur: 5000000, opexBar: 4500000 },
-                overhead: { karyawan: 8, gaji: 1500000, listrik: 6000000 },
-                espressoPrice: 0,
-                avgMargin: 0,
-                highestHPP: { name: '', val: 0 },
-                globalInsight: '',
+<script>
+    let myChart = null;
+    const csvUrl = 'https://raw.githubusercontent.com/OcangAmin/Dashboard-TR/refs/heads/main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
 
-                init() {
-                    this.calculateAll();
-                },
+    async function loadData() {
+        const status = document.getElementById('loadingStatus');
+        status.innerText = "Mengambil data dari GitHub...";
 
-                calculateAll() {
-                    // Update Harga Satuan
-                    this.bahanBaku.forEach(b => b.hargaSatuan = b.hargaBeli / b.isi);
-                    
-                    // Espresso Calculation
-                    const beans = this.bahanBaku.find(b => b.nama.includes('Diks')) || this.bahanBaku[0];
-                    this.espressoPrice = 18 * beans.hargaSatuan;
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+                renderDashboard(results.data);
+                status.innerText = "Data berhasil dimuat!";
+            },
+            error: function(err) {
+                status.innerText = "Gagal memuat data: " + err.message;
+            }
+        });
+    }
 
-                    let totalMargin = 0;
-                    let maxHPP = 0;
-                    let maxHPPName = '';
+    function renderDashboard(data) {
+        // Membersihkan data kosong
+        const cleanData = data.filter(row => row.Menu && row.Total);
 
-                    this.menuItems.forEach(m => {
-                        const hpp = this.calculateMenuHPP(m.nama);
-                        const margin = ((m.hargaJual - hpp) / m.hargaJual) * 100;
-                        totalMargin += margin;
-                        if(hpp > maxHPP) { maxHPP = hpp; maxHPPName = m.nama; }
-                    });
+        // 1. Logika Grafik (Top 5 Menu)
+        const labels = cleanData.map(item => item.Menu).slice(0, 10);
+        const values = cleanData.map(item => item.Total).slice(0, 10);
 
-                    this.avgMargin = Math.round(totalMargin / this.menuItems.length);
-                    this.highestHPP = { name: maxHPPName, val: maxHPP };
-                    this.updateGlobalInsight();
-                },
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        // Hancurkan chart lama jika ada agar tidak tumpang tindih
+        if (myChart) myChart.destroy();
 
-                calculateIngCost(nama, qty) {
-                    const bahan = this.bahanBaku.find(b => b.nama === nama);
-                    return bahan ? bahan.hargaSatuan * qty : 0;
-                },
-
-                calculateMenuHPP(menuNama) {
-                    const resep = this.resepList.find(r => r.menu === menuNama);
-                    if (!resep) return 8500; // Est average
-                    return resep.komposisi.reduce((total, ing) => total + this.calculateIngCost(ing.nama, ing.qty), 0);
-                },
-
-                calculateMargin(menuNama) {
-                    const m = this.menuItems.find(i => i.nama === menuNama);
-                    const hpp = this.calculateMenuHPP(menuNama);
-                    return Math.round(((m.hargaJual - hpp) / m.hargaJual) * 100);
-                },
-
-                getCatColor(cat) {
-                    const colors = {
-                        'Kopi': 'bg-amber-100 text-amber-700',
-                        'Syrup': 'bg-pink-100 text-pink-700',
-                        'Dairy': 'bg-blue-100 text-blue-700',
-                        'Powder': 'bg-purple-100 text-purple-700',
-                        'Operasional': 'bg-slate-100 text-slate-700'
-                    };
-                    return colors[cat] || 'bg-gray-100 text-gray-700';
-                },
-
-                getMenuCategory(menuNama) {
-                    const m = this.menuItems.find(i => i.nama === menuNama);
-                    return m ? m.kategori : 'Misc';
-                },
-
-                updateGlobalInsight() {
-                    this.globalInsight = `Bulan ini performa Anda mencapai ${this.avgMargin}% margin. Menu '${this.highestHPP.name}' memerlukan perhatian khusus karena biaya produksi yang tinggi. Optimalkan stok susu untuk menjaga profit tetap di atas 20jt.`;
-                },
-
-                calculateNetProfit() {
-                    const cogs = this.finance.revenue * 0.35;
-                    const opex = this.finance.opexDapur + this.finance.opexBar;
-                    return this.finance.revenue - cogs - opex - this.overheadTotal;
-                },
-
-                get overheadTotal() {
-                    return (this.overhead.karyawan * this.overhead.gaji) + this.overhead.listrik;
-                },
-
-                formatNumber(num) {
-                    return new Intl.NumberFormat('id-ID').format(Math.round(num));
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Penjualan (Qty/Value)',
+                    data: values,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Top 10 Menu Terlaris' }
                 }
             }
-        }
-    </script>
+        });
+
+        // 2. Logika Tabel
+        let tableHtml = '<table><thead><tr>';
+        // Ambil header dari kunci objek pertama
+        Object.keys(cleanData[0]).forEach(key => {
+            tableHtml += `<th>${key}</th>`;
+        });
+        tableHtml += '</tr></thead><tbody>';
+
+        cleanData.forEach(row => {
+            tableHtml += '<tr>';
+            Object.values(row).forEach(val => {
+                tableHtml += `<td>${val || '-'}</td>`;
+            });
+            tableHtml += '</tr>';
+        });
+        tableHtml += '</tbody></table>';
+
+        document.getElementById('tableContainer').innerHTML = tableHtml;
+    }
+</script>
+
 </body>
 </html>
