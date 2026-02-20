@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tuan Rumah Coffee | Management System v3.5</title>
+    <title>Tuan Rumah Coffee | v4.0 Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -16,8 +16,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .active-tab { color: #f97316; border-bottom: 3px solid #f97316; font-weight: 800; }
         .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
-        input[type="number"] { -moz-appearance: textfield; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="pb-24">
@@ -26,53 +24,41 @@
         <div class="flex justify-between items-center mb-4">
             <div>
                 <h1 class="text-xl font-black text-slate-900 tracking-tight">Tuan Rumah Coffee</h1>
-                <p class="text-[10px] text-orange-600 font-extrabold uppercase tracking-widest">Management System v3.5</p>
+                <p class="text-[10px] text-orange-600 font-extrabold uppercase tracking-widest">Recipe & HPP Manager</p>
             </div>
-            <div class="flex gap-2">
-                 <button onclick="openAddIngModal()" class="bg-slate-100 text-slate-700 text-[10px] font-bold px-3 py-2 rounded-xl active:scale-95 transition-all">
-                    + BAHAN
-                </button>
-                <button onclick="openAddMenuModal()" class="bg-orange-600 text-white text-[10px] font-bold px-3 py-2 rounded-xl shadow-lg active:scale-95 transition-all">
-                    + MENU
-                </button>
-            </div>
+            <button onclick="openAddMenuModal()" class="bg-orange-600 text-white text-[10px] font-bold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition-all">
+                + MENU BARU
+            </button>
         </div>
         
         <div class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth">
-            <button onclick="switchTab(event, 'tab-menu')" class="tab-btn active-tab py-3 text-sm whitespace-nowrap">Menu & Resep</button>
+            <button onclick="switchTab(event, 'tab-menu')" class="tab-btn active-tab py-3 text-sm whitespace-nowrap">Daftar Menu</button>
             <button onclick="switchTab(event, 'tab-inventory')" class="tab-btn py-3 text-sm whitespace-nowrap text-slate-400">Master Bahan</button>
-            <button onclick="switchTab(event, 'tab-analysis')" class="tab-btn py-3 text-sm whitespace-nowrap text-slate-400">Statistik</button>
+            <button onclick="switchTab(event, 'tab-analysis')" class="tab-btn py-3 text-sm whitespace-nowrap text-slate-400">Profit Analysis</button>
         </div>
     </header>
 
-    <main class="p-4 max-w-4xl mx-auto">
-
+    <main class="p-4 max-w-5xl mx-auto">
         <section id="tab-menu" class="tab-content active">
             <div class="flex gap-2 overflow-x-auto no-scrollbar mb-6 pb-2" id="filter-chips"></div>
-            <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </section>
 
         <section id="tab-inventory" class="tab-content">
-            <div class="bg-blue-50 p-4 rounded-2xl mb-6 border border-blue-100">
-                <p class="text-xs text-blue-700 font-semibold leading-relaxed">
-                    💡 <strong>Tips:</strong> Klik pada angka untuk mengubah harga beli. HPP menu akan otomatis terupdate secara real-time.
-                </p>
-            </div>
             <div id="inventory-container" class="space-y-4"></div>
         </section>
 
-        <section id="tab-analysis" class="tab-content text-center py-10">
-            <div class="bg-white p-8 rounded-[40px] border border-slate-100 card-shadow">
-                <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">📊</div>
-                <h3 class="font-bold text-lg mb-2">Ringkasan Margin</h3>
-                <div class="grid grid-cols-2 gap-4 mt-6">
-                    <div class="p-4 bg-slate-50 rounded-3xl">
-                        <p class="text-[10px] text-slate-400 uppercase font-black">Total Menu</p>
-                        <p id="stat-total-menu" class="text-2xl font-black">0</p>
+        <section id="tab-analysis" class="tab-content">
+            <div class="bg-white p-8 rounded-[40px] border border-slate-100 card-shadow text-center">
+                <h3 class="font-black text-slate-800 text-lg mb-6 tracking-tight">Performa Finansial</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-6 bg-orange-50 rounded-3xl">
+                        <p class="text-[10px] text-orange-400 uppercase font-black mb-1">Total Menu</p>
+                        <p id="stat-total-menu" class="text-3xl font-black text-orange-600">0</p>
                     </div>
-                    <div class="p-4 bg-slate-50 rounded-3xl">
-                        <p class="text-[10px] text-slate-400 uppercase font-black">Avg Margin</p>
-                        <p id="stat-avg-margin" class="text-2xl font-black text-emerald-600">0%</p>
+                    <div class="p-6 bg-emerald-50 rounded-3xl">
+                        <p class="text-[10px] text-emerald-400 uppercase font-black mb-1">Avg Margin</p>
+                        <p id="stat-avg-margin" class="text-3xl font-black text-emerald-600">0%</p>
                     </div>
                 </div>
             </div>
@@ -84,114 +70,125 @@
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[40px] p-8 translate-y-full transition-transform duration-300 shadow-2xl overflow-y-auto max-h-[90vh]" id="modal-panel">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
             <h2 id="modal-title" class="text-2xl font-black text-slate-900 mb-1">Menu Name</h2>
-            <p id="modal-category" class="text-xs font-bold text-orange-600 uppercase mb-6 tracking-widest">Category</p>
-            
+            <p id="modal-category" class="text-[10px] font-black text-orange-600 uppercase mb-6 tracking-widest">Category</p>
             <div id="modal-ingredients" class="space-y-3 mb-8"></div>
-
             <div class="bg-slate-900 p-6 rounded-3xl flex justify-between items-center text-white">
                 <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">HPP Terkini</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Estimasi HPP</p>
                     <p id="modal-hpp" class="text-2xl font-black text-orange-400">Rp 0</p>
                 </div>
-                <button onclick="closeModal('recipe-modal')" class="bg-orange-600 px-8 py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">Selesai</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="add-ing-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm p-6 flex items-center justify-center">
-        <div class="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl">
-            <h3 class="font-black text-xl mb-4">Bahan Baru</h3>
-            <div class="space-y-3">
-                <input id="new-ing-name" type="text" placeholder="Nama Bahan" class="w-full bg-slate-100 p-4 rounded-2xl text-sm border-0 outline-none">
-                <select id="new-ing-cat" class="w-full bg-slate-100 p-4 rounded-2xl text-sm border-0 outline-none font-bold">
-                    <option value="KOPI">KOPI</option>
-                    <option value="DAIRY">DAIRY</option>
-                    <option value="SYRUP">SYRUP</option>
-                    <option value="POWDER">POWDER</option>
-                    <option value="TEA">TEA SERIES</option>
-                    <option value="OTHERS">LAIN-LAIN</option>
-                    <option value="PACKAGING">PACKAGING</option>
-                </select>
-                <div class="flex gap-2">
-                    <input id="new-ing-price" type="number" placeholder="Harga Unit" class="w-2/3 bg-slate-100 p-4 rounded-2xl text-sm outline-none">
-                    <select id="new-ing-unit" class="w-1/3 bg-slate-100 p-4 rounded-2xl text-sm font-bold">
-                        <option value="g">gram</option>
-                        <option value="ml">ml</option>
-                        <option value="pcs">pcs</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex gap-3 mt-6">
-                <button onclick="closeModal('add-ing-modal')" class="flex-1 py-4 font-bold text-slate-400">Batal</button>
-                <button onclick="addNewIngredient()" class="flex-1 py-4 bg-orange-600 text-white rounded-2xl font-bold shadow-lg">Tambah</button>
+                <button onclick="closeModal('recipe-modal')" class="bg-orange-600 px-8 py-4 rounded-2xl font-bold active:scale-95 transition-all">Tutup</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- DATA BAHAN BAKU LENGKAP (36+ ITEMS) ---
+        // --- MASTER DATA BAHAN BAKU ---
         let ingredients = {
             "KOPI": {
                 "kaks": { name: "Arabika Kaks", p: 240, u: "g" },
-                "diks": { name: "Arabika Specialty DIKS", p: 280, u: "g" }
+                "diks": { name: "Arabika Diks", p: 280, u: "g" }
             },
             "SYRUP": {
-                "monin_std": { name: "Monin Caramel/Van/Pdn", p: 278, u: "ml" },
-                "monin_fruit": { name: "Monin Fruit Series", p: 250, u: "ml" },
-                "monin_berry": { name: "Monin Berry/Plum", p: 264, u: "ml" },
-                "monin_banana": { name: "Monin Banana", p: 257, u: "ml" },
-                "aren": { name: "Gula Aren Dainichi", p: 38, u: "ml" },
+                "tiramisu": { name: "Syrup Tiramisu", p: 264, u: "ml" },
+                "banana": { name: "Syrup Banana", p: 257, u: "ml" },
+                "caramel": { name: "Syrup Caramel", p: 278, u: "ml" },
+                "butter": { name: "Syrup Butterscotch", p: 278, u: "ml" },
+                "vanilla": { name: "Syrup Vanilla", p: 278, u: "ml" },
+                "pandan": { name: "Syrup Pandan", p: 278, u: "ml" },
+                "grenadine": { name: "Syrup Grenadine", p: 250, u: "ml" },
+                "apple": { name: "Syrup Apple", p: 250, u: "ml" },
+                "melon": { name: "Syrup Melon", p: 250, u: "ml" },
+                "plum": { name: "Syrup Plum", p: 264, u: "ml" },
+                "strawberry": { name: "Syrup Strawberry", p: 264, u: "ml" },
+                "lychee": { name: "Syrup Lychee", p: 278, u: "ml" },
+                "mango": { name: "Syrup Mango", p: 278, u: "ml" },
+                "aren": { name: "Gula Aren", p: 38, u: "ml" },
                 "sugar": { name: "Simple Sugar", p: 18, u: "ml" }
             },
             "DAIRY": {
-                "uht": { name: "Susu UHT Diamond", p: 20, u: "ml" },
-                "evap": { name: "Susu Evaporasi", p: 48, u: "ml" },
-                "skm": { name: "Susu Kental Manis", p: 40, u: "ml" },
+                "uht": { name: "Susu UHT", p: 20, u: "ml" },
+                "evap": { name: "Susu Evap", p: 48, u: "ml" },
+                "skm": { name: "SKM", p: 40, u: "ml" },
+                "creamer": { name: "Creamer", p: 88, u: "g" },
                 "oat": { name: "Oatside", p: 42, u: "ml" },
-                "creamer": { name: "MaxCreamer", p: 88, u: "g" },
                 "cheese": { name: "Cheese Cream", p: 145, u: "g" },
                 "yakult": { name: "Yakult", p: 2100, u: "pcs" }
             },
-            "POWDER": {
-                "p_matcha": { name: "Powder Matcha", p: 150, u: "g" },
-                "p_choco": { name: "Powder Coklat", p: 95, u: "g" },
-                "p_taro": { name: "Powder Taro/RV", p: 85, u: "g" },
-                "p_avocado": { name: "Powder Avocado", p: 80, u: "g" },
-                "p_vanilla": { name: "Powder Vanilla", p: 75, u: "g" }
-            },
-            "TEA": {
-                "thai_tea": { name: "Thai Tea Mix", p: 175, u: "g" },
-                "green_tea": { name: "Green Tea Thai", p: 300, u: "g" },
-                "berry_tea": { name: "Berry Tea", p: 1100, u: "g" },
-                "bpea": { name: "Butterfly Pea", p: 600, u: "g" }
-            },
-            "OTHERS": {
-                "lotus": { name: "Biskuit Lotus", p: 260, u: "g" },
+            "POWDER/TOPPING": {
+                "p_avocado": { name: "Bubuk Avocado", p: 80, u: "g" },
+                "p_taro": { name: "Bubuk Taro", p: 85, u: "g" },
+                "p_rv": { name: "Bubuk Red Velvet", p: 85, u: "g" },
+                "p_choco": { name: "Bubuk Coklat", p: 95, u: "g" },
+                "p_vanilla": { name: "Bubuk Vanilla", p: 75, u: "g" },
+                "p_matcha": { name: "Bubuk Matcha", p: 150, u: "g" },
+                "s_caramel": { name: "Saus Caramel", p: 150, u: "ml" },
+                "s_strawberry": { name: "Saus Strawberry", p: 150, u: "ml" },
+                "lotus_p": { name: "Biskuit Lotus", p: 1300, u: "pcs" },
+                "lotus_s": { name: "Spread Biscoff", p: 260, u: "g" },
                 "peanut": { name: "Peanut Butter", p: 136, u: "g" },
-                "selasih": { name: "Biji Selasih", p: 150, u: "g" },
+                "lychee_f": { name: "Buah Lychee", p: 2500, u: "pcs" }
+            },
+            "BASE/TEA": {
+                "thai": { name: "Ekstrak Thai Tea", p: 10, u: "ml" },
+                "green": { name: "Ekstrak Green Tea", p: 12, u: "ml" },
+                "tea_e": { name: "Ekstrak Tea", p: 5, u: "ml" },
+                "bpea": { name: "Butterfly Tea", p: 8, u: "ml" },
+                "btea": { name: "Berry Tea", p: 12, u: "ml" },
                 "hydro": { name: "Hydro Coco", p: 32, u: "ml" },
                 "sprite": { name: "Sprite", p: 22, u: "ml" },
-                "lime": { name: "Jeruk Nipis", p: 22, u: "g" },
-                "water": { name: "Air Cleo", p: 1, u: "ml" }
+                "selasih": { name: "Biji Selasih", p: 150, u: "g" },
+                "lime": { name: "Jeruk Nipis", p: 22, u: "ml" },
+                "water": { name: "Air Mineral", p: 1, u: "ml" }
             },
             "PACKAGING": {
-                "cup_ice": { name: "Cup Ice + Lid", p: 1550, u: "set" },
-                "cup_hot": { name: "Cup Hot + Lid", p: 1650, u: "set" },
-                "straw": { name: "Straw", p: 180, u: "pcs" }
+                "cup": { name: "Cup/Lid/Straw", p: 1800, u: "set" }
             }
         };
 
-        // --- DATA MENU AWAL ---
+        // --- DATABASE MENU ---
         let menus = [
-            { id: 0, name: "Tuan Rumah Ice", cat: "Ice Coffee", price: 25000, r: [{i:"aren", q:25}, {i:"creamer", q:25}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"cup_ice", q:1}, {i:"straw", q:1}] },
-            { id: 1, name: "Kopsus Tuan", cat: "Ice Coffee", price: 22000, r: [{i:"skm", q:20}, {i:"evap", q:10}, {i:"kaks", q:30}, {i:"uht", q:70}, {i:"cup_ice", q:1}, {i:"straw", q:1}] },
-            { id: 2, name: "Lotus Biscoff Latte", cat: "Signature", price: 32000, r: [{i:"lotus", q:15}, {i:"monin_std", q:15}, {i:"kaks", q:30}, {i:"uht", q:120}, {i:"cup_ice", q:1}] },
-            { id: 3, name: "Thai Tea Cheese", cat: "Tea Series", price: 28000, r: [{i:"thai_tea", q:20}, {i:"skm", q:30}, {i:"cheese", q:20}, {i:"uht", q:100}, {i:"cup_ice", q:1}] }
+            // COFFEE BASED
+            { id: 1, name: "Kopi Susu", cat: "Coffee", price: 20000, r: [{i:"skm", q:20}, {i:"creamer", q:15}, {i:"evap", q:10}, {i:"kaks", q:30}, {i:"uht", q:70}, {i:"cup", q:1}] },
+            { id: 2, name: "Tuan Rumah", cat: "Coffee", price: 25000, r: [{i:"aren", q:25}, {i:"creamer", q:25}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 3, name: "Tiramisu Coffee", cat: "Coffee", price: 28000, r: [{i:"tiramisu", q:20}, {i:"skm", q:10}, {i:"creamer", q:15}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"cheese", q:20}, {i:"cup", q:1}] },
+            { id: 4, name: "Banana Coffee", cat: "Coffee", price: 25000, r: [{i:"banana", q:20}, {i:"skm", q:10}, {i:"creamer", q:15}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 5, name: "Biscoff Coffee", cat: "Coffee", price: 30000, r: [{i:"lotus_s", q:15}, {i:"skm", q:10}, {i:"caramel", q:10}, {i:"creamer", q:10}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"lotus_p", q:1}, {i:"cup", q:1}] },
+            { id: 6, name: "Butterscotch", cat: "Coffee", price: 28000, r: [{i:"butter", q:20}, {i:"skm", q:10}, {i:"creamer", q:15}, {i:"kaks", q:30}, {i:"uht", q:70}, {i:"cheese", q:20}, {i:"cup", q:1}] },
+            { id: 7, name: "Pandan Coffee", cat: "Coffee", price: 25000, r: [{i:"pandan", q:20}, {i:"skm", q:10}, {i:"evap", q:10}, {i:"creamer", q:20}, {i:"kaks", q:30}, {i:"oat", q:100}, {i:"cup", q:1}] },
+            { id: 8, name: "Peanut Butter", cat: "Coffee", price: 25000, r: [{i:"peanut", q:15}, {i:"skm", q:10}, {i:"caramel", q:10}, {i:"creamer", q:10}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 9, name: "Caramel Macchiato", cat: "Coffee", price: 30000, r: [{i:"caramel", q:10}, {i:"vanilla", q:10}, {i:"skm", q:10}, {i:"creamer", q:20}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"s_caramel", q:20}, {i:"cheese", q:20}, {i:"cup", q:1}] },
+            
+            // AMERICANO SERIES
+            { id: 10, name: "Berry Cano", cat: "Americano", price: 22000, r: [{i:"grenadine", q:20}, {i:"sugar", q:10}, {i:"water", q:100}, {i:"diks", q:30}, {i:"cup", q:1}] },
+            { id: 11, name: "Apple Cano", cat: "Americano", price: 22000, r: [{i:"apple", q:20}, {i:"sugar", q:10}, {i:"water", q:100}, {i:"diks", q:30}, {i:"cup", q:1}] },
+            { id: 12, name: "Melon Cano", cat: "Americano", price: 22000, r: [{i:"melon", q:20}, {i:"sugar", q:10}, {i:"water", q:100}, {i:"diks", q:30}, {i:"cup", q:1}] },
+            
+            // NON COFFEE
+            { id: 13, name: "Avocado Milk", cat: "Non-Coffee", price: 23000, r: [{i:"skm", q:10}, {i:"p_avocado", q:20}, {i:"creamer", q:15}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 14, name: "Taro Latte", cat: "Non-Coffee", price: 23000, r: [{i:"skm", q:25}, {i:"p_taro", q:4}, {i:"creamer", q:10}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 15, name: "Red Velvet", cat: "Non-Coffee", price: 23000, r: [{i:"skm", q:20}, {i:"p_rv", q:25}, {i:"creamer", q:10}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 16, name: "Chocolate Sig", cat: "Non-Coffee", price: 23000, r: [{i:"aren", q:15}, {i:"p_choco", q:13}, {i:"creamer", q:10}, {i:"uht", q:100}, {i:"cup", q:1}] },
+            { id: 17, name: "Creamy Coco", cat: "Non-Coffee", price: 28000, r: [{i:"tiramisu", q:15}, {i:"skm", q:10}, {i:"p_choco", q:10}, {i:"creamer", q:10}, {i:"yakult", q:1}, {i:"uht", q:50}, {i:"cheese", q:20}, {i:"cup", q:1}] },
+            { id: 18, name: "Coconut Plum", cat: "Non-Coffee", price: 25000, r: [{i:"grenadine", q:10}, {i:"plum", q:10}, {i:"hydro", q:90}, {i:"sprite", q:60}, {i:"cup", q:1}] },
+            { id: 19, name: "Matcha Latte", cat: "Signature", price: 28000, r: [{i:"p_matcha", q:20}, {i:"skm", q:15}, {i:"creamer", q:10}, {i:"uht", q:110}, {i:"cup", q:1}] },
+            
+            // TEA SERIES
+            { id: 20, name: "Butterfly Tea", cat: "Tea", price: 18000, r: [{i:"bpea", q:180}, {i:"sugar", q:40}, {i:"cup", q:1}] },
+            { id: 21, name: "Thai Tea", cat: "Tea", price: 15000, r: [{i:"skm", q:50}, {i:"evap", q:20}, {i:"thai", q:150}, {i:"cup", q:1}] },
+            { id: 22, name: "Green Tea Thai", cat: "Tea", price: 15000, r: [{i:"skm", q:50}, {i:"evap", q:20}, {i:"green", q:150}, {i:"cup", q:1}] },
+            { id: 23, name: "Lychee Tea", cat: "Tea", price: 22000, r: [{i:"sugar", q:20}, {i:"lychee", q:30}, {i:"tea_e", q:150}, {i:"lychee_f", q:2}, {i:"cup", q:1}] },
+            { id: 24, name: "Mango Squash", cat: "Tea", price: 20000, r: [{i:"mango", q:20}, {i:"lime", q:5}, {i:"selasih", q:10}, {i:"sprite", q:110}, {i:"cup", q:1}] },
+
+            // SPECIALTY
+            { id: 25, name: "Americano Ice", cat: "Specialty", price: 18000, r: [{i:"water", q:100}, {i:"diks", q:30}, {i:"cup", q:1}] },
+            { id: 26, name: "Magic", cat: "Specialty", price: 28000, r: [{i:"diks", q:36}, {i:"oat", q:150}, {i:"cup", q:1}] },
+            { id: 27, name: "Mocha Ice", cat: "Specialty", price: 25000, r: [{i:"skm", q:20}, {i:"p_choco", q:8}, {i:"creamer", q:10}, {i:"diks", q:30}, {i:"uht", q:100}, {i:"cup", q:1}] }
         ];
 
         let activeFilter = 'all';
 
-        // --- CORE LOGIC ---
+        // --- CORE FUNCTIONS ---
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab', 'text-slate-400'));
@@ -204,7 +201,7 @@
             for (let cat in ingredients) {
                 if (ingredients[cat][id]) return ingredients[cat][id];
             }
-            return { name: "Bahan Dihapus", p: 0, u: "u" };
+            return { name: "N/A", p: 0, u: "u" };
         }
 
         function calcHPP(recipe) {
@@ -226,11 +223,11 @@
                     <div onclick="openModal('recipe-modal', ${m.id})" class="bg-white p-5 rounded-[32px] border border-slate-100 card-shadow flex justify-between items-center active:scale-[0.98] transition-all">
                         <div class="flex-1">
                             <h3 class="font-bold text-slate-800 text-sm">${m.name}</h3>
-                            <p class="text-[10px] font-black uppercase text-slate-400">${m.cat} • Rp ${m.price.toLocaleString()}</p>
+                            <p class="text-[9px] font-black uppercase text-slate-400 tracking-tighter">${m.cat} • Rp ${m.price.toLocaleString()}</p>
                         </div>
                         <div class="text-right">
                             <p class="text-xs font-black text-orange-600">Rp ${Math.round(hpp).toLocaleString()}</p>
-                            <p class="text-[10px] font-bold text-emerald-500">${margin}% Margin</p>
+                            <p class="text-[10px] font-bold ${margin > 50 ? 'text-emerald-500' : 'text-orange-400'}">${margin}%</p>
                         </div>
                     </div>`;
             });
@@ -243,16 +240,16 @@
             container.innerHTML = '';
             for (let cat in ingredients) {
                 let html = `<div class="bg-white p-6 rounded-[35px] border border-slate-100 card-shadow">
-                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">${cat}</h3>`;
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">${cat}</h3>`;
                 for (let key in ingredients[cat]) {
                     const item = ingredients[cat][key];
                     html += `
                         <div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
-                            <span class="text-xs font-bold text-slate-700">${item.name} <span class="text-slate-300 font-normal">/${item.u}</span></span>
+                            <span class="text-xs font-bold text-slate-700">${item.name} <small class="text-slate-300">/${item.u}</small></span>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] text-slate-300 font-bold">Rp</span>
                                 <input type="number" value="${item.p}" onchange="updateIngPrice('${cat}','${key}',this.value)" 
-                                class="w-16 bg-slate-50 border-0 rounded-xl px-2 py-2 text-right text-xs font-black text-orange-600 outline-none focus:ring-1 ring-orange-200">
+                                class="w-16 bg-slate-50 border-0 rounded-xl px-2 py-2 text-right text-xs font-black text-orange-600 outline-none">
                             </div>
                         </div>`;
                 }
@@ -260,12 +257,15 @@
             }
         }
 
-        // --- MODAL ACTIONS ---
+        function updateIngPrice(cat, key, val) {
+            ingredients[cat][key].p = parseFloat(val) || 0;
+            renderMenu();
+        }
+
         function openModal(modalId, mId) {
             const m = menus.find(x => x.id === mId);
             document.getElementById('modal-title').innerText = m.name;
             document.getElementById('modal-category').innerText = m.cat;
-            
             const ingBox = document.getElementById('modal-ingredients');
             ingBox.innerHTML = '';
             m.r.forEach((rcp, idx) => {
@@ -275,7 +275,7 @@
                         <span class="text-xs font-bold text-slate-600">${data.name}</span>
                         <div class="flex items-center gap-2">
                             <input type="number" value="${rcp.q}" oninput="updateRecipeQty(${mId}, ${idx}, this.value)" 
-                            class="w-16 bg-white border border-slate-200 rounded-xl px-2 py-2 text-center text-xs font-black">
+                            class="w-16 bg-white border border-slate-100 rounded-xl px-2 py-2 text-center text-xs font-black">
                             <span class="text-[9px] font-bold text-slate-400 uppercase">${data.u}</span>
                         </div>
                     </div>`;
@@ -286,37 +286,8 @@
         }
 
         function closeModal(id) {
-            if (id === 'recipe-modal') {
-                document.getElementById('modal-panel').classList.add('translate-y-full');
-                setTimeout(() => document.getElementById('recipe-modal').classList.add('invisible'), 300);
-            } else {
-                document.getElementById(id).classList.add('hidden');
-            }
-        }
-
-        function openAddIngModal() { document.getElementById('add-ing-modal').classList.remove('hidden'); }
-
-        function addNewIngredient() {
-            const name = document.getElementById('new-ing-name').value;
-            const cat = document.getElementById('new-ing-cat').value;
-            const price = document.getElementById('new-ing-price').value;
-            const unit = document.getElementById('new-ing-unit').value;
-            if(!name || !price) return alert("Isi data lengkap!");
-
-            const key = name.toLowerCase().replace(/\s/g, '_');
-            if(!ingredients[cat]) ingredients[cat] = {};
-            ingredients[cat][key] = { name: name, p: parseFloat(price), u: unit };
-            
-            renderInventory();
-            closeModal('add-ing-modal');
-            // Reset fields
-            document.getElementById('new-ing-name').value = '';
-            document.getElementById('new-ing-price').value = '';
-        }
-
-        function updateIngPrice(cat, key, val) {
-            ingredients[cat][key].p = parseFloat(val) || 0;
-            renderMenu();
+            document.getElementById('modal-panel').classList.add('translate-y-full');
+            setTimeout(() => document.getElementById(id).classList.add('invisible'), 300);
         }
 
         function updateRecipeQty(mId, rIdx, val) {
@@ -335,7 +306,7 @@
             const cats = ['all', ...new Set(menus.map(m => m.cat))];
             document.getElementById('filter-chips').innerHTML = cats.map(c => `
                 <button onclick="activeFilter='${c}'; renderMenu();" 
-                class="px-5 py-2 bg-white rounded-2xl border border-slate-100 text-[10px] font-black uppercase tracking-tight active:bg-orange-600 active:text-white card-shadow">
+                class="px-5 py-2 bg-white rounded-2xl border border-slate-100 text-[10px] font-black uppercase active:bg-orange-600 active:text-white card-shadow">
                     ${c}
                 </button>`).join('');
             renderMenu();
