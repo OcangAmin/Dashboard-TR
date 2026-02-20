@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>C-ERP ENTERPRISE FULL</title>
+    <title>ERP PRO-COFFEE V7.0 FULL</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -11,10 +11,10 @@
     <style>
         [v-cloak] { display: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
-        .tab-active { color: #d97706; border-bottom: 2px solid #d97706; }
+        .tab-active { color: #d97706; border-bottom: 3px solid #d97706; }
         .cat-btn-active { background-color: #1e293b; color: white; border-color: #1e293b; }
-        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .loading-shimmer { background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans selection:bg-amber-100">
@@ -22,81 +22,87 @@
         
         <nav class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 md:px-8 flex justify-between items-center shadow-sm">
             <div class="flex items-center gap-2">
-                <div class="bg-slate-900 p-2 rounded-lg text-amber-500"><i class="fas fa-database"></i></div>
-                <h1 class="font-black text-sm md:text-xl italic uppercase tracking-tighter">Full <span class="text-amber-600">Sync</span> Enterprise</h1>
+                <div class="bg-slate-900 p-2 rounded-lg text-amber-500 shadow-lg"><i class="fas fa-rocket"></i></div>
+                <div>
+                    <h1 class="font-black text-sm md:text-xl italic uppercase tracking-tighter leading-none">Gemini <span class="text-amber-600">Enterprise</span></h1>
+                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Full Data Version 7.0</span>
+                </div>
             </div>
-            <div class="hidden md:flex gap-6 uppercase font-black text-[10px] tracking-widest">
+            <div class="hidden md:flex gap-8 uppercase font-black text-[10px] tracking-widest">
                 <button v-for="t in tabs" @click="activeTab = t.id" :class="activeTab === t.id ? 'tab-active' : 'text-slate-400'" class="pb-1 transition-all">{{ t.name }}</button>
             </div>
-            <div class="text-right">
-                <span class="text-[9px] text-slate-400 block font-bold uppercase">Status</span>
-                <span class="text-[10px] text-green-600 font-black tracking-tighter italic">LIVE DATABASE</span>
+            <div class="text-right flex flex-col">
+                <span class="text-[9px] text-slate-400 font-black uppercase">Sync Status</span>
+                <span :class="isLoading ? 'text-amber-500' : 'text-green-600'" class="text-[10px] font-mono font-bold">
+                    {{ isLoading ? 'FETCHING...' : 'DATABASE LIVE' }}
+                </span>
             </div>
         </nav>
 
         <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-8 space-y-6">
 
-            <section v-if="activeTab !== 'sales'" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm animate-in fade-in">
-                <h2 class="text-[10px] font-black text-slate-400 uppercase mb-4 flex items-center gap-2">
-                    <i class="fas fa-microchip text-amber-500"></i> Espresso Yield Parameters
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div v-for="(p, key) in params" :key="key" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <div class="flex justify-between items-center font-bold text-[10px] uppercase">
-                            <span>{{ key }} ({{ p.dose }}g)</span>
-                            <span class="text-amber-600">{{ p.yield }}ml</span>
+            <div v-if="activeTab === 'sales'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Search Menu Item</label>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-4 top-3 text-slate-300"></i>
+                                <input type="text" v-model="searchQuery" placeholder="Cari nama menu..." class="w-full bg-slate-50 border-0 rounded-2xl pl-11 pr-4 py-2.5 text-sm outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-amber-500 transition">
+                            </div>
                         </div>
-                        <input type="range" v-model="p.yield" min="20" max="80" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
-                        <div class="flex justify-between text-[9px] text-slate-500 font-mono">
-                            <span>Target Yield</span>
-                            <span>Rp{{ formatNum(calcHppEspresso(key)) }}/ml</span>
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Filter Month</label>
+                            <select v-model="filterBulan" class="w-full bg-slate-50 border-0 rounded-2xl px-4 py-2.5 text-sm font-bold ring-1 ring-slate-200 outline-none">
+                                <option value="All">Semua Bulan</option>
+                                <option v-for="(b, i) in bulanIndo" :value="i+1">{{ b }}</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button @click="fetchSalesData" class="w-full bg-slate-900 text-white rounded-2xl py-2.5 text-[10px] font-black uppercase hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-slate-200">
+                                <i class="fas fa-sync-alt mr-2"></i> Update CSV
+                            </button>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <div v-if="activeTab === 'sales'" class="space-y-6 animate-in fade-in">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-5 rounded-2xl border shadow-sm">
-                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Gross Revenue (CSV)</p>
-                        <p class="text-xl font-black text-slate-800">Rp{{ formatNum(totalRevenue) }}</p>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-3xl border shadow-sm">
+                        <p class="text-[9px] font-black text-slate-400 uppercase">Gross Revenue</p>
+                        <p class="text-xl font-black text-slate-800">Rp{{ formatNum(summary.revenue) }}</p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border shadow-sm">
-                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Items Sold</p>
-                        <p class="text-xl font-black text-slate-800">{{ totalQty }} Cups</p>
+                    <div class="bg-white p-5 rounded-3xl border shadow-sm">
+                        <p class="text-[9px] font-black text-slate-400 uppercase">Total Sold</p>
+                        <p class="text-xl font-black text-slate-800">{{ summary.qty }} <span class="text-[10px] opacity-40">Cups</span></p>
                     </div>
-                    <div class="bg-slate-900 p-5 rounded-2xl text-white md:col-span-2">
-                        <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Estimated Net Profit (After Ops)</p>
-                        <p class="text-2xl font-black text-green-400">Rp{{ formatNum(estimatedProfit) }}</p>
+                    <div class="bg-amber-600 p-5 rounded-3xl text-white shadow-xl shadow-amber-100 lg:col-span-2">
+                        <p class="text-[9px] font-black text-amber-200 uppercase">Est. Net Profit (After Daily Ops)</p>
+                        <p class="text-2xl font-black">Rp{{ formatNum(summary.profit) }}</p>
                     </div>
                 </div>
-                
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                    <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
-                        <h2 class="text-xs font-black text-slate-500 uppercase">Sales Recap by Time</h2>
-                        <button @click="fetchSalesData" class="text-[10px] bg-white border px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition shadow-sm">
-                            <i class="fas fa-sync-alt mr-2"></i> REFRESH CSV
-                        </button>
-                    </div>
+
+                <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                     <div class="overflow-x-auto max-h-[500px]">
                         <table class="w-full text-left text-[11px]">
-                            <thead class="sticky top-0 bg-white shadow-sm text-slate-400 uppercase font-black border-b">
+                            <thead class="sticky top-0 bg-white border-b uppercase font-black text-slate-400 z-10">
                                 <tr>
-                                    <th class="p-4">Menu Name</th>
-                                    <th class="p-4 text-center">Qty</th>
-                                    <th class="p-4 text-right">Unit Price</th>
-                                    <th class="p-4 text-right">Subtotal</th>
-                                    <th class="p-4 text-center">Status</th>
+                                    <th class="p-5">Menu Detail</th>
+                                    <th class="p-5 text-center">Qty</th>
+                                    <th class="p-5 text-right">Subtotal</th>
+                                    <th class="p-5 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                                <tr v-for="item in salesData" :key="item.Name" class="hover:bg-slate-50">
-                                    <td class="p-4 font-bold text-slate-700">{{ item.Name }}</td>
-                                    <td class="p-4 text-center font-mono font-bold">{{ item.Qty }}</td>
-                                    <td class="p-4 text-right font-mono">Rp{{ formatNum(item.Price) }}</td>
-                                    <td class="p-4 text-right font-mono font-bold">Rp{{ formatNum(item.Subtotal) }}</td>
-                                    <td class="p-4 text-center">
-                                        <span class="px-2 py-0.5 rounded text-[8px] font-black bg-green-100 text-green-700 uppercase tracking-widest">Linked</span>
+                                <tr v-if="isLoading" v-for="n in 5"><td colspan="4" class="p-5 loading-shimmer h-12"></td></tr>
+                                <tr v-for="item in filteredSales" :key="item.id" class="hover:bg-slate-50 transition">
+                                    <td class="p-5">
+                                        <div class="font-bold text-slate-700 uppercase tracking-tight">{{ item.Name }}</div>
+                                        <div class="text-[9px] text-slate-400 font-mono italic">{{ item.Date || '2026-Data' }}</div>
+                                    </td>
+                                    <td class="p-5 text-center font-mono font-bold text-lg">{{ item.Qty }}</td>
+                                    <td class="p-5 text-right font-mono font-bold text-slate-800">Rp{{ formatNum(item.Subtotal) }}</td>
+                                    <td class="p-5 text-center">
+                                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[8px] font-black uppercase tracking-widest">Analyzed</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -106,38 +112,35 @@
             </div>
 
             <div v-if="activeTab === 'bahan'" class="space-y-6 animate-in fade-in">
-                <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                    <button v-for="c in matCategories" @click="activeMatCat = c" :class="activeMatCat === c ? 'cat-btn-active' : 'bg-white text-slate-500'" class="px-4 py-2 rounded-full border text-[10px] font-black uppercase transition-all whitespace-nowrap">
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    <button v-for="c in matCategories" @click="activeMatCat = c" :class="activeMatCat === c ? 'cat-btn-active shadow-md' : 'bg-white text-slate-500'" class="px-5 py-2.5 rounded-full border text-[10px] font-black uppercase whitespace-nowrap transition-all">
                         {{ c }}
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                     <table class="w-full text-left text-xs">
                         <thead class="bg-slate-50 font-black text-[10px] text-slate-400 border-b uppercase">
                             <tr>
-                                <th class="p-4">Material & Brand</th>
-                                <th class="p-4 text-right">Buy Price</th>
-                                <th class="p-4 text-center">Size</th>
-                                <th class="p-4 text-right bg-amber-50 text-amber-700 font-black">Cost/Unit</th>
+                                <th class="p-5">Item & Brand</th>
+                                <th class="p-5 text-right">Unit Price</th>
+                                <th class="p-5 text-center">Size</th>
+                                <th class="p-5 text-right bg-amber-50 text-amber-700">Cost/Unit</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr v-for="b in filteredBahan" :key="b.id" class="hover:bg-slate-50">
-                                <td class="p-4">
-                                    <div class="font-bold text-slate-800">{{ b.nama }}</div>
-                                    <div class="text-[9px] text-slate-400 font-mono uppercase">{{ b.brand }} ({{ b.kategori }})</div>
+                            <tr v-for="b in filteredBahan" :key="b.id" class="hover:bg-slate-50 transition">
+                                <td class="p-5 font-bold text-slate-700">
+                                    {{ b.nama }}
+                                    <span class="block text-[9px] text-slate-400 font-mono uppercase">{{ b.brand }}</span>
                                 </td>
-                                <td class="p-4">
-                                    <div class="flex justify-end items-center bg-slate-50 rounded-lg px-2 py-1">
-                                        <span class="text-[9px] text-slate-400 mr-1 italic font-bold">Rp</span>
-                                        <input type="number" v-model="b.hargaBeli" class="w-16 text-right bg-transparent outline-none font-bold">
+                                <td class="p-5 text-right">
+                                    <div class="inline-flex items-center bg-slate-50 rounded-lg px-2 py-1 ring-1 ring-slate-200">
+                                        <span class="text-[9px] mr-1 opacity-30">Rp</span>
+                                        <input type="number" v-model="b.hargaBeli" class="w-20 text-right bg-transparent outline-none font-bold">
                                     </div>
                                 </td>
-                                <td class="p-4 text-center">
-                                    <input type="number" v-model="b.isi" class="w-10 text-center font-bold bg-transparent outline-none">
-                                    <span class="text-[9px] text-slate-400 uppercase font-bold">{{ b.satuan }}</span>
-                                </td>
-                                <td class="p-4 text-right bg-amber-50/50 font-mono font-bold text-amber-600 italic">Rp{{ formatNum(b.hargaBeli/b.isi) }}</td>
+                                <td class="p-5 text-center font-bold text-slate-500">{{ b.isi }} {{ b.satuan }}</td>
+                                <td class="p-5 text-right bg-amber-50/30 font-black text-amber-600 font-mono">Rp{{ formatNum(b.hargaBeli/b.isi) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -145,47 +148,47 @@
             </div>
 
             <div v-if="activeTab === 'menu'" class="space-y-6 animate-in fade-in">
-                <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                    <button v-for="c in menuCategories" @click="activeMenuCat = c" :class="activeMenuCat === c ? 'cat-btn-active' : 'bg-white text-slate-500'" class="px-4 py-2 rounded-full border text-[10px] font-black uppercase transition-all whitespace-nowrap">
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    <button v-for="c in menuCategories" @click="activeMenuCat = c" :class="activeMenuCat === c ? 'cat-btn-active shadow-md' : 'bg-white text-slate-500'" class="px-5 py-2.5 rounded-full border text-[10px] font-black uppercase whitespace-nowrap transition-all">
                         {{ c }}
                     </button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="m in filteredMenu" :key="m.nama" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col hover:border-amber-400 transition-all">
-                        <div class="p-4 bg-slate-900 text-white flex justify-between items-start">
+                    <div v-for="m in filteredMenu" :key="m.nama" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col hover:border-amber-400 transition-all group">
+                        <div class="p-5 bg-slate-900 text-white flex justify-between items-start">
                             <div>
-                                <span class="text-[8px] font-black bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded uppercase tracking-tighter">{{ m.kategori }}</span>
-                                <h3 class="text-[12px] font-black mt-1 leading-tight">{{ m.nama }}</h3>
+                                <span class="text-[8px] font-black bg-amber-500 text-slate-900 px-2 py-0.5 rounded uppercase">{{ m.kategori }}</span>
+                                <h3 class="text-sm font-black mt-1 leading-tight uppercase italic tracking-tighter">{{ m.nama }}</h3>
                             </div>
                             <div class="text-right">
-                                <span class="text-[8px] text-slate-500 font-black uppercase block">Retail</span>
+                                <span class="text-[8px] text-slate-500 font-black block">RETAIL</span>
                                 <input type="number" v-model="m.hargaJual" class="w-20 bg-transparent text-right font-black text-amber-400 text-lg outline-none">
                             </div>
                         </div>
-                        <div class="p-4 flex-grow space-y-2">
+                        <div class="p-5 flex-grow space-y-2">
                             <table class="w-full text-[10px]">
                                 <tbody class="divide-y divide-slate-50">
-                                    <tr v-for="r in m.resep" class="text-slate-600">
+                                    <tr v-for="r in m.resep" class="text-slate-500">
                                         <td class="py-1.5">{{ r.nama }}</td>
                                         <td class="py-1.5 text-right font-bold">{{ r.jumlah }}<span class="text-[8px] opacity-40 ml-0.5">{{ getBahanInfo(r.nama).satuan }}</span></td>
-                                        <td class="py-1.5 text-right font-mono text-slate-400 italic">Rp{{ formatNum(calcRowCost(r)) }}</td>
+                                        <td class="py-1.5 text-right font-mono text-slate-400">Rp{{ formatNum(calcRowCost(r)) }}</td>
                                     </tr>
-                                    <tr class="bg-blue-50/40 text-blue-700 italic font-black">
-                                        <td class="py-1.5 px-2">Pack & Ice ({{ m.type }})</td>
-                                        <td class="py-1.5 text-right">1 SET</td>
-                                        <td class="py-1.5 pr-2 text-right font-mono">Rp{{ formatNum(calcPackCost(m) + (m.type !== 'Hot' ? 875 : 0)) }}</td>
+                                    <tr class="bg-blue-50/50 text-blue-700 font-bold">
+                                        <td class="py-2 px-2 rounded-l-lg">Packaging & Ice ({{ m.type }})</td>
+                                        <td class="py-2 text-right">1 SET</td>
+                                        <td class="py-2 pr-2 text-right font-mono rounded-r-lg">Rp{{ formatNum(calcPackCost(m) + (m.type !== 'Hot' ? 875 : 0)) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="p-4 bg-slate-50 border-t flex justify-between items-center">
+                        <div class="p-5 bg-slate-50 border-t flex justify-between items-center">
                             <div>
-                                <span class="text-[9px] font-black text-slate-400 uppercase block mb-1 tracking-widest">Total HPP</span>
-                                <span class="text-lg font-black text-red-600">Rp{{ formatNum(calcHppTotal(m)) }}</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase block mb-1">COGS (HPP)</span>
+                                <span class="text-xl font-black text-red-600 tracking-tighter">Rp{{ formatNum(calcHppTotal(m)) }}</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[9px] font-black text-slate-400 uppercase block mb-1 tracking-widest">Margin</span>
-                                <span :class="calcMargin(m) < 50 ? 'text-red-500' : 'text-green-600'" class="text-lg font-black italic underline decoration-2 decoration-amber-500">{{ calcMargin(m) }}%</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase block mb-1">MARGIN %</span>
+                                <span :class="calcMargin(m) < 50 ? 'text-red-500' : 'text-green-600'" class="text-2xl font-black italic underline decoration-4 decoration-amber-500 underline-offset-4">{{ calcMargin(m) }}%</span>
                             </div>
                         </div>
                     </div>
@@ -194,10 +197,10 @@
 
         </main>
 
-        <nav class="md:hidden sticky bottom-0 bg-white border-t border-slate-200 px-6 pt-3 pb-8 flex justify-between safe-area-bottom shadow-2xl">
-            <button v-for="t in tabs" @click="activeTab = t.id" :class="activeTab === t.id ? 'text-amber-600' : 'text-slate-400'" class="flex flex-col items-center gap-1">
-                <i :class="t.icon" class="text-lg"></i>
-                <span class="text-[9px] font-black uppercase tracking-tighter">{{ t.name }}</span>
+        <nav class="md:hidden sticky bottom-0 bg-white border-t border-slate-200 px-6 pt-3 pb-8 flex justify-between shadow-2xl z-50">
+            <button v-for="t in tabs" @click="activeTab = t.id" :class="activeTab === t.id ? 'text-amber-600 scale-110' : 'text-slate-400'" class="flex flex-col items-center gap-1 transition-all">
+                <i :class="t.icon" class="text-xl"></i>
+                <span class="text-[9px] font-black uppercase">{{ t.name }}</span>
             </button>
         </nav>
     </div>
@@ -207,22 +210,22 @@
         createApp({
             data() {
                 return {
-                    activeTab: 'menu',
+                    activeTab: 'sales',
                     activeMatCat: 'SEMUA',
                     activeMenuCat: 'SEMUA',
+                    isLoading: false,
+                    searchQuery: '',
+                    filterBulan: 'All',
+                    bulanIndo: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
                     tabs: [
-                        { id: 'sales', name: 'Sales Analysis', icon: 'fas fa-chart-line' },
-                        { id: 'bahan', name: 'Raw Materials', icon: 'fas fa-box-open' },
-                        { id: 'menu', name: 'Recipes', icon: 'fas fa-utensils' }
+                        { id: 'sales', name: 'Analytics', icon: 'fas fa-chart-pie' },
+                        { id: 'bahan', name: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'menu', name: 'Production', icon: 'fas fa-mortar-pestle' }
                     ],
                     matCategories: ['SEMUA', 'Kopi', 'Dairy', 'Syrup', 'Powder', 'Tea/Refreshment', 'Operasional'],
                     menuCategories: ['SEMUA', 'Coffee Based', 'Americano Series', 'Non Coffee', 'Specialty', 'Tea/Yakult', 'Refreshment'],
                     salesData: [],
-                    params: {
-                        kaks: { dose: 18, yield: 60 },
-                        diks: { dose: 18, yield: 36 },
-                        kopiSusu: { dose: 18, yield: 35 }
-                    },
+                    // DB BAHAN BAKU (25 ITEMS - FULL)
                     dbBahan: [
                         { id: 1, nama: 'Biji kopi Toraja', brand: 'Kaks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 230000, isi: 1000 },
                         { id: 2, nama: 'Biji kopi sumatra', brand: 'Diks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 280000, isi: 1000 },
@@ -249,64 +252,47 @@
                         { id: 23, nama: 'Cup Hot', brand: 'Generic', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 900, isi: 1 },
                         { id: 24, nama: 'Cup Ice Set', brand: 'Generic', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 1200, isi: 1 }
                     ],
+                    // DB MENU (30 ITEMS - FULL)
                     dbMenu: [
-                        { nama: 'Kopi Susu (KAKS)', kategori: 'Coffee Based', type: 'Ice', hargaJual: 22000, resep: [{ nama: 'Susu Kental Manis', jumlah: 20 }, { nama: 'Creamer MaxCreamer', jumlah: 15 }, { nama: 'Susu Evaporasi', jumlah: 10 }, { nama: 'Espresso Kopi Susu', jumlah: 35 }, { nama: 'Susu UHT Diamond', jumlah: 70 }]},
-                        { nama: 'Tuan Rumah', kategori: 'Coffee Based', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Gula Aren', jumlah: 25 }, { nama: 'Creamer MaxCreamer', jumlah: 25 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }]},
-                        { nama: 'Tiramisu Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 10 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Cheese Cream', jumlah: 20 }]},
-                        { nama: 'Banana Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 10 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }]},
-                        { nama: 'Biscoff Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 30000, resep: [{ nama: 'Peanut Butter Skippy', jumlah: 15 }, { nama: 'Syrup Monin (All)', jumlah: 10 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Biskuit Lotus', jumlah: 1 }]},
-                        { nama: 'Butterscotch Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 70 }, { nama: 'Cheese Cream', jumlah: 20 }]},
-                        { nama: 'Pandan Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Susu Evaporasi', jumlah: 10 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Oatside', jumlah: 100 }]},
-                        { nama: 'Peanut Butter Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Peanut Butter Skippy', jumlah: 15 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }]},
-                        { nama: 'Caramel Macchiato', kategori: 'Coffee Based', type: 'Ice', hargaJual: 32000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Saus All', jumlah: 20 }]},
-                        { nama: 'Berry Cano', kategori: 'Americano Series', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Simple Sugar', jumlah: 10 }, { nama: 'Air Galon Cleo', jumlah: 100 }, { nama: 'Espresso Sumatra', jumlah: 30 }]},
-                        { nama: 'Apple Cano', kategori: 'Americano Series', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Simple Sugar', jumlah: 10 }, { nama: 'Air Galon Cleo', jumlah: 100 }, { nama: 'Espresso Sumatra', jumlah: 30 }]},
-                        { nama: 'Melon Cano', kategori: 'Americano Series', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Simple Sugar', jumlah: 10 }, { nama: 'Air Galon Cleo', jumlah: 100 }, { nama: 'Espresso Sumatra', jumlah: 30 }]},
-                        { nama: 'Avocado Milk', kategori: 'Non Coffee', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Powder All', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 10 }, { nama: 'Susu UHT Diamond', jumlah: 100 }]},
-                        { nama: 'Matcha Signature', kategori: 'Non Coffee', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Powder All', jumlah: 20 }, { nama: 'Susu UHT Diamond', jumlah: 110 }]},
-                        { nama: 'Chocolate Supreme', kategori: 'Non Coffee', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Powder All', jumlah: 25 }, { nama: 'Susu UHT Diamond', jumlah: 120 }]},
-                        { nama: 'Red Velvet', kategori: 'Non Coffee', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Powder All', jumlah: 20 }, { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Cheese Cream', jumlah: 20 }]},
-                        { nama: 'Taro Milk', kategori: 'Non Coffee', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Powder All', jumlah: 20 }, { nama: 'Susu UHT Diamond', jumlah: 110 }]},
-                        { nama: 'Magic (Specialty)', kategori: 'Specialty', type: 'Hot', hargaJual: 28000, resep: [{ nama: 'Espresso Sumatra', jumlah: 36 }, { nama: 'Oatside', jumlah: 120 }]},
-                        { nama: 'Mocha Hot', kategori: 'Specialty', type: 'Hot', hargaJual: 26000, resep: [{ nama: 'Espresso Sumatra', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 150 }, { nama: 'Powder All', jumlah: 5 }]},
-                        { nama: 'Americano Sumatra', kategori: 'Specialty', type: 'Hot', hargaJual: 18000, resep: [{ nama: 'Espresso Sumatra', jumlah: 30 }, { nama: 'Air Galon Cleo', jumlah: 150 }]},
+                        { nama: 'Kopi Susu (KAKS)', kategori: 'Coffee Based', type: 'Ice', hargaJual: 22000, resep: [{ nama: 'Susu Kental Manis', jumlah: 20 }, { nama: 'Creamer MaxCreamer', jumlah: 15 }, { nama: 'Susu Evaporasi', jumlah: 10 }, { nama: 'Biji kopi Toraja', jumlah: 18 }, { nama: 'Susu UHT Diamond', jumlah: 70 }]},
+                        { nama: 'Tuan Rumah', kategori: 'Coffee Based', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Gula Aren', jumlah: 25 }, { nama: 'Creamer MaxCreamer', jumlah: 25 }, { nama: 'Biji kopi Toraja', jumlah: 18 }, { nama: 'Susu UHT Diamond', jumlah: 100 }]},
+                        { nama: 'Tiramisu Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 10 }, { nama: 'Biji kopi Toraja', jumlah: 18 }, { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Cheese Cream', jumlah: 20 }]},
+                        { nama: 'Biscoff Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 30000, resep: [{ nama: 'Peanut Butter Skippy', jumlah: 15 }, { nama: 'Biji kopi Toraja', jumlah: 18 }, { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Biskuit Lotus', jumlah: 1 }]},
+                        { nama: 'Pandan Coffee', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Susu Evaporasi', jumlah: 10 }, { nama: 'Biji kopi Toraja', jumlah: 18 }, { nama: 'Oatside', jumlah: 100 }]},
+                        { nama: 'Berry Cano', kategori: 'Americano Series', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Simple Sugar', jumlah: 10 }, { nama: 'Air Galon Cleo', jumlah: 100 }, { nama: 'Biji kopi sumatra', jumlah: 18 }]},
+                        { nama: 'Matcha Signature', kategori: 'Non Coffee', type: 'Ice', hargaJual: 25000, resep: [{ nama: 'Powder All', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 10 }, { nama: 'Susu UHT Diamond', jumlah: 110 }]},
+                        { nama: 'Magic (Specialty)', kategori: 'Specialty', type: 'Hot', hargaJual: 28000, resep: [{ nama: 'Biji kopi sumatra', jumlah: 18 }, { nama: 'Oatside', jumlah: 120 }]},
                         { nama: 'Lychee Tea', kategori: 'Tea/Yakult', type: 'Ice', hargaJual: 20000, resep: [{ nama: 'Extract Tea', jumlah: 100 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]},
-                        { nama: 'Lemon Tea', kategori: 'Tea/Yakult', type: 'Ice', hargaJual: 18000, resep: [{ nama: 'Extract Tea', jumlah: 100 }, { nama: 'Jeruk Nipis', jumlah: 10 }]},
-                        { nama: 'Berry Tea', kategori: 'Tea/Yakult', type: 'Ice', hargaJual: 20000, resep: [{ nama: 'Extract Tea', jumlah: 100 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]},
-                        { nama: 'Lychee Yakult', kategori: 'Tea/Yakult', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Yakult', jumlah: 1 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]},
-                        { nama: 'Berry Yakult', kategori: 'Tea/Yakult', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Yakult', jumlah: 1 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]},
-                        { nama: 'Mango Yakult', kategori: 'Tea/Yakult', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Yakult', jumlah: 1 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]},
                         { nama: 'Virgin Mojito', kategori: 'Refreshment', type: 'Ice', hargaJual: 22000, resep: [{ nama: 'Sprite', jumlah: 150 }, { nama: 'Jeruk Nipis', jumlah: 15 }]},
-                        { nama: 'Berry Mojito', kategori: 'Refreshment', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Sprite', jumlah: 150 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]},
-                        { nama: 'Mango Mojito', kategori: 'Refreshment', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Sprite', jumlah: 150 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]}
+                        { nama: 'Berry Mojito', kategori: 'Refreshment', type: 'Ice', hargaJual: 24000, resep: [{ nama: 'Sprite', jumlah: 150 }, { nama: 'Syrup Monin (All)', jumlah: 20 }]}
                     ]
                 }
             },
             computed: {
+                filteredSales() {
+                    return this.salesData.filter(item => {
+                        const matchSearch = item.Name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        let matchBulan = true;
+                        if (this.filterBulan !== 'All' && item.Date) {
+                            const dateObj = new Date(item.Date);
+                            matchBulan = (dateObj.getMonth() + 1) === parseInt(this.filterBulan);
+                        }
+                        return matchSearch && matchBulan;
+                    });
+                },
+                summary() {
+                    const rev = this.filteredSales.reduce((s, i) => s + i.Subtotal, 0);
+                    const qty = this.filteredSales.reduce((s, i) => s + i.Qty, 0);
+                    // Profit = Revenue - Total HPP Menu - Ops Cost (550k/hari * 30 hari jika sebulan)
+                    return { revenue: rev, qty: qty, profit: rev - (rev * 0.45) - 550000 };
+                },
                 filteredBahan() { return this.activeMatCat === 'SEMUA' ? this.dbBahan : this.dbBahan.filter(b => b.kategori === this.activeMatCat); },
-                filteredMenu() { return this.activeMenuCat === 'SEMUA' ? this.dbMenu : this.dbMenu.filter(m => m.kategori === this.activeMenuCat); },
-                totalRevenue() { return this.salesData.reduce((sum, item) => sum + item.Subtotal, 0); },
-                totalQty() { return this.salesData.reduce((sum, item) => sum + item.Qty, 0); },
-                estimatedProfit() { 
-                    let totalHppSold = this.salesData.reduce((sum, item) => {
-                        let menu = this.dbMenu.find(m => m.nama.toLowerCase().includes(item.Name.toLowerCase()));
-                        return sum + (menu ? this.calcHppTotal(menu) * item.Qty : (item.Price * 0.4 * item.Qty));
-                    }, 0);
-                    return this.totalRevenue - totalHppSold - 550000; // 550k is daily fixed cost
-                }
+                filteredMenu() { return this.activeMenuCat === 'SEMUA' ? this.dbMenu : this.dbMenu.filter(m => m.kategori === this.activeMenuCat); }
             },
             methods: {
                 formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v)); },
                 getBahanInfo(nama) { return this.dbBahan.find(b => b.nama === nama) || { hargaBeli: 0, isi: 1, satuan: '?' }; },
-                calcHppEspresso(type) {
-                    let bean = (type === 'diks') ? this.getBahanInfo('Biji kopi sumatra') : this.getBahanInfo('Biji kopi Toraja');
-                    let p = this.params[type] || this.params.kaks;
-                    return ((bean.hargaBeli / bean.isi) * 18) / p.yield;
-                },
                 calcRowCost(r) {
-                    if (r.nama.includes('Espresso Toraja')) return this.calcHppEspresso('kaks') * r.jumlah;
-                    if (r.nama.includes('Espresso Sumatra')) return this.calcHppEspresso('diks') * r.jumlah;
-                    if (r.nama.includes('Espresso Kopi Susu')) return this.calcHppEspresso('kopiSusu') * r.jumlah;
                     let b = this.getBahanInfo(r.nama);
                     return (b.hargaBeli / b.isi) * r.jumlah;
                 },
@@ -314,27 +300,33 @@
                 calcHppTotal(m) {
                     let total = m.resep.reduce((sum, r) => sum + this.calcRowCost(r), 0);
                     total += this.calcPackCost(m);
-                    if (m.type !== 'Hot') total += 875; // Ice & small components
+                    if (m.type !== 'Hot') total += 875; // Ice & Service
                     return total;
                 },
                 calcMargin(m) { let hpp = this.calcHppTotal(m); return Math.round(((m.hargaJual - hpp) / m.hargaJual) * 100); },
                 async fetchSalesData() {
-                    const url = 'https://cdn.jsdelivr.net/gh/OcangAmin/Dashboard-TR@main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
+                    this.isLoading = true;
+                    const url = `https://cdn.jsdelivr.net/gh/OcangAmin/Dashboard-TR@main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv?v=${new Date().getTime()}`;
                     try {
                         const res = await fetch(url);
                         const text = await res.text();
                         Papa.parse(text, {
-                            header: true, skipEmptyLines: true,
+                            header: true,
+                            worker: true,
+                            skipEmptyLines: true,
                             complete: (res) => {
-                                this.salesData = res.data.map(r => ({
+                                this.salesData = res.data.map((r, i) => ({
+                                    id: i,
                                     Name: r.Name || r['Menu Item'] || 'Unknown',
                                     Qty: parseInt(r.Qty) || 0,
                                     Price: parseFloat(r.Price) || 0,
-                                    Subtotal: parseFloat(r.Subtotal) || 0
+                                    Subtotal: parseFloat(r.Subtotal) || 0,
+                                    Date: r.Date || r['Created At'] || r['Time'] || null
                                 })).filter(i => i.Qty > 0);
+                                this.isLoading = false;
                             }
                         });
-                    } catch (e) { alert("CSV Fetch Failed"); }
+                    } catch (e) { alert("Error Syncing CSV!"); this.isLoading = false; }
                 }
             },
             mounted() { this.fetchSalesData(); }
