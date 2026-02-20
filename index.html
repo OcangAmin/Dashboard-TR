@@ -3,173 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP TUAN RUMAH BY OCANG - FULL VERSION</title>
+    <title>DASHBOARD TUAN RUMAH - FINAL ENTERPRISE</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         [v-cloak] { display: none; }
-        .glass-nav { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
-        .font-mono-bold { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace; font-weight: 700; }
-        .ios-tab { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+        .glass-nav { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+        .card-shadow { box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         input::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-900 selection:bg-amber-100">
+<body class="bg-[#f8fafc] text-slate-900 font-sans">
     <div id="app" v-cloak class="min-h-screen flex flex-col">
         
-        <nav class="sticky top-0 z-[100] glass-nav text-white px-5 py-4 flex justify-between items-center">
+        <nav class="sticky top-0 z-[100] glass-nav text-white px-6 py-4 flex justify-between items-center border-b border-slate-800">
             <div class="flex items-center gap-3">
-                <div class="bg-amber-500 p-2.5 rounded-2xl text-slate-900 shadow-lg shadow-amber-500/40">
-                    <i class="fas fa-house-user text-lg"></i>
+                <div class="bg-amber-500 p-2.5 rounded-2xl text-slate-900 shadow-lg">
+                    <i class="fas fa-mug-hot text-lg"></i>
                 </div>
                 <div>
                     <h1 class="font-black text-lg uppercase tracking-tighter leading-none">TUAN <span class="text-amber-500">RUMAH</span></h1>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Management System by Ocang</p>
+                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Management System v15.0</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="text-[10px] font-black text-amber-500 uppercase">{{ currentDate }}</p>
+            <div class="flex gap-3">
+                <button @click="fetchSalesData" class="bg-amber-600 hover:bg-amber-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2">
+                    <i class="fas fa-sync-alt" :class="loading ? 'fa-spin' : ''"></i> <span>SYNC CSV</span>
+                </button>
             </div>
         </nav>
 
         <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-8 space-y-8">
 
-            <div v-if="activeTab === 'dash'" class="space-y-6">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-6 rounded-[2rem] border card-shadow">
-                        <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Avg. Menu HPP</p>
-                        <p class="text-xl font-black text-slate-800">Rp{{ formatNum(avgHpp) }}</p>
+            <div v-if="activeTab === 'analytics'" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-[2.5rem] border card-shadow">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Gross Revenue (CSV)</p>
+                        <p class="text-2xl font-black text-slate-800">Rp{{ formatNum(summary.revenue) }}</p>
                     </div>
-                    <div class="bg-slate-900 p-6 rounded-[2rem] text-white md:col-span-2 shadow-2xl border border-amber-500/30">
-                        <p class="text-[9px] font-black text-amber-500 uppercase mb-2">Fixed Monthly Overhead</p>
-                        <p class="text-3xl font-black">Rp{{ formatNum(totalOverhead) }}</p>
-                        <p class="text-[8px] font-bold text-slate-500 mt-2 uppercase">Gaji (6 Staf): Rp9jt | Listrik: Rp6jt</p>
+                    <div class="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-2xl border border-amber-500/30">
+                        <p class="text-[9px] font-black text-amber-500 uppercase mb-1">Est. Net Profit (Daily)</p>
+                        <p class="text-2xl font-black text-green-400">Rp{{ formatNum(summary.profit) }}</p>
+                        <p class="text-[8px] font-bold text-slate-500 mt-1 uppercase">HPP: Rp{{ formatNum(summary.totalHpp) }} | Overhead: Rp{{ formatNum(summary.overhead) }}</p>
                     </div>
-                    <div class="bg-white p-6 rounded-[2rem] border card-shadow">
-                        <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Menu Count</p>
-                        <p class="text-xl font-black text-amber-600">{{ dbMenu.length }} Items</p>
+                    <div class="bg-white p-6 rounded-[2.5rem] border card-shadow">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Total Cups Sold</p>
+                        <p class="text-2xl font-black text-amber-600">{{ summary.qty }} <span class="text-sm">Cups</span></p>
                     </div>
                 </div>
 
-                <div class="bg-amber-50 p-6 rounded-[2.5rem] border border-amber-100 flex gap-4">
-                    <div class="bg-amber-500 p-3 rounded-2xl text-white self-start"><i class="fas fa-robot text-xl"></i></div>
+                <div class="bg-amber-50 p-6 rounded-[2.5rem] border border-amber-100 flex gap-4 items-center">
+                    <div class="bg-amber-500 text-white p-4 rounded-2xl shadow-lg"><i class="fas fa-robot text-xl"></i></div>
                     <div>
-                        <h4 class="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-1">Global AI Insight</h4>
-                        <p class="text-sm text-slate-700 italic leading-relaxed">{{ getGlobalInsight() }}</p>
+                        <h4 class="text-[10px] font-black text-amber-800 uppercase tracking-widest">Global AI Analysis</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed font-medium italic">{{ getGlobalInsight() }}</p>
                     </div>
                 </div>
 
-                <div class="bg-white p-8 rounded-[2.5rem] border card-shadow">
-                    <h2 class="text-xs font-black uppercase tracking-[0.3em] mb-6 text-slate-400"><i class="fas fa-sliders-h mr-2"></i> Database Parameter Espresso</h2>
+                <div class="bg-white p-8 rounded-[3rem] border card-shadow">
+                    <h2 class="text-xs font-black uppercase tracking-[0.3em] mb-6 text-slate-400"><i class="fas fa-sliders-h mr-2 text-amber-500"></i> Espresso Parameter Settings</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="p-5 bg-slate-50 rounded-3xl border border-dashed">
-                            <h3 class="text-[10px] font-black uppercase mb-4 text-blue-600">Standard (Kaks/Diks)</h3>
+                        <div class="p-6 bg-slate-50 rounded-[2rem] border border-dashed border-slate-300">
+                            <h3 class="text-[10px] font-black uppercase mb-4 text-blue-600">Standard Extraction (DIKS)</h3>
                             <div class="grid grid-cols-3 gap-4">
-                                <div><label class="text-[8px] font-black uppercase block mb-1">Dose (gr)</label><input type="number" v-model="param.std.dose" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
-                                <div><label class="text-[8px] font-black uppercase block mb-1">Yield (ml)</label><input type="number" v-model="param.std.yield" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
-                                <div><label class="text-[8px] font-black uppercase block mb-1">Used (ml)</label><input type="number" v-model="param.std.use" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
+                                <div><label class="text-[8px] font-black uppercase text-slate-400">Dose (gr)</label><input type="number" v-model="param.std.dose" class="w-full bg-white border p-2 rounded-xl font-bold text-xs mt-1"></div>
+                                <div><label class="text-[8px] font-black uppercase text-slate-400">Yield (ml)</label><input type="number" v-model="param.std.yield" class="w-full bg-white border p-2 rounded-xl font-bold text-xs mt-1"></div>
+                                <div><label class="text-[8px] font-black uppercase text-slate-400">Used (ml)</label><input type="number" v-model="param.std.use" class="w-full bg-white border p-2 rounded-xl font-bold text-xs mt-1"></div>
                             </div>
-                            <p class="mt-3 text-[9px] font-bold text-slate-500 italic">Cost per 30ml: Rp{{ formatNum(costEspressoStd) }}</p>
                         </div>
-                        <div class="p-5 bg-amber-50 rounded-3xl border border-dashed border-amber-200">
-                            <h3 class="text-[10px] font-black uppercase mb-4 text-amber-600">Khusus Kopi Susu (Kaks)</h3>
+                        <div class="p-6 bg-amber-50 rounded-[2rem] border border-dashed border-amber-200">
+                            <h3 class="text-[10px] font-black uppercase mb-4 text-amber-600">Kopi Susu Ratio (KAKS)</h3>
                             <div class="grid grid-cols-3 gap-4">
-                                <div><label class="text-[8px] font-black uppercase block mb-1">Dose (gr)</label><input type="number" v-model="param.kopsus.dose" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
-                                <div><label class="text-[8px] font-black uppercase block mb-1">Yield (ml)</label><input type="number" v-model="param.kopsus.yield" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
-                                <div><label class="text-[8px] font-black uppercase block mb-1">Used (ml)</label><input type="number" v-model="param.kopsus.use" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
+                                <div><label class="text-[8px] font-black uppercase text-slate-400">Dose (gr)</label><input type="number" v-model="param.kopsus.dose" class="w-full bg-white border p-2 rounded-xl font-bold text-xs mt-1"></div>
+                                <div><label class="text-[8px] font-black uppercase text-slate-400">Yield (ml)</label><input type="number" v-model="param.kopsus.yield" class="w-full bg-white border p-2 rounded-xl font-bold text-xs mt-1"></div>
+                                <div><label class="text-[8px] font-black uppercase text-slate-400">Used (ml)</label><input type="number" v-model="param.kopsus.use" class="w-full bg-white border p-2 rounded-xl font-bold text-xs mt-1"></div>
                             </div>
-                            <p class="mt-3 text-[9px] font-bold text-amber-700 italic">Cost per 30ml: Rp{{ formatNum(costEspressoKopsus) }}</p>
                         </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-[2.5rem] border card-shadow overflow-hidden">
+                    <div class="p-6 bg-slate-50 border-b flex justify-between items-center">
+                        <input v-model="csvUrl" placeholder="Paste Link CSV di sini..." class="bg-white border px-4 py-2 rounded-xl text-xs w-full md:w-1/2 outline-none font-medium">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:block">Sales Performance Table</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="bg-slate-50 uppercase font-black text-slate-400 border-b">
+                                <tr>
+                                    <th class="p-5">Menu Name</th>
+                                    <th class="p-5 text-center">Qty</th>
+                                    <th class="p-5 text-right">Revenue</th>
+                                    <th class="p-5 text-right">HPP Total</th>
+                                    <th class="p-5 text-center">Margin</th>
+                                    <th class="p-5">AI Advice</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50 font-bold">
+                                <tr v-for="item in salesData" :key="item.Name" class="hover:bg-slate-50 transition">
+                                    <td class="p-5 uppercase text-slate-700">{{ item.Name }}</td>
+                                    <td class="p-5 text-center text-slate-400">{{ item.Qty }}</td>
+                                    <td class="p-5 text-right italic">Rp{{ formatNum(item.Subtotal) }}</td>
+                                    <td class="p-5 text-right text-amber-700">Rp{{ formatNum(getMenuHpp(item.Name) * item.Qty) }}</td>
+                                    <td class="p-5 text-center">
+                                        <span :class="getMarginByName(item.Name, item.Subtotal/item.Qty) < 50 ? 'text-red-500' : 'text-green-600'">
+                                            {{ getMarginByName(item.Name, item.Subtotal/item.Qty) }}%
+                                        </span>
+                                    </td>
+                                    <td class="p-5 text-[9px] leading-tight">
+                                        {{ getMarginByName(item.Name, item.Subtotal/item.Qty) < 50 ? '⚠️ Naikkan Harga!' : '✅ Sehat' }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <div v-if="activeTab === 'bahan'" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div v-for="b in dbBahan" :key="b.nama" class="bg-white p-5 rounded-[2rem] border card-shadow hover:border-amber-400 transition-all">
-                        <div class="flex justify-between items-start">
+            <div v-if="activeTab === 'inventory'" class="space-y-6">
+                <div class="bg-white p-8 rounded-[3rem] border card-shadow">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="bg-blue-600 text-white p-3 rounded-2xl shadow-lg"><i class="fas fa-plus"></i></div>
+                        <h2 class="text-lg font-black uppercase tracking-tight text-slate-800">Tambah Bahan Baru</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <input v-model="newBahan.nama" placeholder="Nama Bahan" class="bg-slate-50 p-4 rounded-2xl border text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                        <select v-model="newBahan.kategori" class="bg-slate-50 p-4 rounded-2xl border text-sm font-bold outline-none">
+                            <option v-for="cat in matCategories" :value="cat">{{ cat }}</option>
+                        </select>
+                        <input v-model.number="newBahan.harga" type="number" placeholder="Harga Beli" class="bg-slate-50 p-4 rounded-2xl border text-sm font-bold outline-none">
+                        <input v-model.number="newBahan.isi" type="number" placeholder="Isi (ml/gr)" class="bg-slate-50 p-4 rounded-2xl border text-sm font-bold outline-none">
+                        <button @click="addNewBahan" class="bg-slate-900 text-white p-4 rounded-2xl font-black uppercase hover:bg-amber-500 hover:text-slate-900 transition-all">Simpan</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 overflow-x-auto py-2 no-scrollbar">
+                    <button @click="filterCat = 'All'" :class="filterCat === 'All' ? 'bg-amber-500 text-slate-900' : 'bg-white text-slate-400'" class="px-6 py-2 rounded-full text-[10px] font-black uppercase border transition-all">All</button>
+                    <button v-for="cat in matCategories" @click="filterCat = cat" :class="filterCat === cat ? 'bg-amber-500 text-slate-900 shadow-md' : 'bg-white text-slate-400'" class="px-6 py-2 rounded-full text-[10px] font-black uppercase border transition-all whitespace-nowrap">{{ cat }}</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div v-for="b in filteredBahan" :key="b.nama" class="bg-white p-6 rounded-[2rem] border hover:border-amber-400 transition shadow-sm relative overflow-hidden group">
+                        <div class="flex justify-between items-start mb-4">
                             <div>
-                                <span class="text-[7px] font-black bg-slate-100 px-2 py-0.5 rounded uppercase">{{ b.kategori }}</span>
-                                <h4 class="text-xs font-black uppercase mt-1">{{ b.nama }}</h4>
-                                <p class="text-[8px] font-bold text-slate-400">{{ b.brand }}</p>
+                                <span class="text-[7px] font-black bg-slate-100 text-slate-400 px-2 py-0.5 rounded uppercase">{{ b.kategori }}</span>
+                                <h4 class="font-black text-slate-800 uppercase text-xs mt-1 leading-tight">{{ b.nama }}</h4>
+                            </div>
+                            <button @click="removeBahan(b.nama)" class="text-slate-200 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-50">
+                            <div>
+                                <p class="text-[7px] font-black text-slate-400 uppercase">Unit Cost</p>
+                                <p class="text-xs font-black text-blue-600 italic">Rp{{ formatNum(b.harga / b.isi) }}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-[7px] font-black text-slate-400 uppercase">Unit Cost</p>
-                                <p class="text-xs font-black text-amber-600">Rp{{ formatNum(b.harga / b.isi) }}/{{ b.satuan }}</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-4">
-                            <div class="bg-slate-50 p-2 rounded-xl">
-                                <label class="text-[7px] font-black text-slate-400 block mb-1">Harga Beli</label>
-                                <input type="number" v-model="b.harga" class="w-full bg-transparent text-[10px] font-black outline-none">
-                            </div>
-                            <div class="bg-slate-50 p-2 rounded-xl">
-                                <label class="text-[7px] font-black text-slate-400 block mb-1">Isi ({{ b.satuan }})</label>
-                                <input type="number" v-model="b.isi" class="w-full bg-transparent text-[10px] font-black outline-none">
+                                <p class="text-[7px] font-black text-slate-400 uppercase">Unit</p>
+                                <p class="text-xs font-black text-slate-700">{{ b.satuan }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="activeTab === 'menu'" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="m in dbMenu" :key="m.nama" class="bg-white rounded-[2.5rem] border card-shadow overflow-hidden flex flex-col">
-                        <div class="p-6 bg-slate-900 text-white">
-                            <div class="flex justify-between items-start">
-                                <span class="text-[8px] font-black bg-amber-500 text-slate-900 px-2 py-0.5 rounded uppercase">{{ m.kategori }}</span>
-                                <span class="text-[8px] font-black uppercase text-slate-400">{{ m.type }}</span>
-                            </div>
-                            <h3 class="text-sm font-black uppercase italic mt-2">{{ m.nama }}</h3>
-                            <div class="mt-4 flex justify-between items-end">
-                                <div>
-                                    <p class="text-[8px] font-black text-slate-500 uppercase">Total HPP</p>
-                                    <p class="text-xl font-black text-amber-500">Rp{{ formatNum(calcHpp(m)) }}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-[8px] font-black text-slate-500 uppercase">Harga Jual</p>
-                                    <input type="number" v-model="m.jual" class="w-20 bg-transparent text-right font-black text-white text-lg border-b border-slate-700 outline-none">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-6 space-y-2 flex-grow">
-                            <div v-for="r in m.resep" :key="r.item" class="flex justify-between text-[10px] font-bold text-slate-600 border-b border-slate-50 pb-1">
-                                <span class="uppercase">{{ r.item }}</span>
-                                <span>{{ r.qty }} {{ getBahan(r.item).satuan }}</span>
-                            </div>
-                            <div class="pt-2 mt-2 border-t border-dashed">
-                                <p class="text-[8px] font-black text-slate-400 uppercase italic">Auto Packaging & Ops:</p>
-                                <div class="flex justify-between text-[9px] font-bold text-slate-400">
-                                    <span>Cup + Lid + Straw</span>
-                                    <span>Rp{{ m.type === 'Ice' ? '1.300' : '900' }}</span>
-                                </div>
-                                <div v-if="m.type === 'Ice'" class="flex justify-between text-[9px] font-bold text-slate-400">
-                                    <span>Es Batu (100gr)</span>
-                                    <span>Rp875</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-6 bg-slate-50 border-t flex justify-between items-center">
+            <div v-if="activeTab === 'recipes'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div v-for="m in dbMenu" :key="m.nama" class="bg-white rounded-[2.5rem] border card-shadow overflow-hidden flex flex-col">
+                    <div class="p-6 bg-slate-900 text-white relative">
+                        <span class="text-[8px] font-black bg-amber-500 text-slate-900 px-2 py-0.5 rounded uppercase tracking-widest">{{ m.kategori }}</span>
+                        <h3 class="text-sm font-black uppercase italic mt-2 tracking-tight">{{ m.nama }}</h3>
+                        <div class="mt-4 flex justify-between items-end">
                             <div>
-                                <span class="text-[8px] font-black text-slate-400 uppercase block">Margin</span>
-                                <span :class="getMargin(m) < 50 ? 'text-red-500' : 'text-green-600'" class="text-2xl font-black italic decoration-amber-500 underline underline-offset-4">{{ getMargin(m) }}%</span>
+                                <p class="text-[7px] text-slate-500 uppercase font-black">HPP Produksi</p>
+                                <p class="text-lg font-black text-amber-500 leading-none">Rp{{ formatNum(calcHpp(m)) }}</p>
                             </div>
-                            <div class="text-right max-w-[120px]">
-                                <span class="text-[7px] font-black text-slate-400 uppercase block mb-1">AI Insight</span>
-                                <p class="text-[9px] leading-tight font-bold italic text-slate-500">{{ getMenuInsight(m) }}</p>
+                            <div class="text-right">
+                                <p class="text-[7px] text-slate-500 uppercase font-black tracking-widest">Type</p>
+                                <p class="text-[10px] font-black text-slate-200 uppercase">{{ m.type }}</p>
                             </div>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-2 flex-grow">
+                        <div v-for="r in m.resep" :key="r.item" class="flex justify-between items-center text-[10px] font-bold text-slate-600 border-b border-slate-50 pb-1">
+                            <span class="uppercase">{{ r.item }}</span>
+                            <span>{{ r.qty }} {{ getBahan(r.item).satuan }}</span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-dashed border-slate-200 text-[8px] font-bold text-slate-400 uppercase">
+                            <div class="flex justify-between"><span>Packaging Cost ({{ m.type }})</span><span>Included</span></div>
+                            <div v-if="m.type === 'Ice'" class="flex justify-between"><span>Ice 100gr (Rp8.75/gr)</span><span>Included</span></div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-slate-50 flex justify-between items-center rounded-b-[2.5rem]">
+                        <span class="text-[8px] font-black uppercase text-slate-400 italic">AI: {{ getMargin(m, 25000) < 50 ? 'REVISI' : 'STABIL' }}</span>
+                        <div class="text-right">
+                            <span class="text-[7px] font-black text-slate-400 uppercase block leading-none">Formula Sehat (60%)</span>
+                            <span class="text-xs font-black text-slate-800 tracking-tight">Rp{{ formatNum(calcHpp(m) / 0.4) }}</span>
                         </div>
                     </div>
                 </div>
             </div>
+
         </main>
 
-        <nav class="sticky bottom-0 bg-white/90 backdrop-blur-md border-t px-8 pt-4 ios-tab flex justify-between z-[100] rounded-t-[2.5rem] shadow-2xl">
-            <button v-for="t in tabs" @click="activeTab = t.id" :class="activeTab === t.id ? 'text-amber-500 scale-110 font-black' : 'text-slate-300 font-bold'" class="flex flex-col items-center gap-1 transition-all">
+        <nav class="fixed bottom-0 inset-x-0 bg-white border-t p-6 pb-8 flex justify-around items-center z-[200] rounded-t-[3rem] shadow-[0_-15px_50px_rgba(0,0,0,0.1)]">
+            <button v-for="t in tabs" @click="activeTab = t.id" :class="activeTab === t.id ? 'text-amber-500 scale-125' : 'text-slate-300'" class="flex flex-col items-center gap-1 transition-all duration-300">
                 <i :class="t.icon" class="text-xl"></i>
-                <span class="text-[9px] uppercase tracking-tighter">{{ t.name }}</span>
+                <span class="text-[8px] font-black uppercase tracking-tighter">{{ t.name }}</span>
             </button>
         </nav>
     </div>
@@ -179,129 +219,159 @@
         createApp({
             data() {
                 return {
-                    activeTab: 'dash',
-                    currentDate: new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                    activeTab: 'analytics',
+                    filterCat: 'All',
+                    loading: false,
+                    csvUrl: '', // URL CSV Anda
+                    newBahan: { nama: '', kategori: 'Kopi', harga: 0, isi: 1000, satuan: 'gr' },
+                    matCategories: ['Kopi', 'Syrup', 'Dairy', 'Powder', 'Lain-lain', 'Operasional'],
                     tabs: [
-                        { id: 'dash', name: 'Dashboard', icon: 'fas fa-chart-line' },
-                        { id: 'bahan', name: 'Bahan Baku', icon: 'fas fa-boxes-stacked' },
-                        { id: 'menu', name: 'Menu & Resep', icon: 'fas fa-flask-vial' }
+                        { id: 'analytics', name: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', name: 'Inventory', icon: 'fas fa-boxes-stacked' },
+                        { id: 'recipes', name: 'Recipes', icon: 'fas fa-book-open' }
                     ],
                     param: {
                         std: { dose: 18, yield: 60, use: 30 },
                         kopsus: { dose: 18, yield: 35, use: 30 }
                     },
+                    salesData: [],
                     dbBahan: [
-                        { nama: 'Biji kopi Toraja (kaks)', brand: 'Local', kategori: 'Kopi', satuan: 'gr', harga: 230000, isi: 1000 },
-                        { nama: 'Biji kopi sumatra (diks)', brand: 'Local', kategori: 'Kopi', satuan: 'gr', harga: 280000, isi: 1000 },
-                        { nama: 'Syrup Monin', brand: 'Monin', kategori: 'Syrup', satuan: 'ml', harga: 155000, isi: 700 },
-                        { nama: 'Susu UHT Diamond', brand: 'Diamond', kategori: 'Dairy', satuan: 'ml', harga: 210000, isi: 12000 },
-                        { nama: 'Susu evaporasi', brand: 'F&N', kategori: 'Dairy', satuan: 'ml', harga: 18500, isi: 380 },
-                        { nama: 'Susu kental manis (SKM)', brand: 'Omela', kategori: 'Dairy', satuan: 'ml', harga: 13500, isi: 490 },
-                        { nama: 'Creamer MaxCreamer', brand: 'Max', kategori: 'Dairy', satuan: 'gr', harga: 42000, isi: 500 },
-                        { nama: 'Cheese cream', brand: 'Premix', kategori: 'Dairy', satuan: 'ml', harga: 65000, isi: 500 },
-                        { nama: 'Oatside', brand: 'Oatside', kategori: 'Dairy', satuan: 'ml', harga: 45000, isi: 1000 },
-                        { nama: 'Hydro Coco', brand: 'Kalbe', kategori: 'Dairy', satuan: 'ml', harga: 7500, isi: 250 },
-                        { nama: 'Yakult', brand: 'Yakult', kategori: 'Dairy', satuan: 'pcs', harga: 2500, isi: 1 },
-                        { nama: 'Bubuk powder (All)', brand: 'Premix', kategori: 'Powder', satuan: 'gr', harga: 85000, isi: 1000 },
-                        { nama: 'Peanut butter Skippy', brand: 'Skippy', kategori: 'Lain-lain', satuan: 'gr', harga: 48000, isi: 340 },
-                        { nama: 'Biskuit Lotus', brand: 'Lotus', kategori: 'Lain-lain', satuan: 'pcs', harga: 35000, isi: 16 },
-                        { nama: 'Gula aren', brand: 'Dainichi', kategori: 'Lain-lain', satuan: 'ml', harga: 65000, isi: 1000 },
-                        { nama: 'Simple sugar', brand: 'Homemade', kategori: 'Lain-lain', satuan: 'ml', harga: 15000, isi: 1000 },
-                        { nama: 'Sprite', brand: 'CocaCola', kategori: 'Lain-lain', satuan: 'ml', harga: 15000, isi: 1500 },
-                        { nama: 'Es Batu', brand: 'Crystal', kategori: 'Operasional', satuan: 'gr', harga: 70000, isi: 8000 }
+                        { nama: 'Biji kopi Toraja (kaks)', kategori: 'Kopi', satuan: 'gr', harga: 230000, isi: 1000 },
+                        { nama: 'Biji kopi sumatra (diks)', kategori: 'Kopi', satuan: 'gr', harga: 280000, isi: 1000 },
+                        { nama: 'Syrup Monin', kategori: 'Syrup', satuan: 'ml', harga: 155000, isi: 700 },
+                        { nama: 'Susu UHT Diamond', kategori: 'Dairy', satuan: 'ml', harga: 210000, isi: 12000 },
+                        { nama: 'Susu evaporasi', kategori: 'Dairy', satuan: 'ml', harga: 18500, isi: 380 },
+                        { nama: 'Susu kental manis (SKM)', kategori: 'Dairy', satuan: 'ml', harga: 13500, isi: 490 },
+                        { nama: 'Creamer MaxCreamer', kategori: 'Dairy', satuan: 'gr', harga: 42000, isi: 500 },
+                        { nama: 'Cheese cream', kategori: 'Dairy', satuan: 'ml', harga: 65000, isi: 500 },
+                        { nama: 'Oatside', kategori: 'Dairy', satuan: 'ml', harga: 45000, isi: 1000 },
+                        { nama: 'Hydro Coco', kategori: 'Dairy', satuan: 'ml', harga: 7500, isi: 250 },
+                        { nama: 'Yakult', kategori: 'Dairy', satuan: 'pcs', harga: 2500, isi: 1 },
+                        { nama: 'Bubuk coklat', kategori: 'Powder', satuan: 'gr', harga: 85000, isi: 1000 },
+                        { nama: 'Bubuk matcha', kategori: 'Powder', satuan: 'gr', harga: 85000, isi: 1000 },
+                        { nama: 'Bubuk taro', kategori: 'Powder', satuan: 'gr', harga: 85000, isi: 1000 },
+                        { nama: 'Bubuk red velvet', kategori: 'Powder', satuan: 'gr', harga: 85000, isi: 1000 },
+                        { nama: 'Bubuk avocado', kategori: 'Powder', satuan: 'gr', harga: 85000, isi: 1000 },
+                        { nama: 'Bubuk vanilla', kategori: 'Powder', satuan: 'ml', harga: 85000, isi: 1000 },
+                        { nama: 'Peanut butter Skippy', kategori: 'Lain-lain', satuan: 'gr', harga: 48000, isi: 340 },
+                        { nama: 'Biskuit Lotus', kategori: 'Lain-lain', satuan: 'pcs', harga: 35000, isi: 16 },
+                        { nama: 'Gula aren', kategori: 'Lain-lain', satuan: 'ml', harga: 65000, isi: 1000 },
+                        { nama: 'Simple sugar', kategori: 'Lain-lain', satuan: 'ml', harga: 15000, isi: 1000 },
+                        { nama: 'Sprite', kategori: 'Lain-lain', satuan: 'ml', harga: 15000, isi: 1500 },
+                        { nama: 'Hydro coco', kategori: 'Lain-lain', satuan: 'ml', harga: 7500, isi: 250 },
+                        { nama: 'Air galon Cleo', kategori: 'Lain-lain', satuan: 'ml', harga: 7000, isi: 19000 },
+                        { nama: 'Es Batu', kategori: 'Operasional', satuan: 'gr', harga: 70000, isi: 8000 }
                     ],
                     dbMenu: [
                         // COFFEE BASED
-                        { nama: 'Kopi Susu', kategori: 'Coffee Based', type: 'Ice', jual: 22000, resep: [{ item: 'SKM', qty: 20 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Susu evaporasi', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoKopsus: true }, { item: 'Susu UHT Diamond', qty: 70 }] },
-                        { nama: 'Tuan Rumah', kategori: 'Coffee Based', type: 'Ice', jual: 25000, resep: [{ item: 'Gula aren', qty: 25 }, { item: 'Creamer MaxCreamer', qty: 25 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Tiramisu', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Cheese cream', qty: 20 }] },
-                        { nama: 'Banana', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Biscoff', kategori: 'Coffee Based', type: 'Ice', jual: 32000, resep: [{ item: 'Peanut butter Skippy', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Biskuit Lotus', qty: 1 }] },
-                        { nama: 'Butterscotch', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 70 }, { item: 'Cheese cream', qty: 20 }] },
-                        { nama: 'Pandan', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Susu evaporasi', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Oatside', qty: 100 }] },
-                        { nama: 'Peanut Butter', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Peanut butter Skippy', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Caramel Macchiato', kategori: 'Coffee Based', type: 'Ice', jual: 32000, resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Cheese cream', qty: 20 }] },
-                        // AMERICANO SERIES
-                        { nama: 'Berry Cano', kategori: 'Americano', type: 'Ice', jual: 24000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
-                        { nama: 'Apple Cano', kategori: 'Americano', type: 'Ice', jual: 24000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
-                        { nama: 'Melon Cano', kategori: 'Americano', type: 'Ice', jual: 24000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
-                        // NON COFFEE
-                        { nama: 'Avocado', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'SKM', qty: 10 }, { item: 'Bubuk powder (All)', qty: 20 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Taro', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'SKM', qty: 25 }, { item: 'Bubuk powder (All)', qty: 4 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Red Velvet', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'SKM', qty: 20 }, { item: 'Bubuk powder (All)', qty: 25 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Chocolate Signature', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'Gula aren', qty: 15 }, { item: 'Bubuk powder (All)', qty: 13 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Caramel Latte', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Creamy Coco', kategori: 'Non Coffee', type: 'Ice', jual: 30000, resep: [{ item: 'Syrup Monin', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Bubuk powder (All)', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Yakult', qty: 1 }, { item: 'Susu UHT Diamond', qty: 50 }, { item: 'Cheese cream', qty: 20 }] },
-                        { nama: 'Coconut Plum', kategori: 'Non Coffee', type: 'Ice', jual: 26000, resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Hydro Coco', qty: 90 }, { item: 'Sprite', qty: 60 }] },
-                        { nama: 'Butter Cream', kategori: 'Non Coffee', type: 'Ice', jual: 28000, resep: [{ item: 'Peanut butter Skippy', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Vanilla Latte', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'SKM', qty: 10 }, { item: 'Bubuk powder (All)', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Strawberry Love', kategori: 'Non Coffee', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 5 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        // TEA & SIGNATURE
-                        { nama: 'Matcha', kategori: 'Specialty', type: 'Ice', jual: 26000, resep: [{ item: 'Bubuk powder (All)', qty: 20 }, { item: 'SKM', qty: 15 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 110 }] },
-                        { nama: 'Yakult Orange', kategori: 'Specialty', type: 'Ice', jual: 22000, resep: [{ item: 'Syrup Monin', qty: 15 }, { item: 'Yakult', qty: 1 }, { item: 'Sprite', qty: 110 }] },
-                        { nama: 'Thai Tea', kategori: 'Specialty', type: 'Ice', jual: 20000, resep: [{ item: 'SKM', qty: 50 }, { item: 'Susu evaporasi', qty: 20 }] },
-                        { nama: 'Lychee Tea', kategori: 'Specialty', type: 'Ice', jual: 22000, resep: [{ item: 'Simple sugar', qty: 20 }, { item: 'Syrup Monin', qty: 30 }] },
-                        // SPECIALTY COFFEE
-                        { nama: 'Americano', kategori: 'Coffee Specialty', type: 'Ice', jual: 18000, resep: [{ item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
-                        { nama: 'Latte Ice', kategori: 'Coffee Specialty', type: 'Ice', jual: 25000, resep: [{ item: 'Susu UHT Diamond', qty: 120 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
-                        { nama: 'Magic', kategori: 'Coffee Specialty', type: 'Hot', jual: 28000, resep: [{ item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true, magic: true }, { item: 'Oatside', qty: 120 }] },
-                        { nama: 'Mocha Ice', kategori: 'Coffee Specialty', type: 'Ice', jual: 28000, resep: [{ item: 'SKM', qty: 20 }, { item: 'Bubuk powder (All)', qty: 8 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] }
+                        { nama: 'Kopi Susu', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'SKM', qty: 20 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Susu evaporasi', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoKopsus: true }, { item: 'Susu UHT Diamond', qty: 70 }] },
+                        { nama: 'Tuan Rumah', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Gula aren', qty: 25 }, { item: 'Creamer MaxCreamer', qty: 25 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Tiramisu', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Cheese cream', qty: 20 }] },
+                        { nama: 'Banana', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Biscoff', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Peanut butter Skippy', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Biskuit Lotus', qty: 1 }] },
+                        { nama: 'Butterscotch', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 70 }, { item: 'Cheese cream', qty: 20 }] },
+                        { nama: 'Pandan', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Susu evaporasi', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Oatside', qty: 100 }] },
+                        { nama: 'Peanut Butter', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Peanut butter Skippy', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Caramel Macchiato', kategori: 'Coffee Based', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Cheese cream', qty: 20 }] },
+                        // AMERICANO
+                        { nama: 'Berry Cano', kategori: 'Americano', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
+                        { nama: 'Apple Cano', kategori: 'Americano', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
+                        { nama: 'Melon Cano', kategori: 'Americano', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
+                        // MILK BASED
+                        { nama: 'Avocado', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'SKM', qty: 10 }, { item: 'Bubuk avocado', qty: 20 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Taro', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'SKM', qty: 25 }, { item: 'Bubuk taro', qty: 4 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Red Velvet', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'SKM', qty: 20 }, { item: 'Bubuk red velvet', qty: 25 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Chocolate Signature', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Gula aren', qty: 15 }, { item: 'Bubuk coklat', qty: 13 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Caramel Latte', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Creamy Coco', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Bubuk coklat', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Yakult', qty: 1 }, { item: 'Susu UHT Diamond', qty: 50 }, { item: 'Cheese cream', qty: 20 }] },
+                        { nama: 'Coconut Plum', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'Hydro coco', qty: 90 }, { item: 'Sprite', qty: 60 }] },
+                        { nama: 'Butter Cream', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Peanut butter Skippy', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Vanilla Latte', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'SKM', qty: 10 }, { item: 'Bubuk vanilla', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        { nama: 'Strawberry Love', kategori: 'Non Coffee', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 5 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Susu UHT Diamond', qty: 100 }] },
+                        // TEA & SPECIAL
+                        { nama: 'Matcha', kategori: 'Specialty', type: 'Ice', resep: [{ item: 'Bubuk matcha', qty: 20 }, { item: 'SKM', qty: 15 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 110 }] },
+                        { nama: 'Yakult Series', kategori: 'Specialty', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 15 }, { item: 'Yakult', qty: 1 }, { item: 'Sprite', qty: 110 }] },
+                        { nama: 'Thai Tea', kategori: 'Specialty', type: 'Ice', resep: [{ item: 'SKM', qty: 50 }, { item: 'Susu evaporasi', qty: 20 }] },
+                        { nama: 'Lychee Tea', kategori: 'Specialty', type: 'Ice', resep: [{ item: 'Simple sugar', qty: 20 }, { item: 'Syrup Monin', qty: 30 }] },
+                        { nama: 'Mango Squash', kategori: 'Specialty', type: 'Ice', resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Sprite', qty: 110 }] },
+                        // COFFEE SPECIALTY
+                        { nama: 'Americano', kategori: 'Coffee Specialty', type: 'Ice', resep: [{ item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
+                        { nama: 'Latte Ice', kategori: 'Coffee Specialty', type: 'Ice', resep: [{ item: 'Susu UHT Diamond', qty: 120 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
+                        { nama: 'Magic', kategori: 'Coffee Specialty', type: 'Hot', resep: [{ item: 'Biji kopi sumatra (diks)', qty: 18, isMagic: true }, { item: 'Oatside', qty: 120 }] },
+                        { nama: 'Mocha', kategori: 'Coffee Specialty', type: 'Ice', resep: [{ item: 'SKM', qty: 20 }, { item: 'Bubuk coklat', qty: 8 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] }
                     ]
                 }
             },
             computed: {
-                totalOverhead() { return 15000000; }, // 6 Staf x 1.5jt + 6jt Listrik
-                costEspressoStd() { 
-                    const b = this.getBahan('Biji kopi sumatra (diks)');
-                    return (b.harga / b.isi) * this.param.std.dose * (this.param.std.use / this.param.std.yield);
+                filteredBahan() {
+                    return this.filterCat === 'All' ? this.dbBahan : this.dbBahan.filter(b => b.kategori === this.filterCat);
                 },
-                costEspressoKopsus() {
-                    const b = this.getBahan('Biji kopi Toraja (kaks)');
-                    return (b.harga / b.isi) * this.param.kopsus.dose * (this.param.kopsus.use / this.param.kopsus.yield);
-                },
-                avgHpp() {
-                    let total = 0;
-                    this.dbMenu.forEach(m => total += this.calcHpp(m));
-                    return total / this.dbMenu.length;
+                summary() {
+                    let revenue = 0, totalHpp = 0, qty = 0;
+                    this.salesData.forEach(s => {
+                        const hpp = this.getMenuHpp(s.Name);
+                        revenue += parseFloat(s.Subtotal) || 0;
+                        totalHpp += (hpp * (parseInt(s.Qty) || 0));
+                        qty += parseInt(s.Qty) || 0;
+                    });
+                    const overhead = (1500000 / 30 * 6) + 200000; 
+                    return { revenue, totalHpp, qty, overhead, profit: revenue - totalHpp - overhead };
                 }
             },
             methods: {
                 formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v)); },
                 getBahan(nama) { return this.dbBahan.find(b => b.nama === nama) || { harga: 0, isi: 1, satuan: 'unit' }; },
                 calcHpp(m) {
-                    let cost = 0;
-                    m.resep.forEach(r => {
+                    let cost = m.resep.reduce((acc, r) => {
                         const b = this.getBahan(r.item);
+                        let itemCost = (b.harga / b.isi) * r.qty;
                         if (r.isEspressoKopsus) {
-                            cost += this.costEspressoKopsus;
+                            itemCost = (b.harga / b.isi) * this.param.kopsus.dose * (this.param.kopsus.use / this.param.kopsus.yield);
                         } else if (r.isEspressoStd) {
-                            // Hitung rasio khusus Magic (Yield 36ml)
-                            if (r.magic) {
-                                cost += (b.harga / b.isi) * r.qty;
-                            } else {
-                                cost += this.costEspressoStd;
-                            }
-                        } else {
-                            cost += (b.harga / b.isi) * r.qty;
+                            itemCost = (b.harga / b.isi) * this.param.std.dose * (this.param.std.use / this.param.std.yield);
+                        } else if (r.isMagic) {
+                            itemCost = (b.harga / b.isi) * 18 * (36 / 36); 
                         }
-                    });
-                    // Database Packaging
-                    cost += m.type === 'Ice' ? 1300 : 900;
-                    if (m.type === 'Ice') cost += 875; // 100gr Es Batu
+                        return acc + itemCost;
+                    }, 0);
+                    // ADD PACKAGING & ICE
+                    cost += m.type === 'Ice' ? (900 + 400 + 875) : 1200; 
                     return cost;
                 },
-                getMargin(m) {
+                getMenuHpp(nama) {
+                    const m = this.dbMenu.find(menu => nama.toLowerCase().includes(menu.nama.toLowerCase()));
+                    return m ? this.calcHpp(m) : 9500;
+                },
+                getMargin(m, price) {
                     const hpp = this.calcHpp(m);
-                    return Math.round(((m.jual - hpp) / m.jual) * 100);
+                    return Math.round(((price - hpp) / price) * 100);
                 },
-                getMenuInsight(m) {
-                    const margin = this.getMargin(m);
-                    if (margin < 50) return "REVISI: Margin tipis!";
-                    if (margin > 70) return "OPTIMAL: Profit tinggi.";
-                    return "STABIL: Margin sehat.";
+                getMarginByName(nama, price) {
+                    const m = this.dbMenu.find(menu => nama.toLowerCase().includes(menu.nama.toLowerCase()));
+                    return m ? this.getMargin(m, price) : 0;
                 },
+                addNewBahan() {
+                    if(!this.newBahan.nama) return;
+                    this.dbBahan.push({...this.newBahan});
+                    this.newBahan = { nama: '', kategori: 'Kopi', harga: 0, isi: 1000, satuan: 'gr' };
+                    alert("Bahan ditambahkan!");
+                },
+                removeBahan(nama) { this.dbBahan = this.dbBahan.filter(b => b.nama !== nama); },
                 getGlobalInsight() {
-                    return `Analisa Ocang: Saat ini rata-rata HPP menu berada di Rp${this.formatNum(this.avgHpp)}. Menu dengan margin terendah adalah Kopi Susu karena rasio espresso khusus. Pastikan volume penjualan bulanan mencukupi untuk meng-cover overhead Rp15 Juta.`;
+                    if(this.summary.revenue === 0) return "Belum ada data penjualan CSV untuk dianalisa.";
+                    const margin = (this.summary.profit / this.summary.revenue) * 100;
+                    return margin < 30 ? "WARNING: Profit bersih kritis! Evaluasi menu dengan margin < 50%." : "SISTEM: Profitabilitas stabil. Struktur HPP & Harga Jual sudah optimal.";
+                },
+                fetchSalesData() {
+                    if(!this.csvUrl) return alert("Masukkan Link CSV!");
+                    this.loading = true;
+                    Papa.parse(this.csvUrl, {
+                        download: true, header: true,
+                        complete: (res) => {
+                            this.salesData = res.data.filter(i => i.Name);
+                            this.loading = false;
+                        }
+                    });
                 }
             }
         }).mount('#app');
