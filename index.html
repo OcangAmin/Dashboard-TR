@@ -3,216 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah Coffee - Pro Management</title>
+    <title>Tuan Rumah Coffee | Enterprise Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .tab-btn.active { border-bottom: 3px solid #ea580c; color: #ea580c; font-weight: 700; }
-        .custom-scroll::-webkit-scrollbar { height: 4px; width: 4px; }
+        .tab-btn.active { border-bottom: 3px solid #f97316; color: #f97316; font-weight: 800; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .card { background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        input[type="number"] { outline: none; transition: all 0.2s; }
-        input[type="number"]:focus { border-color: #ea580c; ring: 2px; ring-color: #ffedd5; }
     </style>
 </head>
-<body class="pb-10">
+<body class="pb-12 text-slate-800">
 
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 md:px-8">
-            <div class="flex justify-between items-center h-20">
-                <div class="flex items-center gap-3">
-                    <div class="bg-orange-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-orange-200">
-                        <span class="text-white font-black text-lg">T</span>
-                    </div>
-                    <div>
-                        <h1 class="font-extrabold text-xl leading-none">Tuan Rumah</h1>
-                        <span class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Coffee Management</span>
-                    </div>
-                </div>
-                <div class="hidden md:block">
-                    <span class="text-xs font-bold text-slate-400 block uppercase">Revenue Period</span>
-                    <span class="text-lg font-black text-emerald-600">Rp 101.033.000</span>
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-orange-600 p-2.5 rounded-2xl shadow-lg shadow-orange-200 text-white font-black text-xl">TR</div>
+                <div>
+                    <h1 class="font-extrabold text-xl leading-none">Tuan Rumah Coffee</h1>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Recipe & Inventory Sync</span>
                 </div>
             </div>
-
-            <div class="flex gap-6 overflow-x-auto custom-scroll border-t">
-                <button onclick="openTab(event, 'tab-dashboard')" class="tab-btn active py-4 text-sm font-semibold whitespace-nowrap transition-all">Overview</button>
-                <button onclick="openTab(event, 'tab-menu')" class="tab-btn py-4 text-sm font-semibold whitespace-nowrap transition-all">Menu & HPP</button>
-                <button onclick="openTab(event, 'tab-ingredients')" class="tab-btn py-4 text-sm font-semibold whitespace-nowrap transition-all">Bahan Baku</button>
-                <button onclick="openTab(event, 'tab-sales')" class="tab-btn py-4 text-sm font-semibold whitespace-nowrap transition-all">Rekap Penjualan</button>
+            <div class="flex gap-4 md:gap-8">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Avg. Margin</p>
+                    <p id="avg-margin-display" class="text-lg font-black text-emerald-600">0%</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Total Revenue (Des 25)</p>
+                    <p class="text-lg font-black text-slate-800">Rp 101.033.000</p>
+                </div>
             </div>
         </div>
-    </header>
+        <div class="max-w-7xl mx-auto px-6 flex gap-8 border-t border-slate-100 overflow-x-auto">
+            <button onclick="openTab(event, 'tab-menu')" class="tab-btn active py-4 text-sm font-bold whitespace-nowrap">📜 Menu & Kalkulasi</button>
+            <button onclick="openTab(event, 'tab-inventory')" class="tab-btn py-4 text-sm font-bold whitespace-nowrap">📦 Stok & Harga Bahan</button>
+            <button onclick="openTab(event, 'tab-summary')" class="tab-btn py-4 text-sm font-bold whitespace-nowrap">📊 Summary Sales</button>
+        </div>
+    </nav>
 
     <main class="max-w-7xl mx-auto px-4 md:px-8 mt-8">
         
-        <section id="tab-dashboard" class="tab-content active animate-in fade-in duration-500">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="card p-6 border-l-4 border-l-orange-500">
-                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Top Performer</h3>
-                    <p class="text-2xl font-black text-slate-800">Tuan Rumah Ice</p>
-                    <p class="text-sm text-slate-500 mt-1">757 Cups Terjual</p>
+        <section id="tab-menu" class="tab-content active animate-in fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight">Daftar Menu</h2>
+                    <p class="text-sm text-slate-500">Klik pada baris menu untuk mengedit resep komposisi.</p>
                 </div>
-                <div class="card p-6 border-l-4 border-l-emerald-500">
-                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Gross Revenue</h3>
-                    <p class="text-2xl font-black text-emerald-600">Rp 101.033.000</p>
-                    <p class="text-sm text-slate-500 mt-1">Periode Des 2025</p>
-                </div>
-                <div class="card p-6 border-l-4 border-l-blue-500">
-                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Total Volume</h3>
-                    <p class="text-2xl font-black text-slate-800">4.381 Cups</p>
-                    <p class="text-sm text-slate-500 mt-1">Total seluruh kategori</p>
-                </div>
+                <div class="flex gap-2" id="filter-container"></div>
             </div>
+            
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="p-5 text-xs font-black text-slate-500 uppercase">Product</th>
+                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-right">Price</th>
+                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-right">HPP</th>
+                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-right">Profit</th>
+                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-center">Efficiency</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menu-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
 
-            <div class="card p-8">
-                <h3 class="font-bold text-lg mb-6">Revenue Berdasarkan Kategori</h3>
-                <div class="space-y-4">
-                    <div class="relative pt-1">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold inline-block py-1 px-2 uppercase rounded-full text-orange-600 bg-orange-100">Ice Coffee Series</span>
-                            <span class="text-xs font-bold text-slate-600">Rp 50.695.000 (50.1%)</span>
+        <section id="tab-inventory" class="tab-content">
+            <div class="mb-8">
+                <h2 class="text-2xl font-black text-slate-800">Master Data Bahan Baku</h2>
+                <p class="text-sm text-slate-500">Update harga e-commerce di sini. Semua HPP menu akan tersinkronisasi otomatis.</p>
+            </div>
+            <div id="inventory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <section id="tab-summary" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-3xl border border-slate-200">
+                    <h3 class="font-black text-lg mb-4 text-orange-600">Top Revenue by Category</h3>
+                    <ul class="space-y-4" id="cat-summary">
+                        </ul>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-3xl text-white">
+                    <h3 class="font-black text-lg mb-4 text-orange-400">Information Center</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        Data ini menggunakan asumsi harga e-commerce Indonesia 2026. HPP dihitung secara presisi berdasarkan gramasi dan volume (ml). 
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div class="bg-slate-700/50 p-4 rounded-2xl">
+                            <p class="text-[10px] uppercase font-bold text-slate-400">Total Cups Sold</p>
+                            <p class="text-xl font-black">4.381</p>
                         </div>
-                        <div class="overflow-hidden h-2 text-xs flex rounded bg-slate-100"><div style="width:50%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-orange-500"></div></div>
-                    </div>
-                    <div class="relative pt-1">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">Non-Coffee Series</span>
-                            <span class="text-xs font-bold text-slate-600">Rp 32.585.000 (32.2%)</span>
+                        <div class="bg-slate-700/50 p-4 rounded-2xl">
+                            <p class="text-[10px] uppercase font-bold text-slate-400">Total Menus</p>
+                            <p id="total-menu-count" class="text-xl font-black">0</p>
                         </div>
-                        <div class="overflow-hidden h-2 text-xs flex rounded bg-slate-100"><div style="width:32%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div></div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-menu" class="tab-content">
-            <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
-                <h2 class="text-2xl font-black">Recipe & HPP Analysis</h2>
-                <div class="flex gap-2 overflow-x-auto custom-scroll" id="menu-filters"></div>
-            </div>
-            <div class="card overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 border-b border-slate-100">
-                            <tr>
-                                <th class="p-4 text-xs font-bold text-slate-400 uppercase">Menu</th>
-                                <th class="p-4 text-xs font-bold text-slate-400 uppercase text-right">Retail</th>
-                                <th class="p-4 text-xs font-bold text-slate-400 uppercase text-right">HPP</th>
-                                <th class="p-4 text-xs font-bold text-slate-400 uppercase text-right">Margin (Rp)</th>
-                                <th class="p-4 text-xs font-bold text-slate-400 uppercase text-center">Margin (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="menu-table-body" class="divide-y divide-slate-50"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-ingredients" class="tab-content">
-            <div class="mb-6">
-                <h2 class="text-2xl font-black">Inventory Master</h2>
-                <p class="text-slate-500 text-sm">Sesuaikan harga beli bahan baku (per ml/gram/pcs) di bawah ini.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="ingredients-grid"></div>
-        </section>
-
-        <section id="tab-sales" class="tab-content">
-            <div class="mb-6 flex justify-between items-center">
-                <h2 class="text-2xl font-black text-slate-800">Sales Recap Report</h2>
-                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Verified</span>
-            </div>
-            <div class="card overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-800 text-white">
-                            <tr>
-                                <th class="p-4 text-xs font-bold uppercase">Category</th>
-                                <th class="p-4 text-xs font-bold uppercase">Menu</th>
-                                <th class="p-4 text-xs font-bold uppercase text-center">Qty Sold</th>
-                                <th class="p-4 text-xs font-bold uppercase text-right">Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sales-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
                 </div>
             </div>
         </section>
     </main>
 
+    <div id="recipe-modal" class="modal">
+        <div class="bg-white w-full max-w-lg mx-4 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 id="modal-menu-name" class="font-black text-xl">Edit Recipe</h3>
+                    <p id="modal-menu-cat" class="text-xs text-orange-600 font-bold uppercase"></p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-800">✖</button>
+            </div>
+            <div class="p-6 max-h-[60vh] overflow-y-auto custom-scroll" id="modal-ingredients-list">
+                </div>
+            <div class="p-6 bg-slate-50 border-t flex justify-between items-center">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Live HPP Estimate</p>
+                    <p id="modal-hpp-display" class="text-xl font-black text-orange-600">Rp 0</p>
+                </div>
+                <button onclick="closeModal()" class="bg-slate-800 text-white px-8 py-3 rounded-2xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-slate-200">Selesai</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // DATA BAHAN BAKU
+        // DATA BAHAN BAKU (Sesuai List Anda - Harga per ml/gram)
         const ingredients = {
             "KOPI": {
-                "kaks": { name: "Arabika Kaks", p: 240, u: "g" },
-                "diks": { name: "Arabika Diks", p: 280, u: "g" }
+                "kaks": { name: "Arabika Kaks Grade 1", p: 240, u: "g" },
+                "diks": { name: "Arabika Specialty Diks", p: 280, u: "g" }
             },
             "SYRUP": {
-                "monin": { name: "Monin Syrup", p: 215, u: "ml" },
-                "caramel_sauce": { name: "Caramel Sauce", p: 150, u: "ml" },
-                "straw_sauce": { name: "Straw Sauce", p: 150, u: "ml" }
+                "monin": { name: "Syrup Monin (All)", p: 215, u: "ml" },
+                "simple": { name: "Simple Sugar", p: 10, u: "ml" },
+                "aren": { name: "Gula Aren Dainichi", p: 35, u: "ml" }
             },
             "DAIRY": {
-                "uht": { name: "UHT Diamond", p: 21, u: "ml" },
+                "uht": { name: "Susu UHT Diamond", p: 21, u: "ml" },
                 "oat": { name: "Oatside", p: 45, u: "ml" },
-                "evap": { name: "Susu Evap", p: 32, u: "ml" },
-                "skm": { name: "SKM", p: 12, u: "ml" },
+                "evap": { name: "Susu Evaporasi", p: 32, u: "ml" },
+                "skm": { name: "Susu SKM", p: 12, u: "ml" },
                 "creamer": { name: "MaxCreamer", p: 48, u: "g" },
                 "cheese": { name: "Cheese Cream", p: 150, u: "g" },
                 "yakult": { name: "Yakult", p: 2800, u: "pcs" },
-                "hydro": { name: "Hydro Coco", p: 25, u: "ml" }
+                "coco": { name: "Hydro Coco", p: 25, u: "ml" }
             },
             "POWDER": {
-                "pow_std": { name: "Powder Reg", p: 120, u: "g" },
-                "pow_matcha": { name: "Powder Matcha", p: 180, u: "g" },
-                "pow_vanilla": { name: "Powder Vanilla", p: 120, u: "g" }
+                "p_std": { name: "Powder Regular", p: 120, u: "g" },
+                "p_matcha": { name: "Bubuk Matcha", p: 180, u: "g" }
             },
-            "OTHERS": {
-                "aren": { name: "Gula Aren", p: 35, u: "ml" },
-                "sugar": { name: "Simple Sugar", p: 10, u: "ml" },
-                "skippy": { name: "Skippy/Spread", p: 250, u: "g" },
-                "tea": { name: "Tea Extract", p: 15, u: "ml" },
+            "LAINNYA": {
+                "skippy": { name: "Peanut Butter Skippy", p: 250, u: "g" },
                 "sprite": { name: "Sprite", p: 15, u: "ml" },
-                "lotus": { name: "Lotus Biskuit", p: 2000, u: "pcs" },
-                "nipis": { name: "Jeruk Nipis", p: 100, u: "ml" },
-                "selasih": { name: "Biji Selasih", p: 20, u: "g" },
-                "pkg": { name: "Cup/Lid/Straw", p: 1200, u: "set" }
+                "tea": { name: "Extract Tea", p: 20, u: "ml" },
+                "lotus": { name: "Biskuit Lotus", p: 2000, u: "pcs" },
+                "nipis": { name: "Jeruk Nipis", p: 500, u: "ml" },
+                "packaging": { name: "Cup/Lid/Straw", p: 1200, u: "set" }
             }
         };
 
-        // DATA MENU
+        // FULL DATA MENU & REPIPES
         const menuData = [
-            { name: "Kopi Susu Ice", cat: "Ice Coffee", price: 22000, r: [{i:"skm",q:20},{i:"creamer",q:15},{i:"evap",q:10},{i:"kaks",q:30},{i:"uht",q:70},{i:"pkg",q:1}] },
-            { name: "Tuan Rumah Ice", cat: "Ice Coffee", price: 25000, r: [{i:"aren",q:25},{i:"creamer",q:25},{i:"kaks",q:30},{i:"uht",q:100},{i:"pkg",q:1}] },
-            { name: "Tiramisu Ice", cat: "Ice Coffee", price: 28000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"cheese",q:20},{i:"pkg",q:1}] },
-            { name: "Banana Coffee", cat: "Ice Coffee", price: 25000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"pkg",q:1}] },
-            { name: "Biscoff Ice", cat: "Ice Coffee", price: 27000, r: [{i:"skippy",q:15},{i:"skm",q:10},{i:"monin",q:10},{i:"creamer",q:10},{i:"kaks",q:30},{i:"uht",q:100},{i:"lotus",q:1},{i:"pkg",q:1}] },
-            { name: "Pandan Ice", cat: "Ice Coffee", price: 28000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"evap",q:10},{i:"creamer",q:20},{i:"kaks",q:30},{i:"oat",q:100},{i:"pkg",q:1}] },
-            { name: "Berry Cano", cat: "Americano Series", price: 25000, r: [{i:"monin",q:20},{i:"sugar",q:10},{i:"diks",q:30},{i:"pkg",q:1}] },
-            { name: "Apple Cano", cat: "Americano Series", price: 25000, r: [{i:"monin",q:20},{i:"sugar",q:10},{i:"diks",q:30},{i:"pkg",q:1}] },
-            { name: "Melon Cano", cat: "Americano Series", price: 25000, r: [{i:"monin",q:20},{i:"sugar",q:10},{i:"diks",q:30},{i:"pkg",q:1}] },
-            { name: "Avocado Ice", cat: "Non Coffee", price: 23000, r: [{i:"skm",q:10},{i:"pow_std",q:20},{i:"creamer",q:15},{i:"uht",q:100},{i:"pkg",q:1}] },
-            { name: "Matcha Latte", cat: "Non Coffee", price: 28000, r: [{i:"pow_matcha",q:20},{i:"skm",q:15},{i:"creamer",q:10},{i:"uht",q:110},{i:"pkg",q:1}] },
-            { name: "Magic Hot", cat: "Specialty", price: 28000, r: [{i:"diks",q:36},{i:"oat",q:120}] },
-            { name: "Yakult Series", cat: "Non Coffee", price: 23000, r: [{i:"monin",q:15},{i:"yakult",q:1},{i:"sprite",q:110},{i:"pkg",q:1}] }
+            { name: "Kopsus", cat: "COFFEE", price: 22000, r: [{i:"skm",q:20},{i:"creamer",q:15},{i:"evap",q:10},{i:"kaks",q:30},{i:"uht",q:70},{i:"packaging",q:1}] },
+            { name: "Tuan Rumah", cat: "COFFEE", price: 25000, r: [{i:"aren",q:25},{i:"creamer",q:25},{i:"kaks",q:30},{i:"uht",q:100},{i:"packaging",q:1}] },
+            { name: "Tiramisu", cat: "COFFEE", price: 28000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"cheese",q:20},{i:"packaging",q:1}] },
+            { name: "Banana", cat: "COFFEE", price: 25000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"packaging",q:1}] },
+            { name: "Biscoff", cat: "COFFEE", price: 27000, r: [{i:"skippy",q:15},{i:"skm",q:10},{i:"monin",q:10},{i:"creamer",q:10},{i:"kaks",q:30},{i:"uht",q:100},{i:"lotus",q:1},{i:"packaging",q:1}] },
+            { name: "Berry Cano", cat: "AMERICANO", price: 25000, r: [{i:"monin",q:20},{i:"simple",q:10},{i:"diks",q:30},{i:"packaging",q:1}] },
+            { name: "Apple Cano", cat: "AMERICANO", price: 25000, r: [{i:"monin",q:20},{i:"simple",q:10},{i:"diks",q:30},{i:"packaging",q:1}] },
+            { name: "Avocado", cat: "NON COFFEE", price: 23000, r: [{i:"skm",q:10},{i:"p_std",q:20},{i:"creamer",q:15},{i:"uht",q:100},{i:"packaging",q:1}] },
+            { name: "Matcha", cat: "NON COFFEE", price: 28000, r: [{i:"p_matcha",q:20},{i:"skm",q:15},{i:"creamer",q:10},{i:"uht",q:110},{i:"packaging",q:1}] },
+            { name: "Coconut Plum", cat: "NON COFFEE", price: 28000, r: [{i:"monin",q:20},{i:"coco",q:90},{i:"sprite",q:60},{i:"packaging",q:1}] },
+            { name: "Thai Tea", cat: "TEA", price: 25000, r: [{i:"skm",q:50},{i:"evap",q:20},{i:"tea",q:150},{i:"packaging",q:1}] },
+            { name: "Magic", cat: "SPECIALTY", price: 28000, r: [{i:"diks",q:36},{i:"oat",q:150}] },
+            { name: "Latte Ice", cat: "SPECIALTY", price: 28000, r: [{i:"diks",q:30},{i:"uht",q:120},{i:"packaging",q:1}] }
         ];
 
-        // DATA SALES RECAP (Dari Input Anda)
-        const salesData = [
-            { c: "ADDITIONAL", m: "Air Mineral", q: 317, r: 2508000 },
-            { c: "AMERICANO", m: "Beerycano Ice", q: 62, r: 1550000 },
-            { c: "COFFEE", m: "Americano Ice", q: 138, r: 3036000 },
-            { c: "ICE COFFEE", m: "Tuan Rumah Ice", q: 757, r: 18925000 },
-            { c: "ICE COFFEE", m: "Pandan Ice", q: 370, r: 10360000 },
-            { c: "ICE COFFEE", m: "Butterscotch Ice", q: 186, r: 5208000 },
-            { c: "NON COFFEE", m: "Matcha Latte", q: 327, r: 9156000 },
-            { c: "NON COFFEE", m: "Chocolate Ice", q: 267, r: 6675000 }
-        ];
-
-        let currentCatFilter = 'all';
+        let currentFilter = 'all';
 
         function openTab(evt, tabName) {
             document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
@@ -221,80 +191,134 @@
             evt.currentTarget.classList.add("active");
         }
 
-        function getIngPrice(id) {
-            for (const c in ingredients) { if (ingredients[c][id]) return ingredients[c][id].p; } return 0;
+        function getIng(id) {
+            for (const cat in ingredients) {
+                if (ingredients[cat][id]) return ingredients[cat][id];
+            }
+            return { name: "N/A", p: 0, u: "?" };
         }
 
-        function renderIngredients() {
-            const grid = document.getElementById('ingredients-grid');
+        function calculateHPP(recipe) {
+            return recipe.reduce((total, item) => total + (getIng(item.i).p * item.q), 0);
+        }
+
+        function renderMenu() {
+            const body = document.getElementById('menu-tbody');
+            body.innerHTML = '';
+            let totalMargin = 0;
+            const filtered = currentFilter === 'all' ? menuData : menuData.filter(m => m.cat === currentFilter);
+
+            filtered.forEach((m, idx) => {
+                const hpp = calculateHPP(m.r);
+                const profit = m.price - hpp;
+                const margin = ((profit / m.price) * 100).toFixed(0);
+                totalMargin += parseFloat(margin);
+
+                body.innerHTML += `
+                    <tr onclick="openRecipeEditor(${menuData.indexOf(m)})" class="cursor-pointer hover:bg-orange-50/50 transition-all group">
+                        <td class="p-5">
+                            <p class="font-bold text-slate-800">${m.name}</p>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">${m.cat}</span>
+                        </td>
+                        <td class="p-5 text-right font-semibold text-slate-400">Rp ${m.price.toLocaleString()}</td>
+                        <td class="p-5 text-right font-bold text-orange-600">Rp ${Math.round(hpp).toLocaleString()}</td>
+                        <td class="p-5 text-right font-black text-slate-800">Rp ${Math.round(profit).toLocaleString()}</td>
+                        <td class="p-5 text-center">
+                            <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-black">
+                                ${margin}%
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('avg-margin-display').innerText = (totalMargin / (filtered.length || 1)).toFixed(1) + '%';
+            document.getElementById('total-menu-count').innerText = menuData.length;
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
             grid.innerHTML = '';
             for (const cat in ingredients) {
-                let card = `<div class="card p-6"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">${cat}</h3>`;
+                let section = `<div class="bg-white p-6 rounded-3xl border border-slate-200">
+                    <h3 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest">${cat}</h3>`;
                 for (const key in ingredients[cat]) {
                     const itm = ingredients[cat][key];
-                    card += `
-                        <div class="flex justify-between items-center mb-3">
+                    section += `
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-50">
                             <span class="text-sm font-semibold">${itm.name}</span>
                             <div class="flex items-center gap-2">
-                                <span class="text-[10px] text-slate-400">Rp</span>
-                                <input type="number" value="${itm.p}" onchange="updatePrice('${cat}','${key}',this.value)" 
-                                class="w-20 border rounded-lg px-2 py-1 text-sm text-right font-bold bg-slate-50">
+                                <span class="text-[10px] text-slate-400 font-bold">Rp</span>
+                                <input type="number" value="${itm.p}" onchange="updateIngPrice('${cat}','${key}',this.value)" 
+                                class="w-20 text-right font-black text-orange-600 bg-transparent outline-none">
                             </div>
                         </div>`;
                 }
-                grid.innerHTML += card + `</div>`;
+                grid.innerHTML += section + '</div>';
             }
         }
 
-        function updatePrice(c, k, v) { ingredients[c][k].p = parseFloat(v); renderMenu(); }
+        function updateIngPrice(cat, key, val) {
+            ingredients[cat][key].p = parseFloat(val);
+            renderMenu();
+        }
 
-        function renderMenu() {
-            const body = document.getElementById('menu-table-body');
-            body.innerHTML = '';
-            const filtered = currentCatFilter === 'all' ? menuData : menuData.filter(m => m.cat === currentCatFilter);
+        // EDITOR MODAL LOGIC
+        let activeMenuIdx = null;
+
+        function openRecipeEditor(idx) {
+            activeMenuIdx = idx;
+            const menu = menuData[idx];
+            document.getElementById('modal-menu-name').innerText = menu.name;
+            document.getElementById('modal-menu-cat').innerText = menu.cat;
             
-            filtered.forEach(m => {
-                let hpp = 0;
-                m.r.forEach(rcp => { hpp += (getIngPrice(rcp.i) * rcp.q); });
-                const profit = m.price - hpp;
-                const margin = ((profit / m.price) * 100).toFixed(0);
-
-                body.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-all">
-                        <td class="p-4 font-bold">${m.name}<br><span class="text-[9px] text-slate-400 uppercase">${m.cat}</span></td>
-                        <td class="p-4 text-right font-semibold">Rp ${m.price.toLocaleString()}</td>
-                        <td class="p-4 text-right font-bold text-orange-600">Rp ${Math.round(hpp).toLocaleString()}</td>
-                        <td class="p-4 text-right font-bold text-slate-700">Rp ${Math.round(profit).toLocaleString()}</td>
-                        <td class="p-4 text-center"><span class="bg-slate-100 text-[10px] font-black px-2 py-1 rounded-full">${margin}%</span></td>
-                    </tr>`;
+            const list = document.getElementById('modal-ingredients-list');
+            list.innerHTML = '';
+            
+            menu.r.forEach((rcp, rIdx) => {
+                const ing = getIng(rcp.i);
+                list.innerHTML += `
+                    <div class="flex justify-between items-center mb-4 p-3 bg-slate-50 rounded-2xl">
+                        <span class="text-sm font-bold text-slate-600">${ing.name}</span>
+                        <div class="flex items-center gap-2">
+                            <input type="number" value="${rcp.q}" oninput="updateRecipeQty(${idx}, ${rIdx}, this.value)" 
+                            class="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1 text-center font-black text-slate-800">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">${ing.u}</span>
+                        </div>
+                    </div>`;
             });
+
+            updateModalHPP();
+            document.getElementById('recipe-modal').classList.add('active');
         }
 
-        function renderSales() {
-            const body = document.getElementById('sales-table-body');
-            body.innerHTML = salesData.map(s => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4 font-bold text-slate-400">${s.c}</td>
-                    <td class="p-4 font-bold">${s.m}</td>
-                    <td class="p-4 text-center font-bold text-blue-600">${s.q}</td>
-                    <td class="p-4 text-right font-black">Rp ${s.r.toLocaleString()}</td>
-                </tr>`).join('');
+        function updateRecipeQty(mIdx, rIdx, val) {
+            menuData[mIdx].r[rIdx].q = parseFloat(val) || 0;
+            updateModalHPP();
+            renderMenu();
         }
 
-        function renderMenuFilters() {
+        function updateModalHPP() {
+            const hpp = calculateHPP(menuData[activeMenuIdx].r);
+            document.getElementById('modal-hpp-display').innerText = 'Rp ' + Math.round(hpp).toLocaleString();
+        }
+
+        function closeModal() {
+            document.getElementById('recipe-modal').classList.remove('active');
+        }
+
+        function init() {
+            renderMenu();
+            renderInventory();
+            // Category Filter Injections
             const cats = ['all', ...new Set(menuData.map(m => m.cat))];
-            document.getElementById('menu-filters').innerHTML = cats.map(c => `
-                <button onclick="currentCatFilter='${c}'; renderMenu();" 
-                class="px-4 py-1.5 rounded-full border text-xs font-bold transition-all hover:bg-slate-100 uppercase whitespace-nowrap">
+            document.getElementById('filter-container').innerHTML = cats.map(c => `
+                <button onclick="currentFilter='${c}'; renderMenu();" 
+                class="px-4 py-1.5 rounded-full border border-slate-200 text-[10px] font-bold uppercase transition-all hover:bg-white active:bg-slate-800 active:text-white">
                     ${c}
                 </button>`).join('');
         }
 
-        // Initialize
-        renderIngredients();
-        renderMenu();
-        renderSales();
-        renderMenuFilters();
+        init();
     </script>
 </body>
 </html>
