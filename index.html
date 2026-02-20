@@ -2,141 +2,196 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Advanced Sales Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Intelligence Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .filter-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 20px; }
-        .stat-box { padding: 15px; background: #e7f3ff; border-radius: 8px; color: #007bff; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #007bff; color: white; position: sticky; top: 0; }
-        th, td { padding: 10px; border: 1px solid #eee; text-align: left; font-size: 13px; }
-        .scroll-table { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* Grid Filter */
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .filter-item label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; color: #64748b; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; }
+        
+        /* Statistik */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #dbeafe; }
+        .stat-value { display: block; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; }
+
+        /* Tabel Responsif */
+        .table-container { overflow-x: auto; max-height: 400px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f1f5f9; position: sticky; top: 0; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+        tr:hover { background: #f8fafc; }
+        
+        .loading-overlay { text-align: center; padding: 20px; font-weight: bold; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>📊 Filter Penjualan Interaktif</h2>
-    
-    <div class="filter-group">
-        <div>
-            <label>Cari Menu:</label>
-            <input type="text" id="searchMenu" placeholder="Ketik nama menu..." oninput="applyFilters()">
+<div class="container">
+    <div class="card">
+        <h2 style="margin-top:0">🚀 Dashboard Analisa Penjualan</h2>
+        
+        <div id="loader" class="loading-overlay">Sedang mengunduh data besar...</div>
+
+        <div class="filter-grid">
+            <div class="filter-item">
+                <label>CARI MENU</label>
+                <input type="text" id="filterMenu" placeholder="Contoh: Kopi..." oninput="processData()">
+            </div>
+            <div class="filter-item">
+                <label>FILTER JAM (0-23)</label>
+                <select id="filterHour" onchange="processData()">
+                    <option value="all">Semua Jam</option>
+                    </select>
+            </div>
+            <div class="filter-item">
+                <label>BATAS TAMPILAN TABEL</label>
+                <select id="rowLimit" onchange="processData()">
+                    <option value="50">50 Baris</option>
+                    <option value="500">500 Baris</option>
+                    <option value="1000">1000 Baris</option>
+                </select>
+            </div>
         </div>
-        <div>
-            <label>Tanggal Mulai:</label>
-            <input type="date" id="startDate" onchange="applyFilters()">
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <span id="statTotalRows" class="stat-value">0</span>
+                <span class="stat-label">Baris Ditemukan</span>
+            </div>
+            <div class="stat-card">
+                <span id="statTotalQty" class="stat-value">0</span>
+                <span class="stat-label">Total Qty</span>
+            </div>
+            <div class="stat-card">
+                <span id="statRevenue" class="stat-value">0</span>
+                <span class="stat-label">Estimasi Revenue</span>
+            </div>
         </div>
-        <div>
-            <label>Tanggal Selesai:</label>
-            <input type="date" id="endDate" onchange="applyFilters()">
-        </div>
+
+        <canvas id="salesChart" height="120"></canvas>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-box">Total Transaksi: <span id="statCount">0</span></div>
-        <div class="stat-box">Total Qty: <span id="statQty">0</span></div>
-        <div class="stat-box">Total Pendapatan: <span id="statRevenue">0</span></div>
-    </div>
-
-    <canvas id="mainChart" height="100"></canvas>
-</div>
-
-<div class="card">
-    <h3>Data Detail (Terfilter)</h3>
-    <div class="scroll-table">
-        <table id="dataTable">
-            <thead><tr id="tableHeader"></tr></thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+    <div class="card">
+        <h3>Pratinjau Data Detail</h3>
+        <div class="table-container">
+            <table id="resultTable">
+                <thead><tr id="tableHead"></tr></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    let masterData = []; // Menyimpan semua data asli
-    let chartInstance = null;
-    const url = 'https://raw.githubusercontent.com/OcangAmin/Dashboard-TR/refs/heads/main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
+    let rawData = [];
+    let chartObj = null;
+    const CSV_URL = 'https://cdn.jsdelivr.net/gh/OcangAmin/Dashboard-TR@main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
 
-    // 1. Load Data Otomatis saat halaman dibuka
+    // Inisialisasi Jam
+    const selectHour = document.getElementById('filterHour');
+    for(let i=0; i<24; i++) {
+        let opt = document.createElement('option');
+        opt.value = i.toString().padStart(2, '0');
+        opt.innerText = `Jam ${opt.value}:00`;
+        selectHour.appendChild(opt);
+    }
+
+    // Load Data menggunakan PapaParse
     window.onload = () => {
-        Papa.parse(url, {
-            download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
+        Papa.parse(CSV_URL, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
             complete: function(results) {
-                masterData = results.data;
-                initTableHeader(masterData[0]);
-                applyFilters(); // Jalankan filter pertama kali
+                rawData = results.data;
+                document.getElementById('loader').style.display = 'none';
+                generateHeaders(rawData[0]);
+                processData();
             }
         });
     };
 
-    function initTableHeader(firstRow) {
-        const header = document.getElementById('tableHeader');
-        Object.keys(firstRow).forEach(key => {
-            header.innerHTML += `<th>${key}</th>`;
-        });
+    function generateHeaders(sampleRow) {
+        const head = document.getElementById('tableHead');
+        head.innerHTML = Object.keys(sampleRow).map(k => `<th>${k}</th>`).join('');
     }
 
-    // 2. Logika Filter Utama
-    function applyFilters() {
-        const searchTerm = document.getElementById('searchMenu').value.toLowerCase();
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
+    function processData() {
+        const menuSearch = document.getElementById('filterMenu').value.toLowerCase();
+        const hourFilter = document.getElementById('filterHour').value;
+        const limit = parseInt(document.getElementById('rowLimit').value);
 
-        const filtered = masterData.filter(row => {
-            // Filter Teks
-            const matchText = row.Menu?.toString().toLowerCase().includes(searchTerm);
+        // Filter Logic
+        const filtered = rawData.filter(row => {
+            const matchMenu = !menuSearch || row.Menu?.toString().toLowerCase().includes(menuSearch);
+            // Mencocokkan jam dari kolom 'Time' (format HH:mm:ss)
+            const rowHour = row.Time?.toString().split(':')[0];
+            const matchHour = hourFilter === 'all' || rowHour === hourFilter;
             
-            // Filter Tanggal (Asumsi kolom bernama 'Date')
-            let matchDate = true;
-            if (start && row.Date) matchDate = matchDate && (row.Date >= start);
-            if (end && row.Date) matchDate = matchDate && (row.Date <= end);
-
-            return matchText && matchDate;
+            return matchMenu && matchHour;
         });
 
-        updateUI(filtered);
+        updateStats(filtered);
+        updateChart(filtered);
+        updateTable(filtered.slice(0, limit));
     }
 
-    // 3. Update Tampilan (Chart & Table)
-    function updateUI(data) {
-        // Update Statistik
-        document.getElementById('statCount').innerText = data.length.toLocaleString();
-        const totalQty = data.reduce((sum, row) => sum + (Number(row.Qty) || 0), 0);
-        document.getElementById('statQty').innerText = totalQty.toLocaleString();
+    function updateStats(data) {
+        const totalQty = data.reduce((sum, r) => sum + (Number(r.Qty) || 0), 0);
+        const totalRev = data.reduce((sum, r) => sum + (Number(r.Total) || 0), 0);
         
-        // Update Tabel (Hanya tampilkan 100 pertama untuk kecepatan)
+        document.getElementById('statTotalRows').innerText = data.length.toLocaleString();
+        document.getElementById('statTotalQty').innerText = totalQty.toLocaleString();
+        document.getElementById('statRevenue').innerText = 'Rp ' + totalRev.toLocaleString();
+    }
+
+    function updateTable(data) {
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        data.slice(0, 100).forEach(row => {
-            let tr = '<tr>';
-            Object.values(row).forEach(val => tr += `<td>${val ?? ''}</td>`);
-            tbody.innerHTML += tr + '</tr>';
-        });
-
-        // Update Chart (Top 5 Menu)
-        renderChart(data);
+        tbody.innerHTML = data.map(row => {
+            return `<tr>${Object.values(row).map(v => `<td>${v ?? ''}</td>`).join('')}</tr>`;
+        }).join('');
     }
 
-    function renderChart(data) {
-        const counts = {};
-        data.forEach(row => { counts[row.Menu] = (counts[row.Menu] || 0) + (Number(row.Total) || 0); });
-        
-        const sortedLabels = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
-        const sortedValues = sortedLabels.map(l => counts[l]);
+    function updateChart(data) {
+        // Ambil Top 7 Menu berdasarkan Total
+        const menuSummary = {};
+        data.forEach(r => {
+            menuSummary[r.Menu] = (menuSummary[r.Menu] || 0) + (Number(r.Total) || 0);
+        });
 
-        if (chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(document.getElementById('mainChart'), {
+        const sortedMenu = Object.entries(menuSummary)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 7);
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        if (chartObj) chartObj.destroy();
+
+        chartObj = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: sortedLabels,
-                datasets: [{ label: 'Total Penjualan', data: sortedValues, backgroundColor: '#007bff' }]
+                labels: sortedMenu.map(x => x[0]),
+                datasets: [{
+                    label: 'Revenue Per Menu',
+                    data: sortedMenu.map(x => x[1]),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 5
+                }]
             },
-            options: { indexAxis: 'y' } // Horizontal bar agar teks menu terbaca
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
         });
     }
 </script>
