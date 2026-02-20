@@ -2,258 +2,213 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tuan Rumah Coffee | Enterprise Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tuan Rumah Coffee | iOS Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; }
+        :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; -webkit-tap-highlight-color: transparent; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-btn.active { border-bottom: 3px solid #f97316; color: #f97316; font-weight: 800; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal.active { display: flex; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .ios-blur { background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .active-tab { color: #f97316; border-bottom: 3px solid #f97316; font-weight: 800; }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        input[type="number"] { -moz-appearance: textfield; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="pb-12 text-slate-800">
+<body class="pb-24">
 
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-orange-600 p-2.5 rounded-2xl shadow-lg shadow-orange-200 text-white font-black text-xl">TR</div>
-                <div>
-                    <h1 class="font-extrabold text-xl leading-none">Tuan Rumah Coffee</h1>
-                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Recipe & Inventory Sync</span>
-                </div>
+    <header class="ios-blur border-b border-slate-200 sticky top-0 z-40 px-6 pt-4">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-xl font-black text-slate-900 tracking-tight">Tuan Rumah Coffee</h1>
+                <p class="text-[10px] text-orange-600 font-extrabold uppercase tracking-widest">Management System v3.0</p>
             </div>
-            <div class="flex gap-4 md:gap-8">
-                <div class="text-right">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Avg. Margin</p>
-                    <p id="avg-margin-display" class="text-lg font-black text-emerald-600">0%</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Total Revenue (Des 25)</p>
-                    <p class="text-lg font-black text-slate-800">Rp 101.033.000</p>
-                </div>
+            <div class="text-right bg-orange-50 px-3 py-1 rounded-xl">
+                <span class="text-[9px] font-bold text-orange-400 block uppercase">Revenue</span>
+                <span class="text-sm font-black text-orange-600">101.0M</span>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto px-6 flex gap-8 border-t border-slate-100 overflow-x-auto">
-            <button onclick="openTab(event, 'tab-menu')" class="tab-btn active py-4 text-sm font-bold whitespace-nowrap">📜 Menu & Kalkulasi</button>
-            <button onclick="openTab(event, 'tab-inventory')" class="tab-btn py-4 text-sm font-bold whitespace-nowrap">📦 Stok & Harga Bahan</button>
-            <button onclick="openTab(event, 'tab-summary')" class="tab-btn py-4 text-sm font-bold whitespace-nowrap">📊 Summary Sales</button>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 md:px-8 mt-8">
         
-        <section id="tab-menu" class="tab-content active animate-in fade-in">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-800 tracking-tight">Daftar Menu</h2>
-                    <p class="text-sm text-slate-500">Klik pada baris menu untuk mengedit resep komposisi.</p>
+        <div class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth">
+            <button onclick="switchTab(event, 'tab-menu')" class="tab-btn active-tab py-3 text-sm whitespace-nowrap">Menu & Resep</button>
+            <button onclick="switchTab(event, 'tab-inventory')" class="tab-btn py-3 text-sm whitespace-nowrap text-slate-400">Master Bahan</button>
+            <button onclick="switchTab(event, 'tab-analysis')" class="tab-btn py-3 text-sm whitespace-nowrap text-slate-400">Analisis Sales</button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-4xl mx-auto">
+
+        <section id="tab-menu" class="tab-content active">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar mb-6 pb-2" id="filter-chips">
                 </div>
-                <div class="flex gap-2" id="filter-container"></div>
-            </div>
-            
-            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th class="p-5 text-xs font-black text-slate-500 uppercase">Product</th>
-                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-right">Price</th>
-                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-right">HPP</th>
-                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-right">Profit</th>
-                            <th class="p-5 text-xs font-black text-slate-500 uppercase text-center">Efficiency</th>
-                        </tr>
-                    </thead>
-                    <tbody id="menu-tbody" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
+
+            <div id="menu-container" class="space-y-3">
+                </div>
         </section>
 
         <section id="tab-inventory" class="tab-content">
-            <div class="mb-8">
-                <h2 class="text-2xl font-black text-slate-800">Master Data Bahan Baku</h2>
-                <p class="text-sm text-slate-500">Update harga e-commerce di sini. Semua HPP menu akan tersinkronisasi otomatis.</p>
+            <div class="bg-blue-50 p-4 rounded-2xl mb-6 border border-blue-100">
+                <p class="text-xs text-blue-700 font-semibold leading-relaxed">
+                    💡 <strong>Tips:</strong> Ubah harga beli bahan baku di sini. HPP seluruh menu akan otomatis terupdate.
+                </p>
             </div>
-            <div id="inventory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="inventory-container" class="space-y-4">
+                </div>
         </section>
 
-        <section id="tab-summary" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-8 rounded-3xl border border-slate-200">
-                    <h3 class="font-black text-lg mb-4 text-orange-600">Top Revenue by Category</h3>
-                    <ul class="space-y-4" id="cat-summary">
-                        </ul>
+        <section id="tab-analysis" class="tab-content text-center py-10">
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 card-shadow">
+                <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    📊
                 </div>
-                <div class="bg-slate-800 p-8 rounded-3xl text-white">
-                    <h3 class="font-black text-lg mb-4 text-orange-400">Information Center</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                        Data ini menggunakan asumsi harga e-commerce Indonesia 2026. HPP dihitung secara presisi berdasarkan gramasi dan volume (ml). 
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 mt-6">
-                        <div class="bg-slate-700/50 p-4 rounded-2xl">
-                            <p class="text-[10px] uppercase font-bold text-slate-400">Total Cups Sold</p>
-                            <p class="text-xl font-black">4.381</p>
-                        </div>
-                        <div class="bg-slate-700/50 p-4 rounded-2xl">
-                            <p class="text-[10px] uppercase font-bold text-slate-400">Total Menus</p>
-                            <p id="total-menu-count" class="text-xl font-black">0</p>
-                        </div>
+                <h3 class="font-bold text-lg mb-2">Statistik Desember 2025</h3>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <p class="text-[10px] text-slate-400 uppercase font-black">Total Sold</p>
+                        <p class="text-xl font-black">4,381</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <p class="text-[10px] text-slate-400 uppercase font-black">Avg Margin</p>
+                        <p id="total-avg-margin" class="text-xl font-black text-emerald-600">0%</p>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="recipe-modal" class="modal">
-        <div class="bg-white w-full max-w-lg mx-4 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+    <div id="recipe-modal" class="fixed inset-0 z-50 invisible transition-all duration-300">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[40px] p-8 translate-y-full transition-transform duration-300 shadow-2xl overflow-y-auto max-h-[90vh]" id="modal-panel">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h2 id="modal-title" class="text-2xl font-black text-slate-900 mb-1">Menu Name</h2>
+            <p id="modal-category" class="text-xs font-bold text-orange-600 uppercase mb-6 tracking-widest">Category</p>
+            
+            <div id="modal-ingredients" class="space-y-4 mb-8">
+                </div>
+
+            <div class="bg-slate-900 p-6 rounded-3xl flex justify-between items-center text-white">
                 <div>
-                    <h3 id="modal-menu-name" class="font-black text-xl">Edit Recipe</h3>
-                    <p id="modal-menu-cat" class="text-xs text-orange-600 font-bold uppercase"></p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">HPP Terkini</p>
+                    <p id="modal-hpp" class="text-2xl font-black">Rp 0</p>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-800">✖</button>
-            </div>
-            <div class="p-6 max-h-[60vh] overflow-y-auto custom-scroll" id="modal-ingredients-list">
-                </div>
-            <div class="p-6 bg-slate-50 border-t flex justify-between items-center">
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Live HPP Estimate</p>
-                    <p id="modal-hpp-display" class="text-xl font-black text-orange-600">Rp 0</p>
-                </div>
-                <button onclick="closeModal()" class="bg-slate-800 text-white px-8 py-3 rounded-2xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-slate-200">Selesai</button>
+                <button onclick="closeModal()" class="bg-orange-600 px-8 py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">Simpan</button>
             </div>
         </div>
     </div>
 
     <script>
-        // DATA BAHAN BAKU (Sesuai List Anda - Harga per ml/gram)
+        // --- DATA BAHAN BAKU ---
         const ingredients = {
             "KOPI": {
-                "kaks": { name: "Arabika Kaks Grade 1", p: 240, u: "g" },
-                "diks": { name: "Arabika Specialty Diks", p: 280, u: "g" }
-            },
-            "SYRUP": {
-                "monin": { name: "Syrup Monin (All)", p: 215, u: "ml" },
-                "simple": { name: "Simple Sugar", p: 10, u: "ml" },
-                "aren": { name: "Gula Aren Dainichi", p: 35, u: "ml" }
+                "kaks": { name: "Arabika Kaks", p: 240, u: "g" },
+                "diks": { name: "Arabika Diks", p: 280, u: "g" }
             },
             "DAIRY": {
-                "uht": { name: "Susu UHT Diamond", p: 21, u: "ml" },
+                "uht": { name: "Susu UHT", p: 21, u: "ml" },
                 "oat": { name: "Oatside", p: 45, u: "ml" },
-                "evap": { name: "Susu Evaporasi", p: 32, u: "ml" },
-                "skm": { name: "Susu SKM", p: 12, u: "ml" },
-                "creamer": { name: "MaxCreamer", p: 48, u: "g" },
-                "cheese": { name: "Cheese Cream", p: 150, u: "g" },
-                "yakult": { name: "Yakult", p: 2800, u: "pcs" },
-                "coco": { name: "Hydro Coco", p: 25, u: "ml" }
+                "evap": { name: "Susu Evap", p: 32, u: "ml" },
+                "skm": { name: "SKM", p: 12, u: "ml" },
+                "creamer": { name: "Creamer", p: 48, u: "g" },
+                "yakult": { name: "Yakult", p: 2800, u: "pcs" }
             },
-            "POWDER": {
-                "p_std": { name: "Powder Regular", p: 120, u: "g" },
-                "p_matcha": { name: "Bubuk Matcha", p: 180, u: "g" }
+            "SYRUP/POWDER": {
+                "monin": { name: "Monin All", p: 215, u: "ml" },
+                "aren": { name: "Gula Aren", p: 35, u: "ml" },
+                "p_matcha": { name: "Powder Matcha", p: 180, u: "g" },
+                "p_std": { name: "Powder Std", p: 120, u: "g" }
             },
-            "LAINNYA": {
-                "skippy": { name: "Peanut Butter Skippy", p: 250, u: "g" },
-                "sprite": { name: "Sprite", p: 15, u: "ml" },
-                "tea": { name: "Extract Tea", p: 20, u: "ml" },
-                "lotus": { name: "Biskuit Lotus", p: 2000, u: "pcs" },
-                "nipis": { name: "Jeruk Nipis", p: 500, u: "ml" },
-                "packaging": { name: "Cup/Lid/Straw", p: 1200, u: "set" }
+            "PACKAGING": {
+                "pkg": { name: "Cup/Lid/Straw", p: 1250, u: "set" }
             }
         };
 
-        // FULL DATA MENU & REPIPES
-        const menuData = [
-            { name: "Kopsus", cat: "COFFEE", price: 22000, r: [{i:"skm",q:20},{i:"creamer",q:15},{i:"evap",q:10},{i:"kaks",q:30},{i:"uht",q:70},{i:"packaging",q:1}] },
-            { name: "Tuan Rumah", cat: "COFFEE", price: 25000, r: [{i:"aren",q:25},{i:"creamer",q:25},{i:"kaks",q:30},{i:"uht",q:100},{i:"packaging",q:1}] },
-            { name: "Tiramisu", cat: "COFFEE", price: 28000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"cheese",q:20},{i:"packaging",q:1}] },
-            { name: "Banana", cat: "COFFEE", price: 25000, r: [{i:"monin",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"packaging",q:1}] },
-            { name: "Biscoff", cat: "COFFEE", price: 27000, r: [{i:"skippy",q:15},{i:"skm",q:10},{i:"monin",q:10},{i:"creamer",q:10},{i:"kaks",q:30},{i:"uht",q:100},{i:"lotus",q:1},{i:"packaging",q:1}] },
-            { name: "Berry Cano", cat: "AMERICANO", price: 25000, r: [{i:"monin",q:20},{i:"simple",q:10},{i:"diks",q:30},{i:"packaging",q:1}] },
-            { name: "Apple Cano", cat: "AMERICANO", price: 25000, r: [{i:"monin",q:20},{i:"simple",q:10},{i:"diks",q:30},{i:"packaging",q:1}] },
-            { name: "Avocado", cat: "NON COFFEE", price: 23000, r: [{i:"skm",q:10},{i:"p_std",q:20},{i:"creamer",q:15},{i:"uht",q:100},{i:"packaging",q:1}] },
-            { name: "Matcha", cat: "NON COFFEE", price: 28000, r: [{i:"p_matcha",q:20},{i:"skm",q:15},{i:"creamer",q:10},{i:"uht",q:110},{i:"packaging",q:1}] },
-            { name: "Coconut Plum", cat: "NON COFFEE", price: 28000, r: [{i:"monin",q:20},{i:"coco",q:90},{i:"sprite",q:60},{i:"packaging",q:1}] },
-            { name: "Thai Tea", cat: "TEA", price: 25000, r: [{i:"skm",q:50},{i:"evap",q:20},{i:"tea",q:150},{i:"packaging",q:1}] },
-            { name: "Magic", cat: "SPECIALTY", price: 28000, r: [{i:"diks",q:36},{i:"oat",q:150}] },
-            { name: "Latte Ice", cat: "SPECIALTY", price: 28000, r: [{i:"diks",q:30},{i:"uht",q:120},{i:"packaging",q:1}] }
+        // --- DATA MENU LENGKAP ---
+        const menus = [
+            { id: 0, name: "Tuan Rumah Ice", cat: "Ice Coffee", price: 25000, r: [{i:"aren", q:25}, {i:"creamer", q:25}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"pkg", q:1}] },
+            { id: 1, name: "Kopsus Tuan", cat: "Ice Coffee", price: 22000, r: [{i:"skm", q:20}, {i:"creamer", q:15}, {i:"evap", q:10}, {i:"kaks", q:30}, {i:"uht", q:70}, {i:"pkg", q:1}] },
+            { id: 2, name: "Banana Coffee", cat: "Ice Coffee", price: 25000, r: [{i:"monin", q:20}, {i:"skm", q:10}, {i:"kaks", q:30}, {i:"uht", q:100}, {i:"pkg", q:1}] },
+            { id: 3, name: "Berry Cano", cat: "Americano", price: 25000, r: [{i:"monin", q:20}, {i:"diks", q:30}, {i:"pkg", q:1}] },
+            { id: 4, name: "Apple Cano", cat: "Americano", price: 25000, r: [{i:"monin", q:20}, {id:"diks", q:30}, {i:"pkg", q:1}] },
+            { id: 5, name: "Matcha Latte", cat: "Non Coffee", price: 28000, r: [{i:"p_matcha", q:20}, {i:"skm", q:15}, {i:"uht", q:110}, {i:"pkg", q:1}] },
+            { id: 6, name: "Chocolate Ice", cat: "Non Coffee", price: 25000, r: [{i:"p_std", q:15}, {i:"aren", q:10}, {i:"uht", q:100}, {i:"pkg", q:1}] },
+            { id: 7, name: "Magic", cat: "Specialty", price: 28000, r: [{i:"diks", q:36}, {i:"oat", q:150}, {i:"pkg", q:1}] },
+            { id: 8, name: "Thai Tea", cat: "Tea Series", price: 25000, r: [{i:"skm", q:50}, {i:"evap", q:20}, {i:"pkg", q:1}] }
         ];
 
-        let currentFilter = 'all';
+        let activeFilter = 'all';
 
-        function openTab(evt, tabName) {
-            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
+        function switchTab(e, tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab', 'text-slate-400'));
+            
+            document.getElementById(tabId).classList.add('active');
+            e.currentTarget.classList.add('active-tab');
+            e.currentTarget.classList.remove('text-slate-400');
         }
 
         function getIng(id) {
-            for (const cat in ingredients) {
+            for (let cat in ingredients) {
                 if (ingredients[cat][id]) return ingredients[cat][id];
             }
-            return { name: "N/A", p: 0, u: "?" };
+            return { name: id, p: 0, u: "u" };
         }
 
-        function calculateHPP(recipe) {
-            return recipe.reduce((total, item) => total + (getIng(item.i).p * item.q), 0);
+        function calcHPP(recipe) {
+            return recipe.reduce((acc, curr) => acc + (getIng(curr.i).p * curr.q), 0);
         }
 
         function renderMenu() {
-            const body = document.getElementById('menu-tbody');
-            body.innerHTML = '';
-            let totalMargin = 0;
-            const filtered = currentFilter === 'all' ? menuData : menuData.filter(m => m.cat === currentFilter);
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            let totalM = 0;
 
-            filtered.forEach((m, idx) => {
-                const hpp = calculateHPP(m.r);
-                const profit = m.price - hpp;
-                const margin = ((profit / m.price) * 100).toFixed(0);
-                totalMargin += parseFloat(margin);
+            const filtered = activeFilter === 'all' ? menus : menus.filter(m => m.cat === activeFilter);
+            
+            filtered.forEach(m => {
+                const hpp = calcHPP(m.r);
+                const margin = (((m.price - hpp) / m.price) * 100).toFixed(0);
+                totalM += parseInt(margin);
 
-                body.innerHTML += `
-                    <tr onclick="openRecipeEditor(${menuData.indexOf(m)})" class="cursor-pointer hover:bg-orange-50/50 transition-all group">
-                        <td class="p-5">
-                            <p class="font-bold text-slate-800">${m.name}</p>
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">${m.cat}</span>
-                        </td>
-                        <td class="p-5 text-right font-semibold text-slate-400">Rp ${m.price.toLocaleString()}</td>
-                        <td class="p-5 text-right font-bold text-orange-600">Rp ${Math.round(hpp).toLocaleString()}</td>
-                        <td class="p-5 text-right font-black text-slate-800">Rp ${Math.round(profit).toLocaleString()}</td>
-                        <td class="p-5 text-center">
-                            <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-black">
-                                ${margin}%
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                container.innerHTML += `
+                    <div onclick="openModal(${m.id})" class="bg-white p-5 rounded-3xl border border-slate-100 card-shadow flex justify-between items-center active:scale-[0.98] transition-all">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-800">${m.name}</h3>
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-tighter">${m.cat}</span>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-orange-600">Rp ${Math.round(hpp).toLocaleString()}</p>
+                            <p class="text-[10px] font-bold text-emerald-500">${margin}% Margin</p>
+                        </div>
+                        <div class="ml-4 text-slate-300">❯</div>
+                    </div>`;
             });
-            document.getElementById('avg-margin-display').innerText = (totalMargin / (filtered.length || 1)).toFixed(1) + '%';
-            document.getElementById('total-menu-count').innerText = menuData.length;
+            document.getElementById('total-avg-margin').innerText = (totalM / (filtered.length || 1)).toFixed(0) + '%';
         }
 
         function renderInventory() {
-            const grid = document.getElementById('inventory-grid');
-            grid.innerHTML = '';
-            for (const cat in ingredients) {
-                let section = `<div class="bg-white p-6 rounded-3xl border border-slate-200">
-                    <h3 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest">${cat}</h3>`;
-                for (const key in ingredients[cat]) {
-                    const itm = ingredients[cat][key];
-                    section += `
-                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-50">
-                            <span class="text-sm font-semibold">${itm.name}</span>
+            const container = document.getElementById('inventory-container');
+            container.innerHTML = '';
+            for (let cat in ingredients) {
+                let html = `<div class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">${cat}</h3>`;
+                for (let key in ingredients[cat]) {
+                    const item = ingredients[cat][key];
+                    html += `
+                        <div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
+                            <span class="text-sm font-semibold text-slate-700">${item.name}</span>
                             <div class="flex items-center gap-2">
-                                <span class="text-[10px] text-slate-400 font-bold">Rp</span>
-                                <input type="number" value="${itm.p}" onchange="updateIngPrice('${cat}','${key}',this.value)" 
-                                class="w-20 text-right font-black text-orange-600 bg-transparent outline-none">
+                                <span class="text-[10px] text-slate-300 font-bold">Rp</span>
+                                <input type="number" value="${item.p}" onchange="updateIngPrice('${cat}','${key}',this.value)" 
+                                class="w-20 bg-slate-50 border-0 rounded-xl px-3 py-2 text-right text-xs font-black text-orange-600 focus:bg-orange-50 outline-none">
                             </div>
                         </div>`;
                 }
-                grid.innerHTML += section + '</div>';
+                container.innerHTML += html + '</div>';
             }
         }
 
@@ -262,60 +217,64 @@
             renderMenu();
         }
 
-        // EDITOR MODAL LOGIC
-        let activeMenuIdx = null;
-
-        function openRecipeEditor(idx) {
-            activeMenuIdx = idx;
-            const menu = menuData[idx];
-            document.getElementById('modal-menu-name').innerText = menu.name;
-            document.getElementById('modal-menu-cat').innerText = menu.cat;
+        // MODAL LOGIC
+        function openModal(id) {
+            const m = menus.find(x => x.id === id);
+            document.getElementById('modal-title').innerText = m.name;
+            document.getElementById('modal-category').innerText = m.cat;
             
-            const list = document.getElementById('modal-ingredients-list');
-            list.innerHTML = '';
+            const ingBox = document.getElementById('modal-ingredients');
+            ingBox.innerHTML = '';
             
-            menu.r.forEach((rcp, rIdx) => {
-                const ing = getIng(rcp.i);
-                list.innerHTML += `
-                    <div class="flex justify-between items-center mb-4 p-3 bg-slate-50 rounded-2xl">
-                        <span class="text-sm font-bold text-slate-600">${ing.name}</span>
+            m.r.forEach((rcp, idx) => {
+                const data = getIng(rcp.i);
+                ingBox.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
+                        <span class="text-sm font-bold text-slate-600">${data.name}</span>
                         <div class="flex items-center gap-2">
-                            <input type="number" value="${rcp.q}" oninput="updateRecipeQty(${idx}, ${rIdx}, this.value)" 
-                            class="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1 text-center font-black text-slate-800">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">${ing.u}</span>
+                            <input type="number" value="${rcp.q}" oninput="updateRecipeQty(${id}, ${idx}, this.value)" 
+                            class="w-16 bg-white border border-slate-200 rounded-xl px-2 py-2 text-center font-black text-slate-800">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">${data.u}</span>
                         </div>
                     </div>`;
             });
 
-            updateModalHPP();
-            document.getElementById('recipe-modal').classList.add('active');
+            updateModalHPP(m);
+            const modal = document.getElementById('recipe-modal');
+            const panel = document.getElementById('modal-panel');
+            modal.classList.remove('invisible');
+            setTimeout(() => panel.classList.remove('translate-y-full'), 10);
         }
 
-        function updateRecipeQty(mIdx, rIdx, val) {
-            menuData[mIdx].r[rIdx].q = parseFloat(val) || 0;
-            updateModalHPP();
+        function updateRecipeQty(mId, rIdx, val) {
+            const m = menus.find(x => x.id === mId);
+            m.r[rIdx].q = parseFloat(val) || 0;
+            updateModalHPP(m);
             renderMenu();
         }
 
-        function updateModalHPP() {
-            const hpp = calculateHPP(menuData[activeMenuIdx].r);
-            document.getElementById('modal-hpp-display').innerText = 'Rp ' + Math.round(hpp).toLocaleString();
+        function updateModalHPP(m) {
+            const hpp = calcHPP(m.r);
+            document.getElementById('modal-hpp').innerText = 'Rp ' + Math.round(hpp).toLocaleString();
         }
 
         function closeModal() {
-            document.getElementById('recipe-modal').classList.remove('active');
+            const panel = document.getElementById('modal-panel');
+            panel.classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('recipe-modal').classList.add('invisible'), 300);
         }
 
         function init() {
-            renderMenu();
-            renderInventory();
-            // Category Filter Injections
-            const cats = ['all', ...new Set(menuData.map(m => m.cat))];
-            document.getElementById('filter-container').innerHTML = cats.map(c => `
-                <button onclick="currentFilter='${c}'; renderMenu();" 
-                class="px-4 py-1.5 rounded-full border border-slate-200 text-[10px] font-bold uppercase transition-all hover:bg-white active:bg-slate-800 active:text-white">
+            // Render Chips
+            const cats = ['all', ...new Set(menus.map(m => m.cat))];
+            document.getElementById('filter-chips').innerHTML = cats.map(c => `
+                <button onclick="activeFilter='${c}'; renderMenu();" 
+                class="px-5 py-2 bg-white rounded-2xl border border-slate-100 text-[10px] font-black uppercase tracking-tight active:bg-orange-600 active:text-white card-shadow">
                     ${c}
                 </button>`).join('');
+            
+            renderMenu();
+            renderInventory();
         }
 
         init();
