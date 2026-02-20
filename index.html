@@ -3,197 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Intelligence Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    
+    <title>Tuan Rumah Coffee - Dashboard Lengkap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        /* Grid Filter */
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .filter-item label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; color: #64748b; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; }
-        
-        /* Statistik */
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #dbeafe; }
-        .stat-value { display: block; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-        .stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; }
-
-        /* Tabel Responsif */
-        .table-container { overflow-x: auto; max-height: 400px; border: 1px solid #e2e8f0; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f1f5f9; position: sticky; top: 0; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
-        tr:hover { background: #f8fafc; }
-        
-        .loading-overlay { text-align: center; padding: 20px; font-weight: bold; color: var(--primary); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f4f7f6; }
+        .sticky-side { position: sticky; top: 80px; height: calc(100vh - 100px); }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .input-edit { background: transparent; border-bottom: 1px dashed #cbd5e1; width: 60px; text-align: right; font-weight: bold; outline: none; }
+        .input-edit:focus { border-bottom: 2px solid #ea580c; color: #ea580c; }
     </style>
 </head>
-<body>
+<body class="text-slate-800">
 
-<div class="container">
-    <div class="card">
-        <h2 style="margin-top:0">🚀 Dashboard Analisa Penjualan</h2>
-        
-        <div id="loader" class="loading-overlay">Sedang mengunduh data besar...</div>
-
-        <div class="filter-grid">
-            <div class="filter-item">
-                <label>CARI MENU</label>
-                <input type="text" id="filterMenu" placeholder="Contoh: Kopi..." oninput="processData()">
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-orange-600 p-2 rounded-xl shadow-lg shadow-orange-200">
+                <span class="text-white font-bold tracking-tighter text-xl">TR</span>
             </div>
-            <div class="filter-item">
-                <label>FILTER JAM (0-23)</label>
-                <select id="filterHour" onchange="processData()">
-                    <option value="all">Semua Jam</option>
-                    </select>
-            </div>
-            <div class="filter-item">
-                <label>BATAS TAMPILAN TABEL</label>
-                <select id="rowLimit" onchange="processData()">
-                    <option value="50">50 Baris</option>
-                    <option value="500">500 Baris</option>
-                    <option value="1000">1000 Baris</option>
-                </select>
+            <div>
+                <h1 class="font-extrabold text-lg md:text-xl leading-none">Tuan Rumah Coffee</h1>
+                <span class="text-[10px] md:text-xs text-slate-500 font-medium">PROFESSIONAL DASHBOARD v2.0</span>
             </div>
         </div>
-
-        <div class="stats-row">
-            <div class="stat-card">
-                <span id="statTotalRows" class="stat-value">0</span>
-                <span class="stat-label">Baris Ditemukan</span>
-            </div>
-            <div class="stat-card">
-                <span id="statTotalQty" class="stat-value">0</span>
-                <span class="stat-label">Total Qty</span>
-            </div>
-            <div class="stat-card">
-                <span id="statRevenue" class="stat-value">0</span>
-                <span class="stat-label">Estimasi Revenue</span>
-            </div>
+        <div class="text-right">
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Revenue Des 2025</p>
+            <p class="text-sm md:text-lg font-black text-emerald-600">Rp 101.033.000</p>
         </div>
+    </nav>
 
-        <canvas id="salesChart" height="120"></canvas>
-    </div>
-
-    <div class="card">
-        <h3>Pratinjau Data Detail</h3>
-        <div class="table-container">
-            <table id="resultTable">
-                <thead><tr id="tableHead"></tr></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script>
-    let rawData = [];
-    let chartObj = null;
-    const CSV_URL = 'https://cdn.jsdelivr.net/gh/OcangAmin/Dashboard-TR@main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
-
-    // Inisialisasi Jam
-    const selectHour = document.getElementById('filterHour');
-    for(let i=0; i<24; i++) {
-        let opt = document.createElement('option');
-        opt.value = i.toString().padStart(2, '0');
-        opt.innerText = `Jam ${opt.value}:00`;
-        selectHour.appendChild(opt);
-    }
-
-    // Load Data menggunakan PapaParse
-    window.onload = () => {
-        Papa.parse(CSV_URL, {
-            download: true,
-            header: true,
-            dynamicTyping: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                rawData = results.data;
-                document.getElementById('loader').style.display = 'none';
-                generateHeaders(rawData[0]);
-                processData();
-            }
-        });
-    };
-
-    function generateHeaders(sampleRow) {
-        const head = document.getElementById('tableHead');
-        head.innerHTML = Object.keys(sampleRow).map(k => `<th>${k}</th>`).join('');
-    }
-
-    function processData() {
-        const menuSearch = document.getElementById('filterMenu').value.toLowerCase();
-        const hourFilter = document.getElementById('filterHour').value;
-        const limit = parseInt(document.getElementById('rowLimit').value);
-
-        // Filter Logic
-        const filtered = rawData.filter(row => {
-            const matchMenu = !menuSearch || row.Menu?.toString().toLowerCase().includes(menuSearch);
-            // Mencocokkan jam dari kolom 'Time' (format HH:mm:ss)
-            const rowHour = row.Time?.toString().split(':')[0];
-            const matchHour = hourFilter === 'all' || rowHour === hourFilter;
+    <div class="p-4 md:p-8 max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            return matchMenu && matchHour;
-        });
+            <div class="lg:col-span-3">
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm sticky-side overflow-hidden flex flex-col">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50">
+                        <h2 class="font-bold flex items-center gap-2 text-slate-700">
+                            <span>📦</span> Master Bahan Baku
+                        </h2>
+                        <p class="text-[10px] text-slate-400 mt-1">Ubah harga di sini untuk update HPP otomatis</p>
+                    </div>
+                    <div class="p-4 overflow-y-auto custom-scroll flex-grow space-y-6" id="ingredients-list">
+                        </div>
+                </div>
+            </div>
 
-        updateStats(filtered);
-        updateChart(filtered);
-        updateTable(filtered.slice(0, limit));
-    }
+            <div class="lg:col-span-9 space-y-6">
+                
+                <div class="flex gap-2 overflow-x-auto pb-2 custom-scroll" id="cat-filters">
+                    </div>
 
-    function updateStats(data) {
-        const totalQty = data.reduce((sum, r) => sum + (Number(r.Qty) || 0), 0);
-        const totalRev = data.reduce((sum, r) => sum + (Number(r.Total) || 0), 0);
-        
-        document.getElementById('statTotalRows').innerText = data.length.toLocaleString();
-        document.getElementById('statTotalQty').innerText = totalQty.toLocaleString();
-        document.getElementById('statRevenue').innerText = 'Rp ' + totalRev.toLocaleString();
-    }
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Menu</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Harga Jual</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">HPP</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Gross Profit</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Margin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menu-body" class="divide-y divide-slate-50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    function updateTable(data) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = data.map(row => {
-            return `<tr>${Object.values(row).map(v => `<td>${v ?? ''}</td>`).join('')}</tr>`;
-        }).join('');
-    }
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase">Top Kategori</h4>
+                        <p class="text-xl font-black text-orange-600 mt-1">Ice Coffee</p>
+                        <p class="text-[10px] text-slate-500">Revenue: Rp 50.695.000</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase">Volume Penjualan</h4>
+                        <p class="text-xl font-black text-slate-800 mt-1">4.381 Cups</p>
+                        <p class="text-[10px] text-slate-500">Periode 1-31 Des 2025</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase">Profitabilitas</h4>
+                        <p class="text-xl font-black text-emerald-600 mt-1">Estimasi 65%</p>
+                        <p class="text-[10px] text-slate-500">Berdasarkan HPP Bahan Baku</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function updateChart(data) {
-        // Ambil Top 7 Menu berdasarkan Total
-        const menuSummary = {};
-        data.forEach(r => {
-            menuSummary[r.Menu] = (menuSummary[r.Menu] || 0) + (Number(r.Total) || 0);
-        });
-
-        const sortedMenu = Object.entries(menuSummary)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 7);
-
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        if (chartObj) chartObj.destroy();
-
-        chartObj = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: sortedMenu.map(x => x[0]),
-                datasets: [{
-                    label: 'Revenue Per Menu',
-                    data: sortedMenu.map(x => x[1]),
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 5
-                }]
+    <script>
+        // MASTER DATA BAHAN BAKU (Sesuai List Anda)
+        const ingredients = {
+            "KOPI": {
+                "kaks": { name: "Arabika Kaks", price: 240, unit: "g" }, // 240rb/kg
+                "diks": { name: "Arabika Diks", price: 280, unit: "g" }  // 280rb/kg
             },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } }
+            "SYRUP MONIN": {
+                "monin_std": { name: "Monin (All Flavors)", price: 215, unit: "ml" },
+                "sauce_caramel": { name: "Saus Caramel", price: 150, unit: "ml" },
+                "sauce_strawberry": { name: "Saus Strawberry", price: 150, unit: "ml" }
+            },
+            "DAIRY": {
+                "uht": { name: "UHT Diamond", price: 21, unit: "ml" },
+                "oatside": { name: "Oatside", price: 45, unit: "ml" },
+                "evaporasi": { name: "Susu Evaporasi", price: 32, unit: "ml" },
+                "skm": { name: "Susu SKM", price: 12, unit: "ml" },
+                "creamer": { name: "MaxCreamer", price: 48, unit: "g" },
+                "cheese": { name: "Cheese Cream", price: 150, unit: "g" },
+                "yakult": { name: "Yakult", price: 2800, unit: "pcs" },
+                "hydro": { name: "Hydro Coco", price: 25, unit: "ml" }
+            },
+            "POWDER": {
+                "p_std": { name: "Powder (Reguler)", price: 120, unit: "g" },
+                "p_matcha": { name: "Bubuk Matcha", price: 180, unit: "g" },
+                "p_vanilla": { name: "Bubuk Vanilla", price: 120, unit: "g" }
+            },
+            "LAINNYA": {
+                "aren": { name: "Gula Aren", price: 35, unit: "ml" },
+                "skippy": { name: "Skippy / Spread", price: 250, unit: "g" },
+                "tea": { name: "Tea Extract", price: 15, unit: "ml" },
+                "sprite": { name: "Sprite", price: 15, unit: "ml" },
+                "sugar": { name: "Simple Sugar", price: 10, unit: "ml" },
+                "cup": { name: "Cup/Lid/Straw", price: 1200, unit: "set" },
+                "lotus": { name: "Biskuit Lotus", price: 2000, unit: "pcs" },
+                "selasih": { name: "Biji Selasih", price: 10, unit: "g" },
+                "nipis": { name: "Jeruk Nipis", price: 500, unit: "ml" }
             }
-        });
-    }
-</script>
+        };
+
+        // DATA MENU LENGKAP
+        const menuData = [
+            // COFFEE BASED
+            { name: "Kopi Susu", cat: "COFFEE", price: 22000, r: [{i:"skm", q:20},{i:"creamer",q:15},{i:"evaporasi",q:10},{i:"kaks",q:30},{i:"uht",q:70}] },
+            { name: "Tuan Rumah", cat: "COFFEE", price: 25000, r: [{i:"aren",q:25},{i:"creamer",q:25},{i:"kaks",q:30},{i:"uht",q:100}] },
+            { name: "Tiramisu", cat: "COFFEE", price: 28000, r: [{i:"monin_std",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100},{i:"cheese",q:20}] },
+            { name: "Banana", cat: "COFFEE", price: 25000, r: [{i:"monin_std",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:100}] },
+            { name: "Biscoff", cat: "COFFEE", price: 27000, r: [{i:"skippy",q:15},{i:"skm",q:10},{i:"monin_std",q:10},{i:"creamer",q:10},{i:"kaks",q:30},{i:"uht",q:100},{i:"lotus",q:1}] },
+            { name: "Butterscotch", cat: "COFFEE", price: 28000, r: [{i:"monin_std",q:20},{i:"skm",q:10},{i:"creamer",q:15},{i:"kaks",q:30},{i:"uht",q:70},{i:"cheese",q:20}] },
+            { name: "Pandan", cat: "COFFEE", price: 28000, r: [{i:"monin_std",q:20},{i:"skm",q:10},{i:"evaporasi",q:10},{i:"creamer",q:20},{i:"kaks",q:30},{i:"oatside",q:100}] },
+            { name: "Peanut Butter", cat: "COFFEE", price: 27000, r: [{i:"skippy",q:15},{i:"skm",q:10},{i:"monin_std",q:10},{i:"creamer",q:10},{i:"kaks",q:30},{i:"uht",q:100}] },
+            { name: "Caramel Macchiato", cat: "COFFEE", price: 28000, r: [{i:"monin_std",q:10},{i:"monin_std",q:10},{i:"skm",q:10},{i:"creamer",q:20},{i:"kaks",q:30},{i:"uht",q:100},{i:"sauce_caramel",q:20},{i:"cheese",q:20}] },
+
+            // AMERICANO SERIES
+            { name: "Berry Cano", cat: "AMERICANO SERIES", price: 25000, r: [{i:"monin_std",q:20},{i:"sugar",q:10},{i:"diks",q:30}] },
+            { name: "Apple Cano", cat: "AMERICANO SERIES", price: 25000, r: [{i:"monin_std",q:20},{i:"sugar",q:10},{i:"diks",q:30}] },
+            { name: "Melon Cano", cat: "AMERICANO SERIES", price: 25000, r: [{i:"monin_std",q:20},{i:"sugar",q:10},{i:"diks",q:30}] },
+
+            // NON COFFEE
+            { name: "Avocado", cat: "NON COFFEE", price: 23000, r: [{i:"skm",q:10},{i:"p_std",q:20},{i:"creamer",q:15},{i:"uht",q:100}] },
+            { name: "Taro", cat: "NON COFFEE", price: 25000, r: [{i:"skm",q:25},{i:"p_std",q:4},{i:"creamer",q:10},{i:"uht",q:100}] },
+            { name: "Red Velvet", cat: "NON COFFEE", price: 23000, r: [{i:"skm",q:20},{i:"p_std",q:25},{i:"creamer",q:10},{i:"uht",q:100}] },
+            { name: "Chocolate Signature", cat: "NON COFFEE", price: 25000, r: [{i:"aren",q:15},{i:"p_std",q:13},{i:"creamer",q:10},{i:"uht",q:100}] },
+            { name: "Caramel Latte", cat: "NON COFFEE", price: 23000, r: [{i:"monin_std",q:20},{i:"skm",q:10},{i:"uht",q:100},{i:"sauce_caramel",q:20}] },
+            { name: "Creamy Coco", cat: "NON COFFEE", price: 25000, r: [{i:"monin_std",q:15},{i:"skm",q:10},{i:"p_std",q:10},{i:"creamer",q:10},{i:"yakult",q:1},{i:"uht",q:50},{i:"cheese",q:20}] },
+            { name: "Coconut Plum", cat: "NON COFFEE", price: 28000, r: [{i:"monin_std",q:20},{i:"hydro",q:90},{i:"sprite",q:60}] },
+            { name: "Butter Cream", cat: "NON COFFEE", price: 26000, r: [{i:"skippy",q:20},{i:"skm",q:10},{i:"creamer",q:10},{i:"uht",q:100}] },
+            { name: "Vanilla Latte", cat: "NON COFFEE", price: 23000, r: [{i:"monin_std",q:10},{i:"skm",q:10},{i:"p_vanilla",q:10},{i:"uht",q:100}] },
+            { name: "Strawberry Love", cat: "NON COFFEE", price: 23000, r: [{i:"monin_std",q:20},{i:"skm",q:5},{i:"creamer",q:20},{i:"uht",q:100},{i:"sauce_strawberry",q:20}] },
+
+            // TEA SERIES
+            { name: "Matcha Latte", cat: "TEA SERIES", price: 28000, r: [{i:"p_matcha",q:20},{i:"skm",q:15},{i:"creamer",q:10},{i:"uht",q:110}] },
+            { name: "Yakult Series", cat: "TEA SERIES", price: 23000, r: [{i:"monin_std",q:15},{i:"yakult",q:1},{i:"sprite",q:110}] },
+            { name: "Butterfly Tea", cat: "TEA SERIES", price: 22000, r: [{i:"tea",q:180},{i:"sugar",q:40}] },
+            { name: "Thai Tea", cat: "TEA SERIES", price: 25000, r: [{i:"skm",q:50},{i:"evaporasi",q:20},{i:"tea",q:150}] },
+            { name: "Berry Pop", cat: "TEA SERIES", price: 22000, r: [{i:"tea",q:180},{i:"sugar",q:40}] },
+            { name: "Green Tea", cat: "TEA SERIES", price: 25000, r: [{i:"skm",q:50},{i:"evaporasi",q:20},{i:"tea",q:150}] },
+            { name: "Lychee Tea", cat: "TEA SERIES", price: 25000, r: [{i:"sugar",q:20},{i:"monin_std",q:30},{i:"tea",q:150}] },
+            { name: "Mango Squash", cat: "TEA SERIES", price: 23000, r: [{i:"monin_std",q:20},{i:"nipis",q:5},{i:"selasih",q:10},{i:"sprite",q:110}] },
+
+            // SPECIALTY
+            { name: "Espresso Hot", cat: "SPECIALTY", price: 20000, r: [{i:"diks",q:30}] },
+            { name: "Americano Ice", cat: "SPECIALTY", price: 22000, r: [{i:"diks",q:30}] },
+            { name: "Long Black Ice", cat: "SPECIALTY", price: 22000, r: [{i:"diks",q:40}] },
+            { name: "Latte Ice", cat: "SPECIALTY", price: 28000, r: [{i:"diks",q:30},{i:"uht",q:120}] },
+            { name: "Cappuccino Ice", cat: "SPECIALTY", price: 28000, r: [{i:"sugar",q:10},{i:"uht",q:90},{i:"diks",q:30}] },
+            { name: "Magic", cat: "SPECIALTY", price: 28000, r: [{i:"diks",q:36},{i:"oatside",q:120}] },
+            { name: "Mocha Ice", cat: "SPECIALTY", price: 26000, r: [{i:"skm",q:20},{i:"p_std",q:8},{i:"creamer",q:10},{i:"diks",q:30},{i:"uht",q:100}] }
+        ];
+
+        let currentCat = 'all';
+
+        function getPrice(id) {
+            for (const c in ingredients) {
+                if (ingredients[c][id]) return ingredients[c][id].price;
+            } return 0;
+        }
+
+        function renderIngredients() {
+            const list = document.getElementById('ingredients-list');
+            list.innerHTML = '';
+            for (const cat in ingredients) {
+                let section = `<div><h3 class="text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest">${cat}</h3>`;
+                for (const key in ingredients[cat]) {
+                    const item = ingredients[cat][key];
+                    section += `
+                        <div class="flex justify-between items-center mb-2 bg-slate-50/50 p-2 rounded-lg group">
+                            <span class="text-xs font-semibold text-slate-600">${item.name}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[9px] text-slate-400">Rp</span>
+                                <input type="number" value="${item.price}" onchange="updateIng('${cat}','${key}',this.value)" class="input-edit text-xs">
+                            </div>
+                        </div>`;
+                }
+                list.innerHTML += section + `</div>`;
+            }
+        }
+
+        function updateIng(cat, key, val) {
+            ingredients[cat][key].price = parseFloat(val);
+            renderMenu();
+        }
+
+        function renderFilters() {
+            const filters = document.getElementById('cat-filters');
+            const cats = ['all', ...new Set(menuData.map(m => m.cat))];
+            filters.innerHTML = cats.map(c => `
+                <button onclick="setCat('${c}')" class="px-5 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap 
+                ${currentCat === c ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'}">
+                    ${c.toUpperCase()}
+                </button>
+            `).join('');
+        }
+
+        function setCat(c) { currentCat = c; renderFilters(); renderMenu(); }
+
+        function renderMenu() {
+            const body = document.getElementById('menu-body');
+            body.innerHTML = '';
+            const filtered = currentCat === 'all' ? menuData : menuData.filter(m => m.cat === currentCat);
+
+            filtered.forEach(m => {
+                let hpp = 1200; // Modal Packaging Tetap
+                m.r.forEach(recipeItem => { hpp += (getPrice(recipeItem.i) * recipeItem.q); });
+                const profit = m.price - hpp;
+                const margin = ((profit / m.price) * 100).toFixed(0);
+
+                body.innerHTML += `
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="p-4 font-bold text-slate-700">${m.name} <span class="block text-[9px] text-slate-400 uppercase tracking-tighter">${m.cat}</span></td>
+                        <td class="p-4 text-right font-bold">Rp ${m.price.toLocaleString()}</td>
+                        <td class="p-4 text-right text-orange-600 font-bold">Rp ${Math.round(hpp).toLocaleString()}</td>
+                        <td class="p-4 text-right text-emerald-600 font-bold">Rp ${Math.round(profit).toLocaleString()}</td>
+                        <td class="p-4 text-center"><span class="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-black">${margin}%</span></td>
+                    </tr>`;
+            });
+        }
+
+        renderIngredients();
+        renderFilters();
+        renderMenu();
+    </script>
 </body>
 </html>
