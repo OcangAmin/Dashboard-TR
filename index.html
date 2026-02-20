@@ -2,115 +2,143 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Rekapitulasi Penjualan</title>
+    <title>Advanced Sales Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; transition: 0.3s; }
-        button:hover { background: #0056b3; }
-        canvas { max-width: 100%; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f8f9fa; }
-        .status { text-align: center; color: #666; font-style: italic; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .filter-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 20px; }
+        .stat-box { padding: 15px; background: #e7f3ff; border-radius: 8px; color: #007bff; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #007bff; color: white; position: sticky; top: 0; }
+        th, td { padding: 10px; border: 1px solid #eee; text-align: left; font-size: 13px; }
+        .scroll-table { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Dashboard Penjualan Menu</h1>
+<div class="card">
+    <h2>📊 Filter Penjualan Interaktif</h2>
     
-    <div class="controls">
-        <button onclick="loadData()">🔄 Muat / Segarkan Data</button>
+    <div class="filter-group">
+        <div>
+            <label>Cari Menu:</label>
+            <input type="text" id="searchMenu" placeholder="Ketik nama menu..." oninput="applyFilters()">
+        </div>
+        <div>
+            <label>Tanggal Mulai:</label>
+            <input type="date" id="startDate" onchange="applyFilters()">
+        </div>
+        <div>
+            <label>Tanggal Selesai:</label>
+            <input type="date" id="endDate" onchange="applyFilters()">
+        </div>
     </div>
 
-    <p id="loadingStatus" class="status">Klik tombol untuk memproses file CSV...</p>
+    <div class="stats-grid">
+        <div class="stat-box">Total Transaksi: <span id="statCount">0</span></div>
+        <div class="stat-box">Total Qty: <span id="statQty">0</span></div>
+        <div class="stat-box">Total Pendapatan: <span id="statRevenue">0</span></div>
+    </div>
 
-    <canvas id="salesChart"></canvas>
+    <canvas id="mainChart" height="100"></canvas>
+</div>
 
-    <div id="tableContainer"></div>
+<div class="card">
+    <h3>Data Detail (Terfilter)</h3>
+    <div class="scroll-table">
+        <table id="dataTable">
+            <thead><tr id="tableHeader"></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    let myChart = null;
-    const csvUrl = 'https://raw.githubusercontent.com/OcangAmin/Dashboard-TR/refs/heads/main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
+    let masterData = []; // Menyimpan semua data asli
+    let chartInstance = null;
+    const url = 'https://raw.githubusercontent.com/OcangAmin/Dashboard-TR/refs/heads/main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
 
-    async function loadData() {
-        const status = document.getElementById('loadingStatus');
-        status.innerText = "Mengambil data dari GitHub...";
-
-        Papa.parse(csvUrl, {
-            download: true,
-            header: true,
-            dynamicTyping: true,
+    // 1. Load Data Otomatis saat halaman dibuka
+    window.onload = () => {
+        Papa.parse(url, {
+            download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
             complete: function(results) {
-                renderDashboard(results.data);
-                status.innerText = "Data berhasil dimuat!";
-            },
-            error: function(err) {
-                status.innerText = "Gagal memuat data: " + err.message;
+                masterData = results.data;
+                initTableHeader(masterData[0]);
+                applyFilters(); // Jalankan filter pertama kali
             }
+        });
+    };
+
+    function initTableHeader(firstRow) {
+        const header = document.getElementById('tableHeader');
+        Object.keys(firstRow).forEach(key => {
+            header.innerHTML += `<th>${key}</th>`;
         });
     }
 
-    function renderDashboard(data) {
-        // Membersihkan data kosong
-        const cleanData = data.filter(row => row.Menu && row.Total);
+    // 2. Logika Filter Utama
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchMenu').value.toLowerCase();
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
 
-        // 1. Logika Grafik (Top 5 Menu)
-        const labels = cleanData.map(item => item.Menu).slice(0, 10);
-        const values = cleanData.map(item => item.Total).slice(0, 10);
+        const filtered = masterData.filter(row => {
+            // Filter Teks
+            const matchText = row.Menu?.toString().toLowerCase().includes(searchTerm);
+            
+            // Filter Tanggal (Asumsi kolom bernama 'Date')
+            let matchDate = true;
+            if (start && row.Date) matchDate = matchDate && (row.Date >= start);
+            if (end && row.Date) matchDate = matchDate && (row.Date <= end);
 
-        const ctx = document.getElementById('salesChart').getContext('2d');
+            return matchText && matchDate;
+        });
+
+        updateUI(filtered);
+    }
+
+    // 3. Update Tampilan (Chart & Table)
+    function updateUI(data) {
+        // Update Statistik
+        document.getElementById('statCount').innerText = data.length.toLocaleString();
+        const totalQty = data.reduce((sum, row) => sum + (Number(row.Qty) || 0), 0);
+        document.getElementById('statQty').innerText = totalQty.toLocaleString();
         
-        // Hancurkan chart lama jika ada agar tidak tumpang tindih
-        if (myChart) myChart.destroy();
+        // Update Tabel (Hanya tampilkan 100 pertama untuk kecepatan)
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        data.slice(0, 100).forEach(row => {
+            let tr = '<tr>';
+            Object.values(row).forEach(val => tr += `<td>${val ?? ''}</td>`);
+            tbody.innerHTML += tr + '</tr>';
+        });
 
-        myChart = new Chart(ctx, {
+        // Update Chart (Top 5 Menu)
+        renderChart(data);
+    }
+
+    function renderChart(data) {
+        const counts = {};
+        data.forEach(row => { counts[row.Menu] = (counts[row.Menu] || 0) + (Number(row.Total) || 0); });
+        
+        const sortedLabels = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
+        const sortedValues = sortedLabels.map(l => counts[l]);
+
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(document.getElementById('mainChart'), {
             type: 'bar',
             data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Total Penjualan (Qty/Value)',
-                    data: values,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
+                labels: sortedLabels,
+                datasets: [{ label: 'Total Penjualan', data: sortedValues, backgroundColor: '#007bff' }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: { display: true, text: 'Top 10 Menu Terlaris' }
-                }
-            }
+            options: { indexAxis: 'y' } // Horizontal bar agar teks menu terbaca
         });
-
-        // 2. Logika Tabel
-        let tableHtml = '<table><thead><tr>';
-        // Ambil header dari kunci objek pertama
-        Object.keys(cleanData[0]).forEach(key => {
-            tableHtml += `<th>${key}</th>`;
-        });
-        tableHtml += '</tr></thead><tbody>';
-
-        cleanData.forEach(row => {
-            tableHtml += '<tr>';
-            Object.values(row).forEach(val => {
-                tableHtml += `<td>${val || '-'}</td>`;
-            });
-            tableHtml += '</tr>';
-        });
-        tableHtml += '</tbody></table>';
-
-        document.getElementById('tableContainer').innerHTML = tableHtml;
     }
 </script>
-
 </body>
 </html>
