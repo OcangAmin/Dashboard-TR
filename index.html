@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP TUAN RUMAH BY OCANG - FULL VERSION</title>
+    <title>ERP TUAN RUMAH BY OCANG - FULL SYNC</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -45,7 +45,7 @@
                     <div class="bg-slate-900 p-6 rounded-[2rem] text-white md:col-span-2 shadow-2xl border border-amber-500/30">
                         <p class="text-[9px] font-black text-amber-500 uppercase mb-2">Fixed Monthly Overhead</p>
                         <p class="text-3xl font-black">Rp{{ formatNum(totalOverhead) }}</p>
-                        <p class="text-[8px] font-bold text-slate-500 mt-2 uppercase">Gaji (6 Staf): Rp9jt | Listrik: Rp6jt</p>
+                        <p class="text-[8px] font-bold text-slate-500 mt-2 uppercase">Gaji (6 Staf): Rp9jt | Ops/Listrik: Rp6jt</p>
                     </div>
                     <div class="bg-white p-6 rounded-[2rem] border card-shadow">
                         <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Menu Count</p>
@@ -65,7 +65,7 @@
                     <h2 class="text-xs font-black uppercase tracking-[0.3em] mb-6 text-slate-400"><i class="fas fa-sliders-h mr-2"></i> Database Parameter Espresso</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="p-5 bg-slate-50 rounded-3xl border border-dashed">
-                            <h3 class="text-[10px] font-black uppercase mb-4 text-blue-600">Standard (Kaks/Diks)</h3>
+                            <h3 class="text-[10px] font-black uppercase mb-4 text-blue-600">Standard (Diks - Sumatra)</h3>
                             <div class="grid grid-cols-3 gap-4">
                                 <div><label class="text-[8px] font-black uppercase block mb-1">Dose (gr)</label><input type="number" v-model="param.std.dose" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
                                 <div><label class="text-[8px] font-black uppercase block mb-1">Yield (ml)</label><input type="number" v-model="param.std.yield" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
@@ -74,7 +74,7 @@
                             <p class="mt-3 text-[9px] font-bold text-slate-500 italic">Cost per 30ml: Rp{{ formatNum(costEspressoStd) }}</p>
                         </div>
                         <div class="p-5 bg-amber-50 rounded-3xl border border-dashed border-amber-200">
-                            <h3 class="text-[10px] font-black uppercase mb-4 text-amber-600">Khusus Kopi Susu (Kaks)</h3>
+                            <h3 class="text-[10px] font-black uppercase mb-4 text-amber-600">Khusus Kopsus (Kaks - Toraja)</h3>
                             <div class="grid grid-cols-3 gap-4">
                                 <div><label class="text-[8px] font-black uppercase block mb-1">Dose (gr)</label><input type="number" v-model="param.kopsus.dose" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
                                 <div><label class="text-[8px] font-black uppercase block mb-1">Yield (ml)</label><input type="number" v-model="param.kopsus.yield" class="w-full bg-white border rounded-lg p-2 font-bold text-xs"></div>
@@ -140,9 +140,9 @@
                                 <span>{{ r.qty }} {{ getBahan(r.item).satuan }}</span>
                             </div>
                             <div class="pt-2 mt-2 border-t border-dashed">
-                                <p class="text-[8px] font-black text-slate-400 uppercase italic">Auto Packaging & Ops:</p>
+                                <p class="text-[8px] font-black text-slate-400 uppercase italic">Packaging & Ops:</p>
                                 <div class="flex justify-between text-[9px] font-bold text-slate-400">
-                                    <span>Cup + Lid + Straw</span>
+                                    <span>Cup + Lid + Straw + Paperbag</span>
                                     <span>Rp{{ m.type === 'Ice' ? '1.300' : '900' }}</span>
                                 </div>
                                 <div v-if="m.type === 'Ice'" class="flex justify-between text-[9px] font-bold text-slate-400">
@@ -187,8 +187,8 @@
                         { id: 'menu', name: 'Menu & Resep', icon: 'fas fa-flask-vial' }
                     ],
                     param: {
-                        std: { dose: 18, yield: 60, use: 30 },
-                        kopsus: { dose: 18, yield: 35, use: 30 }
+                        std: { dose: 18, yield: 60, use: 30 }, // Untuk Sumatra (Diks)
+                        kopsus: { dose: 18, yield: 35, use: 30 } // Untuk Toraja (Kaks)
                     },
                     dbBahan: [
                         { nama: 'Biji kopi Toraja (kaks)', brand: 'Local', kategori: 'Kopi', satuan: 'gr', harga: 230000, isi: 1000 },
@@ -211,46 +211,35 @@
                         { nama: 'Es Batu', brand: 'Crystal', kategori: 'Operasional', satuan: 'gr', harga: 70000, isi: 8000 }
                     ],
                     dbMenu: [
-                        // COFFEE BASED
+                        // COFFEE BASED (Kaks)
                         { nama: 'Kopi Susu', kategori: 'Coffee Based', type: 'Ice', jual: 22000, resep: [{ item: 'SKM', qty: 20 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Susu evaporasi', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoKopsus: true }, { item: 'Susu UHT Diamond', qty: 70 }] },
                         { nama: 'Tuan Rumah', kategori: 'Coffee Based', type: 'Ice', jual: 25000, resep: [{ item: 'Gula aren', qty: 25 }, { item: 'Creamer MaxCreamer', qty: 25 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
                         { nama: 'Tiramisu', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Cheese cream', qty: 20 }] },
                         { nama: 'Banana', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
                         { nama: 'Biscoff', kategori: 'Coffee Based', type: 'Ice', jual: 32000, resep: [{ item: 'Peanut butter Skippy', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Biskuit Lotus', qty: 1 }] },
-                        { nama: 'Butterscotch', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 70 }, { item: 'Cheese cream', qty: 20 }] },
-                        { nama: 'Pandan', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Susu evaporasi', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Oatside', qty: 100 }] },
-                        { nama: 'Peanut Butter', kategori: 'Coffee Based', type: 'Ice', jual: 28000, resep: [{ item: 'Peanut butter Skippy', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Caramel Macchiato', kategori: 'Coffee Based', type: 'Ice', jual: 32000, resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Biji kopi Toraja (kaks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }, { item: 'Cheese cream', qty: 20 }] },
-                        // AMERICANO SERIES
+                        
+                        // AMERICANO SERIES (Diks)
                         { nama: 'Berry Cano', kategori: 'Americano', type: 'Ice', jual: 24000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
                         { nama: 'Apple Cano', kategori: 'Americano', type: 'Ice', jual: 24000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
                         { nama: 'Melon Cano', kategori: 'Americano', type: 'Ice', jual: 24000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Simple sugar', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
+                        
                         // NON COFFEE
                         { nama: 'Avocado', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'SKM', qty: 10 }, { item: 'Bubuk powder (All)', qty: 20 }, { item: 'Creamer MaxCreamer', qty: 15 }, { item: 'Susu UHT Diamond', qty: 100 }] },
                         { nama: 'Taro', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'SKM', qty: 25 }, { item: 'Bubuk powder (All)', qty: 4 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Red Velvet', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'SKM', qty: 20 }, { item: 'Bubuk powder (All)', qty: 25 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
                         { nama: 'Chocolate Signature', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'Gula aren', qty: 15 }, { item: 'Bubuk powder (All)', qty: 13 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Caramel Latte', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
                         { nama: 'Creamy Coco', kategori: 'Non Coffee', type: 'Ice', jual: 30000, resep: [{ item: 'Syrup Monin', qty: 15 }, { item: 'SKM', qty: 10 }, { item: 'Bubuk powder (All)', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Yakult', qty: 1 }, { item: 'Susu UHT Diamond', qty: 50 }, { item: 'Cheese cream', qty: 20 }] },
-                        { nama: 'Coconut Plum', kategori: 'Non Coffee', type: 'Ice', jual: 26000, resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'Syrup Monin', qty: 10 }, { item: 'Hydro Coco', qty: 90 }, { item: 'Sprite', qty: 60 }] },
-                        { nama: 'Butter Cream', kategori: 'Non Coffee', type: 'Ice', jual: 28000, resep: [{ item: 'Peanut butter Skippy', qty: 20 }, { item: 'SKM', qty: 10 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Vanilla Latte', kategori: 'Non Coffee', type: 'Ice', jual: 25000, resep: [{ item: 'Syrup Monin', qty: 10 }, { item: 'SKM', qty: 10 }, { item: 'Bubuk powder (All)', qty: 10 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        { nama: 'Strawberry Love', kategori: 'Non Coffee', type: 'Ice', jual: 28000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'SKM', qty: 5 }, { item: 'Creamer MaxCreamer', qty: 20 }, { item: 'Susu UHT Diamond', qty: 100 }] },
-                        // TEA & SIGNATURE
+                        { nama: 'Coconut Plum', kategori: 'Non Coffee', type: 'Ice', jual: 26000, resep: [{ item: 'Syrup Monin', qty: 20 }, { item: 'Hydro Coco', qty: 90 }, { item: 'Sprite', qty: 60 }] },
+                        
+                        // SPECIALTY & TEA
                         { nama: 'Matcha', kategori: 'Specialty', type: 'Ice', jual: 26000, resep: [{ item: 'Bubuk powder (All)', qty: 20 }, { item: 'SKM', qty: 15 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Susu UHT Diamond', qty: 110 }] },
                         { nama: 'Yakult Orange', kategori: 'Specialty', type: 'Ice', jual: 22000, resep: [{ item: 'Syrup Monin', qty: 15 }, { item: 'Yakult', qty: 1 }, { item: 'Sprite', qty: 110 }] },
-                        { nama: 'Thai Tea', kategori: 'Specialty', type: 'Ice', jual: 20000, resep: [{ item: 'SKM', qty: 50 }, { item: 'Susu evaporasi', qty: 20 }] },
-                        { nama: 'Lychee Tea', kategori: 'Specialty', type: 'Ice', jual: 22000, resep: [{ item: 'Simple sugar', qty: 20 }, { item: 'Syrup Monin', qty: 30 }] },
-                        // SPECIALTY COFFEE
-                        { nama: 'Americano', kategori: 'Coffee Specialty', type: 'Ice', jual: 18000, resep: [{ item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
-                        { nama: 'Latte Ice', kategori: 'Coffee Specialty', type: 'Ice', jual: 25000, resep: [{ item: 'Susu UHT Diamond', qty: 120 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] },
                         { nama: 'Magic', kategori: 'Coffee Specialty', type: 'Hot', jual: 28000, resep: [{ item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true, magic: true }, { item: 'Oatside', qty: 120 }] },
-                        { nama: 'Mocha Ice', kategori: 'Coffee Specialty', type: 'Ice', jual: 28000, resep: [{ item: 'SKM', qty: 20 }, { item: 'Bubuk powder (All)', qty: 8 }, { item: 'Creamer MaxCreamer', qty: 10 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }, { item: 'Susu UHT Diamond', qty: 100 }] }
+                        { nama: 'Latte Ice', kategori: 'Coffee Specialty', type: 'Ice', jual: 25000, resep: [{ item: 'Susu UHT Diamond', qty: 120 }, { item: 'Biji kopi sumatra (diks)', qty: 18, isEspressoStd: true }] }
                     ]
                 }
             },
             computed: {
-                totalOverhead() { return 15000000; }, // 6 Staf x 1.5jt + 6jt Listrik
+                totalOverhead() { return 15000000; }, 
                 costEspressoStd() { 
                     const b = this.getBahan('Biji kopi sumatra (diks)');
                     return (b.harga / b.isi) * this.param.std.dose * (this.param.std.use / this.param.std.yield);
@@ -267,7 +256,9 @@
             },
             methods: {
                 formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v)); },
-                getBahan(nama) { return this.dbBahan.find(b => b.nama === nama) || { harga: 0, isi: 1, satuan: 'unit' }; },
+                getBahan(nama) { 
+                    return this.dbBahan.find(b => b.nama === nama) || { harga: 0, isi: 1, satuan: 'unit' }; 
+                },
                 calcHpp(m) {
                     let cost = 0;
                     m.resep.forEach(r => {
@@ -275,8 +266,8 @@
                         if (r.isEspressoKopsus) {
                             cost += this.costEspressoKopsus;
                         } else if (r.isEspressoStd) {
-                            // Hitung rasio khusus Magic (Yield 36ml)
                             if (r.magic) {
+                                // Magic menggunakan yield khusus namun dose tetap 18gr
                                 cost += (b.harga / b.isi) * r.qty;
                             } else {
                                 cost += this.costEspressoStd;
@@ -285,9 +276,9 @@
                             cost += (b.harga / b.isi) * r.qty;
                         }
                     });
-                    // Database Packaging
+                    // Packaging & Ice Cost Logic
                     cost += m.type === 'Ice' ? 1300 : 900;
-                    if (m.type === 'Ice') cost += 875; // 100gr Es Batu
+                    if (m.type === 'Ice') cost += 875; // Harga es batu per porsi
                     return cost;
                 },
                 getMargin(m) {
@@ -296,12 +287,12 @@
                 },
                 getMenuInsight(m) {
                     const margin = this.getMargin(m);
-                    if (margin < 50) return "REVISI: Margin tipis!";
-                    if (margin > 70) return "OPTIMAL: Profit tinggi.";
-                    return "STABIL: Margin sehat.";
+                    if (margin < 50) return "WARNING: Margin kritis, tinjau harga jual.";
+                    if (margin > 70) return "EXCELLENT: Profitability sangat tinggi.";
+                    return "NORMAL: Margin standar industri.";
                 },
                 getGlobalInsight() {
-                    return `Analisa Ocang: Saat ini rata-rata HPP menu berada di Rp${this.formatNum(this.avgHpp)}. Menu dengan margin terendah adalah Kopi Susu karena rasio espresso khusus. Pastikan volume penjualan bulanan mencukupi untuk meng-cover overhead Rp15 Juta.`;
+                    return `Analisa Ocang: Overhead bulanan Rp15jt membutuhkan penjualan harian rata-rata 35-40 cup dengan margin 60%. Fokus pada menu 'Specialty' untuk menaikkan profit harian.`;
                 }
             }
         }).mount('#app');
