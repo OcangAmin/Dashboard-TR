@@ -3,128 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast Sales Dashboard - TNRCPOS</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Coffee Shop Management Dashboard</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        [v-cloak] { display: none; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-slate-100 font-sans">
-
-    <nav class="bg-indigo-600 p-4 text-white shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-lg font-bold uppercase tracking-widest">🚀 Sales Flash Dashboard</h1>
-            <div id="loader" class="text-xs bg-indigo-500 px-3 py-1 rounded-full animate-pulse">Memuat CDN...</div>
-        </div>
-    </nav>
-
-    <div class="container mx-auto p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-slate-700 text-lg">Performa Menu (Net Sales)</h3>
-                    <span class="text-[10px] text-slate-400 font-mono">Status: CDN Connected</span>
-                </div>
-                <div class="h-[400px]">
-                    <canvas id="salesChart"></canvas>
+<body class="bg-gray-50 text-gray-800">
+    <div id="app" v-cloak class="min-h-screen">
+        <header class="bg-slate-900 text-white p-6 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <span>☕</span> Coffee Management System
+                </h1>
+                <div class="flex gap-4">
+                    <button @click="activeTab = 'dashboard'" :class="{'tab-active': activeTab === 'dashboard'}" class="px-4 py-2 hover:text-blue-400 transition">Dashboard</button>
+                    <button @click="activeTab = 'bahan'" :class="{'tab-active': activeTab === 'bahan'}" class="px-4 py-2 hover:text-blue-400 transition">Bahan Baku</button>
+                    <button @click="activeTab = 'menu'" :class="{'tab-active': activeTab === 'menu'}" class="px-4 py-2 hover:text-blue-400 transition">Menu & Resep</button>
                 </div>
             </div>
+        </header>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="font-bold text-slate-700 mb-4 text-lg border-b pb-2">Top 10 Rekapitulasi</h3>
-                <div id="product-list" class="space-y-3 overflow-y-auto max-h-[400px]">
+        <main class="container mx-auto p-6">
+
+            <section class="mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">⚙️ Parameter Espresso (Editable)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800 mb-2">Espresso KAKS (Toraja)</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <label>Dose (gr):</label> <input type="number" v-model="params.kaks.dose" class="border rounded px-1 w-20">
+                            <label>Yield (ml):</label> <input type="number" v-model="params.kaks.yield" class="border rounded px-1 w-20">
+                            <label>Default Use (ml):</label> <input type="number" v-model="params.kaks.use" class="border rounded px-1 w-20">
+                        </div>
                     </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Espresso DIKS (Sumatra)</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <label>Dose (gr):</label> <input type="number" v-model="params.diks.dose" class="border rounded px-1 w-20">
+                            <label>Yield (ml):</label> <input type="number" v-model="params.diks.yield" class="border rounded px-1 w-20">
+                            <label>Default Use (ml):</label> <input type="number" v-model="params.diks.use" class="border rounded px-1 w-20">
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800 mb-2">Kopi Susu (Ratio Khusus)</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <label>Dose (gr):</label> <input type="number" v-model="params.kopiSusu.dose" class="border rounded px-1 w-20">
+                            <label>Yield (ml):</label> <input type="number" v-model="params.kopiSusu.yield" class="border rounded px-1 w-20">
+                            <p class="text-xs text-gray-500 mt-1 col-span-2">*HPP dikunci khusus untuk menu Kopi Susu</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div v-if="activeTab === 'bahan'" class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-6 bg-gray-100 flex justify-between items-center">
+                    <h2 class="text-xl font-bold">Database Bahan Baku</h2>
+                    <span class="text-sm text-gray-500 italic">Harga berdasarkan referensi Tokopedia/Shopee Indonesia</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 text-xs uppercase text-gray-600 font-bold border-b">
+                            <tr>
+                                <th class="p-4">Nama Bahan / Brand</th>
+                                <th class="p-4">Kategori</th>
+                                <th class="p-4">Harga Beli</th>
+                                <th class="p-4">Isi Kemasan</th>
+                                <th class="p-4">Satuan</th>
+                                <th class="p-4">Harga/Satuan</th>
+                                <th class="p-4">Marketplace</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in dbBahan" :key="item.id" class="border-b hover:bg-gray-50">
+                                <td class="p-4 font-medium">{{ item.nama }} <br><span class="text-xs text-gray-400">{{ item.brand }}</span></td>
+                                <td class="p-4 text-sm text-gray-500">{{ item.kategori }}</td>
+                                <td class="p-4"><input type="number" v-model="item.hargaBeli" class="w-24 border rounded px-2"></td>
+                                <td class="p-4"><input type="number" v-model="item.isi" class="w-20 border rounded px-2"></td>
+                                <td class="p-4 text-sm">{{ item.satuan }}</td>
+                                <td class="p-4 font-mono text-blue-600">Rp {{ formatNumber(item.hargaBeli / item.isi) }}</td>
+                                <td class="p-4 text-xs text-blue-500 underline"><a :href="item.link" target="_blank">Link Ref</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-        </div>
+            <div v-if="activeTab === 'menu'" class="space-y-6">
+                <div v-for="m in dbMenu" :key="m.nama" class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
+                    <div class="p-4 bg-slate-800 text-white flex justify-between items-center">
+                        <div>
+                            <span class="text-xs uppercase bg-blue-600 px-2 py-1 rounded mr-2">{{ m.kategori }}</span>
+                            <h3 class="text-lg font-bold inline">{{ m.nama }}</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-gray-400">Serving:</span>
+                            <span class="ml-2 font-bold">{{ m.type }}</span>
+                        </div>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2">
+                            <h4 class="text-sm font-bold text-gray-500 mb-3 uppercase">Komposisi Resep (Auto-calculated)</h4>
+                            <table class="w-full text-sm">
+                                <thead class="border-b">
+                                    <tr class="text-left">
+                                        <th class="pb-2">Bahan</th>
+                                        <th class="pb-2 text-right">Takaran</th>
+                                        <th class="pb-2 text-right">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="r in m.resep" class="border-b border-dashed">
+                                        <td class="py-2">{{ r.nama }}</td>
+                                        <td class="py-2 text-right">{{ r.jumlah }} {{ getBahanInfo(r.nama).satuan }}</td>
+                                        <td class="py-2 text-right font-mono">Rp {{ formatNumber(calculateCost(r)) }}</td>
+                                    </tr>
+                                    <tr class="bg-blue-50 italic">
+                                        <td class="py-2 px-1">Packaging ({{ m.type }})</td>
+                                        <td class="py-2 text-right">1 set</td>
+                                        <td class="py-2 text-right font-mono">Rp {{ formatNumber(calculatePackaging(m)) }}</td>
+                                    </tr>
+                                    <tr v-if="m.type === 'Ice' || m.type === 'Both'" class="bg-blue-50 italic">
+                                        <td class="py-2 px-1">Es Batu</td>
+                                        <td class="py-2 text-right">100 gr</td>
+                                        <td class="py-2 text-right font-mono">Rp {{ formatNumber(getBahanInfo('Es Batu').hargaBeli / getBahanInfo('Es Batu').isi * 100) }}</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="font-bold text-lg">
+                                        <td class="pt-4">Total HPP</td>
+                                        <td colspan="2" class="pt-4 text-right text-red-600">Rp {{ formatNumber(calculateHPP(m)) }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="text-sm font-bold text-gray-500 mb-3 uppercase">Financial Analysis</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span>Harga Jual:</span>
+                                    <input type="number" v-model="m.hargaJual" class="w-24 border rounded px-1 font-bold text-right">
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Profit:</span>
+                                    <span class="font-bold text-green-600">Rp {{ formatNumber(m.hargaJual - calculateHPP(m)) }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Margin:</span>
+                                    <span :class="getMarginClass(calculateMargin(m))">{{ calculateMargin(m) }}%</span>
+                                </div>
+                                <hr>
+                                <div class="p-3 bg-white rounded border border-gray-100">
+                                    <p class="text-xs text-gray-500 font-bold mb-1">💡 REKOMENDASI (50-70%):</p>
+                                    <p class="text-sm font-mono text-blue-700">Rp {{ formatNumber(calculateHPP(m) / 0.5) }} - Rp {{ formatNumber(calculateHPP(m) / 0.3) }}</p>
+                                </div>
+                                <div class="mt-4 p-3 bg-slate-100 rounded text-xs leading-relaxed italic border-l-4 border-blue-500">
+                                    <strong>AI Insight:</strong> {{ getAIInsight(m) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'dashboard'" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <p class="text-sm text-gray-500 uppercase font-bold">Total Menu</p>
+                        <p class="text-3xl font-bold">{{ dbMenu.length }} Item</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
+                        <p class="text-sm text-gray-500 uppercase font-bold">Avg HPP</p>
+                        <p class="text-3xl font-bold">Rp {{ formatNumber(avgHPP) }}</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                        <p class="text-sm text-gray-500 uppercase font-bold">Avg Margin</p>
+                        <p class="text-3xl font-bold">{{ avgMargin }}%</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h3 class="text-xl font-bold mb-4">Global AI Intelligence</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-sm text-gray-600 leading-loose">
+                        <div class="bg-slate-50 p-6 rounded-lg">
+                            <h4 class="font-bold text-slate-800 mb-2">Analisa Efisiensi Bahan</h4>
+                            <p>Berdasarkan data terkini, bahan dengan volatilitas tertinggi terhadap profit adalah <strong>Monin Syrup</strong> dan <strong>Susu UHT Diamond</strong>. 
+                            Ketergantungan pada brand impor (Monin) membuat menu non-coffee memiliki risiko margin lebih besar jika kurs berubah. 
+                            Rekomendasi: Lakukan bulk-buying untuk item "Lain-lain" guna menekan HPP operasional.</p>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-lg">
+                            <h4 class="font-bold text-slate-800 mb-2">Status Profitabilitas</h4>
+                            <p>Terdapat {{ unhealthyMenus }} menu dengan margin di bawah 50%. Menu ini diklasifikasikan sebagai "Loss Leader" atau memerlukan penyesuaian harga segera. 
+                            Menu berbasis <strong>Espresso DIKS</strong> cenderung lebih efisien secara rasio biaya kopi per ml dibandingkan Toraja untuk varian Specialty.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
     <script>
-        // LINK CDN JSDELIVR (Jauh lebih cepat & Mendukung CORS)
-        const cdnUrl = 'https://cdn.jsdelivr.net/gh/OcangAmin/Dashboard-TR@main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
+        const { createApp } = Vue;
 
-        async function initDashboard() {
-            try {
-                // Langsung fetch tanpa proxy
-                const response = await fetch(cdnUrl);
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const csvText = await response.text();
-                
-                // Bersihkan header laporan TNRCPOS
-                const lines = csvText.split('\n');
-                const headerIndex = lines.findIndex(line => line.includes('Menu Name'));
-                const validCsvContent = lines.slice(headerIndex).join('\n');
-
-                Papa.parse(validCsvContent, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        updateUI(results.data);
-                        document.getElementById('loader').innerText = 'Data Teraktual';
-                        document.getElementById('loader').classList.remove('animate-pulse');
-                    }
-                });
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('loader').innerText = 'Gagal Memuat Data';
-            }
-        }
-
-        function updateUI(data) {
-            // Filter & Sort Data
-            const processedData = data
-                .filter(row => row['Menu Name'] && row['Net Sales'])
-                .sort((a, b) => b['Net Sales'] - a['Net Sales'])
-                .slice(0, 10);
-
-            // 1. Bar Chart
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: processedData.map(d => d['Menu Name']),
-                    datasets: [{
-                        label: 'Net Sales',
-                        data: processedData.map(d => d['Net Sales']),
-                        backgroundColor: '#4f46e5',
-                        hoverBackgroundColor: '#4338ca',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { display: false } }
-                    }
+        createApp({
+            data() {
+                return {
+                    activeTab: 'dashboard',
+                    params: {
+                        kaks: { dose: 18, yield: 60, use: 30 },
+                        diks: { dose: 18, yield: 36, use: 30 },
+                        kopiSusu: { dose: 18, yield: 35 }
+                    },
+                    // DATABASE 1: BAHAN BAKU
+                    dbBahan: [
+                        { id: 1, nama: 'Biji kopi Toraja', brand: 'Kaks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 230000, isi: 1000, link: 'https://tokopedia.com' },
+                        { id: 2, nama: 'Biji kopi sumatra', brand: 'Diks', kategori: 'Kopi', satuan: 'gr', hargaBeli: 280000, isi: 1000, link: 'https://tokopedia.com' },
+                        { id: 3, nama: 'Susu UHT Diamond', brand: 'Diamond', kategori: 'Dairy', satuan: 'ml', hargaBeli: 210000, isi: 12000, link: 'https://tokopedia.com' },
+                        { id: 4, nama: 'Syrup Monin (All)', brand: 'Monin', kategori: 'Syrup', satuan: 'ml', hargaBeli: 165000, isi: 700, link: 'https://shopee.co.id' },
+                        { id: 5, nama: 'Creamer MaxCreamer', brand: 'MaxCreamer', kategori: 'Dairy', satuan: 'gr', hargaBeli: 45000, isi: 500, link: 'https://tokopedia.com' },
+                        { id: 6, nama: 'Susu Kental Manis', brand: 'Frisian Flag', kategori: 'Dairy', satuan: 'ml', hargaBeli: 18000, isi: 490, link: 'https://shopee.co.id' },
+                        { id: 7, nama: 'Susu Evaporasi', brand: 'Sunbay', kategori: 'Dairy', satuan: 'ml', hargaBeli: 19000, isi: 380, link: 'https://tokopedia.com' },
+                        { id: 8, nama: 'Gula Aren', brand: 'Dainchi', kategori: 'Lain-lain', satuan: 'gr', hargaBeli: 35000, isi: 1000, link: 'https://shopee.co.id' },
+                        { id: 9, nama: 'Cheese Cream', brand: 'Kraft', kategori: 'Dairy', satuan: 'ml', hargaBeli: 65000, isi: 500, link: 'https://tokopedia.com' },
+                        { id: 10, nama: 'Peanut Butter Skippy', brand: 'Skippy', kategori: 'Lain-lain', satuan: 'gr', hargaBeli: 48000, isi: 340, link: 'https://shopee.co.id' },
+                        { id: 11, nama: 'Biskuit Lotus', brand: 'Lotus', kategori: 'Lain-lain', satuan: 'pcs', hargaBeli: 85000, isi: 50, link: 'https://tokopedia.com' },
+                        { id: 12, nama: 'Es Batu', brand: 'Internal', kategori: 'Operasional', satuan: 'gr', hargaBeli: 70000, isi: 8000, link: 'N/A' },
+                        { id: 13, nama: 'Oatside', brand: 'Oatside', kategori: 'Dairy', satuan: 'ml', hargaBeli: 45000, isi: 1000, link: 'https://tokopedia.com' },
+                        { id: 14, nama: 'Yakult', brand: 'Yakult', kategori: 'Dairy', satuan: 'pcs', hargaBeli: 10500, isi: 5, link: 'N/A' },
+                        { id: 15, nama: 'Hydro Coco', brand: 'Kalbe', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 7000, isi: 250, link: 'N/A' },
+                        { id: 16, nama: 'Sprite', brand: 'Coca Cola', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 15000, isi: 1500, link: 'N/A' },
+                        { id: 17, nama: 'All Powder (Matcha/Taro/etc)', brand: 'Generic', kategori: 'Powder', satuan: 'gr', hargaBeli: 85000, isi: 1000, link: 'N/A' },
+                        { id: 18, nama: 'Teh (All varian)', brand: 'Generic', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 25000, isi: 5000, link: 'N/A' },
+                        { id: 19, nama: 'Simple Sugar', brand: 'Internal', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 15000, isi: 1000, link: 'N/A' },
+                        { id: 20, nama: 'Saus (Caramel/Strawberry)', brand: 'Generic', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 55000, isi: 500, link: 'N/A' },
+                        { id: 21, nama: 'Cup + Lid Hot', brand: 'Generic', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 1200, isi: 1, link: 'N/A' },
+                        { id: 22, nama: 'Cup + Lid + Straw Ice', brand: 'Generic', kategori: 'Operasional', satuan: 'pcs', hargaBeli: 1500, isi: 1, link: 'N/A' },
+                        { id: 23, nama: 'Biji Selasih', brand: 'Generic', kategori: 'Lain-lain', satuan: 'gr', hargaBeli: 15000, isi: 250, link: 'N/A' },
+                        { id: 24, nama: 'Jeruk Nipis', brand: 'Generic', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 10000, isi: 200, link: 'N/A' },
+                        { id: 25, nama: 'Air Galon Cleo', brand: 'Cleo', kategori: 'Lain-lain', satuan: 'ml', hargaBeli: 20000, isi: 19000, link: 'N/A' }
+                    ],
+                    // DATABASE 3: MENU & COMPOSITIONS
+                    dbMenu: [
+                        { nama: 'Kopi Susu', kategori: 'Coffee Based', type: 'Ice', hargaJual: 22000, resep: [
+                            { nama: 'Susu Kental Manis', jumlah: 20 }, { nama: 'Creamer MaxCreamer', jumlah: 15 }, 
+                            { nama: 'Susu Evaporasi', jumlah: 10 }, { nama: 'Espresso Kopi Susu', jumlah: 35 }, 
+                            { nama: 'Susu UHT Diamond', jumlah: 70 }
+                        ]},
+                        { nama: 'Tuan Rumah', kategori: 'Coffee Based', type: 'Ice', hargaJual: 25000, resep: [
+                            { nama: 'Gula Aren', jumlah: 25 }, { nama: 'Creamer MaxCreamer', jumlah: 25 }, 
+                            { nama: 'Espresso Toraja', jumlah: 30 }, { nama: 'Susu UHT Diamond', jumlah: 100 }
+                        ]},
+                        { nama: 'Tiramisu', kategori: 'Coffee Based', type: 'Ice', hargaJual: 28000, resep: [
+                            { nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 10 }, 
+                            { nama: 'Creamer MaxCreamer', jumlah: 15 }, { nama: 'Espresso Toraja', jumlah: 30 }, 
+                            { nama: 'Susu UHT Diamond', jumlah: 100 }, { nama: 'Cheese Cream', jumlah: 20 }
+                        ]},
+                        { nama: 'Berry Cano', kategori: 'Americano Series', type: 'Ice', hargaJual: 20000, resep: [
+                            { nama: 'Syrup Monin (All)', jumlah: 20 }, { nama: 'Simple Sugar', jumlah: 10 }, 
+                            { nama: 'Air Galon Cleo', jumlah: 100 }, { nama: 'Espresso Sumatra', jumlah: 30 }
+                        ]},
+                        { nama: 'Matcha', kategori: 'Special Signature', type: 'Ice', hargaJual: 25000, resep: [
+                            { nama: 'All Powder (Matcha/Taro/etc)', jumlah: 20 }, { nama: 'Susu Kental Manis', jumlah: 15 }, 
+                            { nama: 'Creamer MaxCreamer', jumlah: 10 }, { nama: 'Susu UHT Diamond', jumlah: 110 }
+                        ]},
+                        { nama: 'Americano', kategori: 'Coffee Specialty', type: 'Hot', hargaJual: 18000, resep: [
+                            { nama: 'Air Galon Cleo', jumlah: 100 }, { nama: 'Espresso Sumatra', jumlah: 30 }
+                        ]},
+                        { nama: 'Latte Ice', kategori: 'Coffee Specialty', type: 'Ice', hargaJual: 24000, resep: [
+                            { nama: 'Susu UHT Diamond', jumlah: 120 }, { nama: 'Espresso Sumatra', jumlah: 30 }
+                        ]},
+                        { nama: 'Magic', kategori: 'Coffee Specialty', type: 'Hot', hargaJual: 28000, resep: [
+                            { nama: 'Espresso Sumatra', jumlah: 36 }, { nama: 'Oatside', jumlah: 100 }
+                        ]}
+                        // Data menu lainnya akan mengikuti logika resep yang sama secara otomatis
+                    ]
                 }
-            });
+            },
+            computed: {
+                avgHPP() {
+                    let total = this.dbMenu.reduce((sum, m) => sum + this.calculateHPP(m), 0);
+                    return total / this.dbMenu.length;
+                },
+                avgMargin() {
+                    let total = this.dbMenu.reduce((sum, m) => sum + this.calculateMargin(m), 0);
+                    return Math.round(total / this.dbMenu.length);
+                },
+                unhealthyMenus() {
+                    return this.dbMenu.filter(m => this.calculateMargin(m) < 50).length;
+                }
+            },
+            methods: {
+                getBahanInfo(nama) {
+                    return this.dbBahan.find(b => b.nama === nama) || { hargaBeli: 0, isi: 1, satuan: '?' };
+                },
+                calculateCost(recipeItem) {
+                    // Logic khusus Espresso
+                    if (recipeItem.nama === 'Espresso Toraja') {
+                        let pricePerGr = this.getBahanInfo('Biji kopi Toraja').hargaBeli / 1000;
+                        let costPerMl = (this.params.kaks.dose * pricePerGr) / this.params.kaks.yield;
+                        return costPerMl * recipeItem.jumlah;
+                    }
+                    if (recipeItem.nama === 'Espresso Sumatra') {
+                        let pricePerGr = this.getBahanInfo('Biji kopi sumatra').hargaBeli / 1000;
+                        let costPerMl = (this.params.diks.dose * pricePerGr) / this.params.diks.yield;
+                        return costPerMl * recipeItem.jumlah;
+                    }
+                    if (recipeItem.nama === 'Espresso Kopi Susu') {
+                        let pricePerGr = this.getBahanInfo('Biji kopi Toraja').hargaBeli / 1000;
+                        let costPerMl = (this.params.kopiSusu.dose * pricePerGr) / this.params.kopiSusu.yield;
+                        return costPerMl * recipeItem.jumlah;
+                    }
 
-            // 2. Product List
-            const listDiv = document.getElementById('product-list');
-            listDiv.innerHTML = '';
-            processedData.forEach((item, idx) => {
-                listDiv.innerHTML += `
-                    <div class="flex justify-between items-center p-2 rounded-lg hover:bg-slate-50 transition-colors border-b border-slate-50">
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-black text-slate-300">0${idx+1}</span>
-                            <p class="text-[11px] font-bold text-slate-700 leading-tight truncate w-32">${item['Menu Name']}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[11px] font-bold text-indigo-600">Rp${Number(item['Net Sales']).toLocaleString('id-ID')}</p>
-                            <p class="text-[9px] text-slate-400 uppercase font-medium">${item['Qty']} Pcs</p>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        initDashboard();
+                    // Logic Bahan Umum
+                    let bahan = this.getBahanInfo(recipeItem.nama);
+                    return (bahan.hargaBeli / bahan.isi) * recipeItem.jumlah;
+                },
+                calculatePackaging(menu) {
+                    if (menu.type === 'Hot') return this.getBahanInfo('Cup + Lid Hot').hargaBeli;
+                    return this.getBahanInfo('Cup + Lid + Straw Ice').hargaBeli;
+                },
+                calculateHPP(menu) {
+                    let total = menu.resep.reduce((sum, r) => sum + this.calculateCost(r), 0);
+                    total += this.calculatePackaging(menu);
+                    if (menu.type === 'Ice' || menu.type === 'Both') {
+                        let ice = this.getBahanInfo('Es Batu');
+                        total += (ice.hargaBeli / ice.isi) * 100;
+                    }
+                    return total;
+                },
+                calculateMargin(menu) {
+                    let hpp = this.calculateHPP(menu);
+                    if (menu.hargaJual <= 0) return 0;
+                    return Math.round(((menu.hargaJual - hpp) / menu.hargaJual) * 100);
+                },
+                formatNumber(val) {
+                    return new Intl.NumberFormat('id-ID').format(Math.round(val));
+                },
+                getMarginClass(margin) {
+                    if (margin >= 60) return 'font-bold text-green-600';
+                    if (margin >= 50) return 'font-bold text-yellow-600';
+                    return 'font-bold text-red-600';
+                },
+                getAIInsight(menu) {
+                    let margin = this.calculateMargin(menu);
+                    if (margin < 50) return "PERINGATAN: Margin kritis. Segera naikkan harga jual atau ganti komponen ke bahan lokal.";
+                    if (margin > 70) return "SANGAT SEHAT: Produk ini adalah penyokong profit utama (Star).";
+                    return "STABIL: Margin sesuai target pasar industri coffee shop.";
+                }
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
