@@ -2,35 +2,34 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Sales Dashboard - TNRCPOS</title>
+    <title>TNRCPOS Sales Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900">
+<body class="bg-gray-100">
 
-    <nav class="bg-indigo-900 p-4 text-white shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight">📊 Sales Menu Recapitulation</h1>
-            <div id="status-badge" class="text-xs bg-yellow-500 px-3 py-1 rounded-full text-black font-bold">Connecting...</div>
+    <div class="bg-indigo-700 p-6 text-white shadow-xl mb-8">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold">📊 Dashboard Rekapitulasi Menu</h1>
+            <p class="text-indigo-200 text-sm">Sumber Data: GitHub Raw CSV (TNRCPOS)</p>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mx-auto p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="container mx-auto px-4 pb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="font-bold text-slate-700 mb-4 text-lg">Tren Penjualan per Menu (Net Sales)</h3>
-                <div class="h-[400px]">
-                    <canvas id="mainChart"></canvas>
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
+                <h3 class="font-semibold text-gray-700 mb-6">Grafik Penjualan per Produk (Net Sales)</h3>
+                <div class="h-[450px]">
+                    <canvas id="salesChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="font-bold text-slate-700 mb-4 text-lg">Top 10 Menu Terlaris</h3>
-                <div id="product-list" class="space-y-3 overflow-y-auto max-h-[400px]">
-                    <p class="text-slate-400 italic text-sm">Menunggu data...</p>
+            <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-indigo-500">
+                <h3 class="font-semibold text-gray-700 mb-4">Top 10 Menu Terlaris</h3>
+                <div id="product-list" class="space-y-3">
+                    <p class="text-gray-400 animate-pulse">Memproses data CSV...</p>
                 </div>
             </div>
 
@@ -38,95 +37,77 @@
     </div>
 
     <script>
-        // Menggunakan AllOrigins Proxy untuk menembus blokir CORS GitHub
-        const rawUrl = 'https://raw.githubusercontent.com/OcangAmin/Dashboard-TR/refs/heads/main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`;
+        const rawCsvUrl = 'https://raw.githubusercontent.com/OcangAmin/Dashboard-TR/refs/heads/main/Sales%20Menu%20Recapitulation%20By%20Time%20Report_TNRCPOSADMIN_17715414456883.csv';
+        
+        // Gunakan proxy agar tidak kena blokir CORS oleh browser
+        const finalUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawCsvUrl)}`;
 
-        async function fetchData() {
+        async function loadDashboard() {
             try {
-                const response = await fetch(proxyUrl);
-                const json = await response.json();
-                const csvString = json.contents;
+                const res = await fetch(finalUrl);
+                const json = await res.json();
+                const rawContent = json.contents;
 
-                // Membersihkan baris header non-data (biasanya laporan POS punya 4-5 baris info di atas)
-                const rows = csvString.split('\n');
-                const startLine = rows.findIndex(row => row.includes('Menu Name') || row.includes('Menu'));
-                const cleanCsv = rows.slice(startLine).join('\n');
+                // Membersihkan CSV: Cari baris tempat "Menu Name" berada
+                const lines = rawContent.split('\n');
+                const headerIndex = lines.findIndex(l => l.includes('Menu Name'));
+                const cleanData = lines.slice(headerIndex).join('\n');
 
-                Papa.parse(cleanCsv, {
+                Papa.parse(cleanData, {
                     header: true,
                     dynamicTyping: true,
                     skipEmptyLines: true,
                     complete: function(results) {
-                        renderDashboard(results.data);
-                        document.getElementById('status-badge').innerText = 'Live Data';
-                        document.getElementById('status-badge').className = 'text-xs bg-green-500 px-3 py-1 rounded-full text-white font-bold';
+                        displayData(results.data);
                     }
                 });
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('status-badge').innerText = 'Error Connection';
-                document.getElementById('product-list').innerHTML = "Gagal memuat data. Pastikan link GitHub benar.";
+            } catch (e) {
+                document.getElementById('product-list').innerHTML = "Gagal memuat file dari GitHub.";
             }
         }
 
-        function renderDashboard(data) {
-            // Filter data yang valid (memiliki Net Sales dan Menu Name)
-            const validData = data.filter(d => d['Menu Name'] && d['Net Sales'] !== undefined)
-                                 .sort((a, b) => b['Net Sales'] - a['Net Sales']);
+        function displayData(data) {
+            // Urutkan berdasarkan Net Sales tertinggi
+            const sortedData = data
+                .filter(item => item['Menu Name'] && item['Net Sales'])
+                .sort((a, b) => b['Net Sales'] - a['Net Sales']);
 
-            const labels = validData.slice(0, 10).map(d => d['Menu Name']);
-            const values = validData.slice(0, 10).map(d => d['Net Sales']);
+            const top10 = sortedData.slice(0, 10);
 
-            // 1. Render Bar Chart
-            const ctx = document.getElementById('mainChart').getContext('2d');
+            // 1. Render Chart
+            const ctx = document.getElementById('salesChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: top10.map(d => d['Menu Name']),
                     datasets: [{
-                        label: 'Total Net Sales (Rp)',
-                        data: values,
-                        backgroundColor: 'rgba(79, 70, 229, 0.8)',
-                        borderColor: '#4f46e5',
-                        borderWidth: 1,
-                        borderRadius: 5
+                        label: 'Net Sales (Rp)',
+                        data: top10.map(d => d['Net Sales']),
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 6
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // Membuat bar horizontal agar nama menu terbaca jelas
+                    indexAxis: 'y', // Horizontal agar nama menu tidak terpotong
                     responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    maintainAspectRatio: false
                 }
             });
 
-            // 2. Render List Produk
-            const listContainer = document.getElementById('product-list');
-            listContainer.innerHTML = '';
-            validData.slice(0, 10).forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded-lg border-b border-slate-100';
-                div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-bold text-slate-400">#${index+1}</span>
-                        <div>
-                            <p class="font-bold text-slate-800 text-xs">${item['Menu Name']}</p>
-                            <p class="text-[10px] text-slate-500 uppercase">${item['Category Name'] || 'No Category'}</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-indigo-600 font-bold text-xs">Rp ${Number(item['Net Sales']).toLocaleString('id-ID')}</p>
-                        <p class="text-[10px] text-slate-400">${item['Qty']} Sold</p>
+            // 2. Render List
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+            top10.forEach((item, i) => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="text-xs font-medium text-gray-600 w-2/3">${i+1}. ${item['Menu Name']}</span>
+                        <span class="text-xs font-bold text-indigo-600 text-right">Rp ${Number(item['Net Sales']).toLocaleString('id-ID')}</span>
                     </div>
                 `;
-                listContainer.appendChild(div);
             });
         }
 
-        fetchData();
+        loadDashboard();
     </script>
 </body>
 </html>
