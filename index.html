@@ -1,10 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta http-equiv="refresh" content="0; url=https://ais-dev-i47qfxomsjf75ylv2lfv3o-169370119789.asia-southeast1.run.app">
-    <title>Redirecting...</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blooming Taste - Admin HPP</title>
+    <style>
+        body { font-family: sans-serif; padding: 15px; background: #f9f9f9; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h3 { color: #5d4037; margin-top: 0; }
+        .input-group { margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-search { background: #616161; color: white; }
+        .btn-sync { background: #4caf50; color: white; }
+        .saran-list { background: #f0f0f0; padding: 10px; border-radius: 8px; list-style: none; margin: 10px 0; }
+        .saran-list li { padding: 8px; border-bottom: 1px solid #ddd; cursor: pointer; color: #1565c0; }
+        
+        /* Progress Bar */
+        .progress-wrapper { background: #eee; border-radius: 20px; height: 25px; width: 100%; margin: 15px 0; display: none; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; background: #4caf50; width: 0%; transition: width 0.3s; }
+        .progress-text { position: absolute; width: 100%; text-align: center; top: 3px; font-size: 12px; font-weight: bold; }
+
+        .hasil-box { background: #e8f5e9; padding: 15px; border-left: 5px solid #4caf50; margin-top: 15px; display: none; }
+    </style>
 </head>
 <body>
-    <p>Sedang mengalihkan ke aplikasi... Jika tidak berpindah, <a href="https://ais-dev-i47qfxomsjf75ylv2lfv3o-169370119789.asia-southeast1.run.app">klik di sini</a>.</p>
+
+    <div class="card">
+        <h3>🔍 Cari Referensi Harga</h3>
+        <div class="input-group">
+            <input type="text" id="namaBahan" placeholder="Tulis nama bahan (ex: Kopi Kaks 1kg)">
+        </div>
+        <button onclick="cariHarga()" class="btn-search">Cari di E-Commerce</button>
+        <ul id="listSaran" class="saran-list" style="display:none;"></ul>
+    </div>
+
+    <div class="card">
+        <h3>☕ Kalkulator HPP & Sinkron</h3>
+        <div class="input-group">
+            <label>Pilih Jenis Espresso:</label>
+            <select id="pilihanMenu">
+                <option value="espresso_kaks">Espresso (Kaks) - 18g In / 35ml Out</option>
+                <option value="espresso_diks">Espresso (Diks) - 18.5g In / 33ml Out</option>
+                <option value="lungo_kaks">Lungo (Kaks) - 18g In / 60ml Out</option>
+                <option value="lungo_kaks_half">1/2 Lungo (Kaks) - 9g In / 30ml Out</option>
+            </select>
+        </div>
+        
+        <button onclick="mulaiSinkron()" class="btn-sync">🔄 SINKRONISASI DATA</button>
+
+        <div id="wrapperProgress" class="progress-wrapper">
+            <div id="barFill" class="bar-fill"></div>
+            <div id="textProgress" class="progress-text">0%</div>
+        </div>
+
+        <div id="boxHasil" class="hasil-box">
+            <h4 id="judulHasil"></h4>
+            <div id="detailHpp"></div>
+        </div>
+    </div>
+
+    <script>
+        // DATA HARGA ASUMSI (Silakan ubah angka ini)
+        const HARGA_DASAR = {
+            kaks: 250, // per gram (250rb/kg)
+            diks: 260, // per gram (260rb/kg)
+            cleo: 0.35 // per ml (6500/19L)
+        };
+
+        // 1. Fungsi Cari Harga Simulasi
+        function cariHarga() {
+            const nama = document.getElementById('namaBahan').value;
+            if(!nama) return alert("Isi nama bahan dulu!");
+            
+            const list = document.getElementById('listSaran');
+            list.style.display = 'block';
+            list.innerHTML = "<li>Mencari di Google Shopping...</li>";
+
+            setTimeout(() => {
+                list.innerHTML = `
+                    <li onclick="pilihHarga(248000)">🛒 Tokopedia: Rp248.000</li>
+                    <li onclick="pilihHarga(255000)">🛒 Shopee: Rp255.000 (Relevan)</li>
+                    <li onclick="pilihHarga(260000)">🛒 Blibli: Rp260.000</li>
+                `;
+            }, 1200);
+        }
+
+        function pilihHarga(h) {
+            alert("Harga Rp" + h.toLocaleString() + " dipilih sebagai referensi aktual.");
+        }
+
+        // 2. Fungsi Sinkronisasi (Progress Bar)
+        function mulaiSinkron() {
+            const bar = document.getElementById('barFill');
+            const txt = document.getElementById('textProgress');
+            const wrapper = document.getElementById('wrapperProgress');
+            const box = document.getElementById('boxHasil');
+
+            box.style.display = 'none';
+            wrapper.style.display = 'block';
+            let persen = 0;
+
+            const jalan = setInterval(() => {
+                persen += Math.floor(Math.random() * 15) + 5;
+                if(persen >= 100) {
+                    persen = 100;
+                    clearInterval(jalan);
+                    hitungHpp();
+                }
+                bar.style.width = persen + '%';
+                txt.innerText = persen + '%';
+            }, 150);
+        }
+
+        // 3. Logika Perhitungan Utama
+        function hitungHpp() {
+            const menu = document.getElementById('pilihanMenu').value;
+            let kopi, air, jenisKopi, namaMenu;
+            const spill = 1.05; // 5% Spill
+
+            if(menu === 'espresso_kaks') {
+                kopi = 18; air = 35; jenisKopi = 'kaks'; namaMenu = "Espresso Kaks";
+            } else if(menu === 'espresso_diks') {
+                kopi = 18.5; air = 33; jenisKopi = 'diks'; namaMenu = "Espresso Diks";
+            } else if(menu === 'lungo_kaks') {
+                kopi = 18; air = 60; jenisKopi = 'kaks'; namaMenu = "Lungo Kaks";
+            } else if(menu === 'lungo_kaks_half') {
+                kopi = 9; air = 30; jenisKopi = 'kaks'; namaMenu = "1/2 Lungo Kaks";
+            }
+
+            const biayaKopi = kopi * HARGA_DASAR[jenisKopi];
+            const biayaAir = air * HARGA_DASAR.cleo;
+            const hppFinal = (biayaKopi + biayaAir) * spill;
+
+            // Tampilkan Hasil
+            document.getElementById('boxHasil').style.display = 'block';
+            document.getElementById('judulHasil').innerText = "✅ " + namaMenu;
+            document.getElementById('detailHpp').innerHTML = `
+                Bahan: ${kopi}g Kopi + ${air}ml Cleo<br>
+                HPP + Spill 5%: <strong>Rp${Math.round(hppFinal).toLocaleString()}</strong>
+            `;
+        }
+    </script>
 </body>
 </html>
